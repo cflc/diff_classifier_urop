@@ -136,7 +136,7 @@ def plot_heatmap(prefix, feature='asymmetry1', vmin=0, vmax=1, resolution=512, r
     """
     # Inputs
     # ----------
-    merged_ft = pd.read_csv('features_{}.csv'.format(prefix))
+    merged_ft = pd.read_csv(prefix)
     string = feature
     leveler = merged_ft[string]
     t_min = vmin
@@ -226,7 +226,7 @@ def plot_scatterplot(prefix, feature='asymmetry1', vmin=0, vmax=1, resolution=51
     """
     # Inputs
     # ----------
-    merged_ft = pd.read_csv('features_{}.csv'.format(prefix))
+    merged_ft = pd.read_csv(prefix)
     string = feature
     leveler = merged_ft[string]
     t_min = vmin
