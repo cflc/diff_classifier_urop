@@ -842,7 +842,7 @@ def calculate_features(dframe, framerate=1, frame=(10, 100), mean_values=True):
                 bitesize = datai[(datai['X'] >= 128*xrange) & (datai['X'] < 128*(xrange+1)) &
                                  (datai['Y'] >= 128*yrange) & (datai['Y'] < 128*(yrange+1))]
                 bitesize.replace([np.inf, -np.inf], np.nan)
-                print(bitesize.shape)
+                #print(bitesize.shape)
                 for col in bitesize.columns:
                     if col not in nonnum and 'Mean' not in col and 'Std' not in col:
                         datai['Mean '+ col][bitesize.index] = np.nanmean(bitesize[col])
