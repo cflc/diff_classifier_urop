@@ -441,6 +441,7 @@ def all_msds2(data, frames=651):
                      'Mean_Intensity': xyft['iarray'].flatten('F')}
 
             new_data = pd.DataFrame(data=data1)
+            print(new_data)
         except ValueError:
             data1 = {'Frame': [],
                      'Track_ID': [],
