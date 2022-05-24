@@ -411,6 +411,7 @@ def all_msds2(data, frames=651):
     >>> msd.all_msds2(df, frames=length)[cols]
 
     """
+    print("HERE")
     if data.shape[0] > 2:
         try:
             xyft = make_xyarray(data, length=frames)
