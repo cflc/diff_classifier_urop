@@ -477,7 +477,7 @@ def plot_individual_msds(prefix, x_range=100, y_range=20, umppx=0.16, fps=100.02
 
     """
 
-    merged = pd.read_csv('{}/msd_{}.csv'.format(folder, prefix))
+    merged = pd.read_csv('msd_{}.csv'.format(prefix))
 
     fig = plt.figure(figsize=figsize)
     particles = int(max(merged['Track_ID']))
