@@ -464,6 +464,7 @@ def all_msds2(data, frames=651):
                      'Mean_Intensity': []}
             new_data = pd.DataFrame(data=data1)
     else:
+        print('YOU DID NOT GET AND MSD2')
         data1 = {'Frame': [],
                  'Track_ID': [],
                  'X': [],
