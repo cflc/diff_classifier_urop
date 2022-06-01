@@ -99,6 +99,7 @@ def test_plot_individual_msds():
 
     dataf = msd.random_traj_dataset(nparts=30, ndist=(1, 1), seed=3)
     msds = msd.all_msds2(dataf, frames=100)
+    print(msds)
     msds.to_csv(msd_file)
     feat = ft.calculate_features(msds)
     feat.to_csv(ft_file)
@@ -106,6 +107,8 @@ def test_plot_individual_msds():
     geomean, gSEM = hm.plot_individual_msds(prefix, umppx=1, fps=1, y_range=400, alpha=0.3, upload=False)
     npt.assert_almost_equal(339.9, np.round(np.sum(geomean), 1))
     npt.assert_almost_equal(35.3, np.round(np.sum(gSEM), 1))
+    print("GSEMM", np.round(np.sum(gSEM)))
+    print("Geomean", np.round(np.sum(geomean)))
 
 
 def test_plot_particles_in_frame():
@@ -121,3 +124,5 @@ def test_plot_particles_in_frame():
 
     hm.plot_particles_in_frame(prefix, x_range=100, y_range=20, upload=False)
     assert os.path.isfile('in_frame_{}.png'.format(prefix))
+
+test_plot_individual_msds()

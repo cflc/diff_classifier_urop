@@ -96,6 +96,7 @@ def test_make_xyarray():
     npt.assert_equal(xyft['tarray'], tt_array)
     npt.assert_equal(xyft['farray'], ft_array)
     npt.assert_equal(xyft['xarray'], xt_array)
+
     npt.assert_equal(xyft['yarray'], yt_array)
 
     # Second test
@@ -120,6 +121,10 @@ def test_make_xyarray():
     yt_array = np.array([[6, np.nan], [7, np.nan], [8, 2], [9, 3], [10, 4],
                          [np.nan, 5], [np.nan, 6]]).astype(float)
 
+    print('XARRRAY')
+    print(xyft['xarray'])
+    print('XTARRRAY')
+    print(xt_array)
     npt.assert_equal(xyft['tarray'], tt_array)
     npt.assert_equal(xyft['farray'], ft_array)
     npt.assert_equal(xyft['xarray'], xt_array)
@@ -154,6 +159,10 @@ def test_all_msds2():
     dfi = pd.DataFrame(data=di)[cols]
 
     length = max(df['Frame']) + 1
+    print("DFI")
+    print( dfi)
+    print("MSDS")
+    print(msd.all_msds2(df, frames=length))
     pdt.assert_frame_equal(dfi, msd.all_msds2(df, frames=length)[cols])
 
 
@@ -318,3 +327,20 @@ def test_random_traj_dataset():
 
 def test_plot_all_experiments():
     print('To do later.')
+
+
+
+
+
+data1 = {'Frame': [0, 1, 2, 3, 4, 20, 21, 22, 23, 24],
+             'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+             'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
+             'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6],
+             'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+             'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+             'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
+df = pd.DataFrame(data=data1)
+length = max(df['Frame']) + 1
+cols = ['X', 'Y', 'MSDs', 'Gauss','Frame']
+print(msd.all_msds2(df, frames=length)[cols])
+test_make_xyarray()

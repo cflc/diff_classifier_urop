@@ -139,14 +139,14 @@ def msd_calc(track, length=10):
              }
     new_track = pd.DataFrame(data=data1)
 
-    for frame in range(0, length-1):
-        xy = [np.square(nth_diff(new_track['X'], n=frame+1)),
-              np.square(nth_diff(new_track['Y'], n=frame+1))]
+    for frame in range(0, length - 1):
+        xy = [np.square(nth_diff(new_track['X'], n=frame + 1)),
+              np.square(nth_diff(new_track['Y'], n=frame + 1))]
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            meansd[frame+1] = np.nanmean(xy[0] + xy[1])
-            gauss[frame+1] = np.nanmean(xy[0]**2 + xy[1]**2
-                                        )/(2*(meansd[frame+1]**2))
+            meansd[frame + 1] = np.nanmean(xy[0] + xy[1])
+            gauss[frame + 1] = np.nanmean(xy[0] ** 2 + xy[1] ** 2
+                                          ) / (2 * (meansd[frame + 1] ** 2))
 
     new_track['MSDs'] = pd.Series(meansd, index=new_track.index)
     new_track['Gauss'] = pd.Series(gauss, index=new_track.index)
@@ -191,7 +191,7 @@ def all_msds(data):
     partcount = trackids.shape[0]
     length = int(max(data['Frame']))
     new = {}
-    new['length'] = partcount*length
+    new['length'] = partcount * length
     new['frame'] = np.zeros(new['length'])
     new['ID'] = np.zeros(new['length'])
     new['xy'] = [np.zeros(new['length']),
@@ -213,7 +213,7 @@ def all_msds(data):
             index2 = index2 + length
         new['single_track'] = msd_calc(single_track, length=length)
         new['frame'][index1:index2] = np.linspace(1, length, length)
-        new['ID'][index1:index2] = particle+1
+        new['ID'][index1:index2] = particle + 1
         new['xy'][0][index1:index2] = new['single_track']['X']
         new['xy'][1][index1:index2] = new['single_track']['Y']
         meansd[index1:index2] = new['single_track']['MSDs']
@@ -234,6 +234,13 @@ def make_xyarray(data, length=651):
     """Rearranges xy position data into 2d arrays
 
     Rearranges xy data from input pandas dataframe into 2D numpy array.
+
+    This takes the particles from the different track and then combines it so that the x positions
+    at the same time are put in together
+
+    example:
+    if we have 2 particles a and b and at frame 1 a is at position X =3 and  b is not in frame, Then we have [3, nan]
+    if on frame 2 a postion X=7 and b position X= 8 then we have [[3,nan],[7,8]]
 
     Parameters
     ----------
@@ -257,10 +264,11 @@ def make_xyarray(data, length=651):
 
     Examples
     --------
-    >>> data1 = {'Frame': [0, 1, 2, 3, 4, 2, 3, 4, 5, 6],
-    ...          'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
-    ...          'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
-    ...          'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6]}
+    >>> data1 = {'Frame': [0, 1, 2, 3, 4, 2, 3, 4, 5, 6], 'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+    >>> 'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6]}
+    >>>  data1 = {'Frame': [0, 1, 2, 3, 4, 2, 3, 4, 5, 6], 'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+    >>>'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6], 'Quality': [5,5,4,6,7,5,4,4,3,5],
+    >>> 'Mean_Intensity': [100,300,200,300,300,300,400,300,400,300],'SN_Ratio':[0.9,0.8,0.9,1,1,0.9,1,0.8,0.9,1]}
     >>> df = pd.DataFrame(data=data1)
     >>> length = max(df['Frame']) + 1
     >>> xyft = msd.make_xyarray(df, length=length)
@@ -296,25 +304,20 @@ def make_xyarray(data, length=651):
     """
 
     # Initial values
-    first_p = int(min(data['Track_ID']))
-    particles = int(max(data['Track_ID'])) - first_p + 1
-    xyft = {}
-    xyft['xarray'] = np.zeros((length, particles))
-    xyft['yarray'] = np.zeros((length, particles))
-    xyft['farray'] = np.zeros((length, particles))
-    xyft['tarray'] = np.zeros((length, particles))
-    xyft['qarray'] = np.zeros((length, particles))
-    xyft['snarray'] = np.zeros((length, particles))
-    xyft['iarray'] = np.zeros((length, particles))
+    first_p = int(min(data['Track_ID']))  # this is the smallest Track ID value (1)
+    particles = int(max(data['Track_ID'])) - first_p + 1  # number of IDs , ie. total number of particles
 
-    track = data[data['Track_ID'] == first_p
-                 ].sort_values(['Track_ID', 'Frame'],
-                               ascending=[1, 1]).reset_index(drop=True)
-    new_frame = np.linspace(0, length-1, length)
+    xyft = {'xarray': np.zeros((length, particles)), 'yarray': np.zeros((length, particles)),
+            'farray': np.zeros((length, particles)), 'tarray': np.zeros((length, particles)),
+            'qarray': np.zeros((length, particles)), 'snarray': np.zeros((length, particles)),
+            'iarray': np.zeros((length, particles))}
+
+    track = data[data['Track_ID'] == first_p].sort_values(['Track_ID', 'Frame'], ascending=[1, 1]).reset_index(
+        drop=True)
+    new_frame = np.linspace(0, length - 1, length)
 
     old_frame = track['Frame'].values.astype(float)
-    oldxy = [track['X'].values,
-             track['Y'].values,
+    oldxy = [track['X'].values, track['Y'].values,
              track['Quality'].values,
              track['SN_Ratio'].values,
              track['Mean_Intensity'].values]
@@ -341,7 +344,7 @@ def make_xyarray(data, length=651):
     xyft['snarray'][:, 0] = intxy[3]
     xyft['iarray'][:, 0] = intxy[4]
 
-    for part in range(first_p+1, first_p+particles):
+    for part in range(first_p + 1, first_p + particles):
         track = data[data['Track_ID'] == part
                      ].sort_values(['Track_ID', 'Frame'],
                                    ascending=[1, 1]).reset_index(drop=True)
@@ -367,13 +370,13 @@ def make_xyarray(data, length=651):
         intxy = [fxy[0](new_frame), fxy[1](new_frame), fxy[2](new_frame),
                  fxy[3](new_frame), fxy[4](new_frame)]
 
-        xyft['xarray'][:, part-first_p] = intxy[0]
-        xyft['yarray'][:, part-first_p] = intxy[1]
-        xyft['farray'][:, part-first_p] = new_frame
-        xyft['tarray'][:, part-first_p] = part
-        xyft['qarray'][:, part-first_p] = intxy[2]
-        xyft['snarray'][:, part-first_p] = intxy[3]
-        xyft['iarray'][:, part-first_p] = intxy[4]
+        xyft['xarray'][:, part - first_p] = intxy[0]
+        xyft['yarray'][:, part - first_p] = intxy[1]
+        xyft['farray'][:, part - first_p] = new_frame
+        xyft['tarray'][:, part - first_p] = part
+        xyft['qarray'][:, part - first_p] = intxy[2]
+        xyft['snarray'][:, part - first_p] = intxy[3]
+        xyft['iarray'][:, part - first_p] = intxy[4]
 
     return xyft
 
@@ -411,25 +414,27 @@ def all_msds2(data, frames=651):
     >>> msd.all_msds2(df, frames=length)[cols]
 
     """
-    print("HERE")
     if data.shape[0] > 2:
         try:
             xyft = make_xyarray(data, length=frames)
-            length = xyft['xarray'].shape[0]
-            particles = xyft['xarray'].shape[1]
+            length = xyft['xarray'].shape[0]  # number of frames
+            particles = xyft['xarray'].shape[1]  # number of TrackID
 
             meansd = np.zeros((length, particles))
             gauss = np.zeros((length, particles))
 
-            for frame in range(0, length-1):
-                xpos = np.square(nth_diff(xyft['xarray'], n=frame+1))
-                ypos = np.square(nth_diff(xyft['yarray'], n=frame+1))
+            for frame in range(0, length - 1):
+                xpos = np.square(nth_diff(xyft['xarray'], n=frame + 1))
+                ypos = np.square(nth_diff(xyft['yarray'], n=frame + 1))
 
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", category=RuntimeWarning)
-                    meansd[frame+1, :] = np.nanmean(xpos + ypos, axis=0)
-                    gauss[frame+1, :] = np.nanmean(xpos**2 + ypos**2, axis=0
-                                                   )/(2*(meansd[frame+1]**2))
+                    meansd[frame + 1, :] = np.nanmean(xpos + ypos, axis=0)
+                    gauss[frame + 1, :] = np.nanmean(xpos ** 2 + ypos ** 2, axis=0) / (2 * (meansd[frame + 1] ** 2))
+
+            print('XARRAY')
+            # print(xyft['xarray'])
+            print(xyft['xarray'].flatten('F'))
 
             data1 = {'Frame': xyft['farray'].flatten('F'),
                      'Track_ID': xyft['tarray'].flatten('F'),
@@ -442,8 +447,9 @@ def all_msds2(data, frames=651):
                      'Mean_Intensity': xyft['iarray'].flatten('F')}
 
             new_data = pd.DataFrame(data=data1)
-            print(new_data)
+
         except ValueError:
+            print('YOU DID NOT GET AND MSD2')
             data1 = {'Frame': [],
                      'Track_ID': [],
                      'X': [],
@@ -455,6 +461,7 @@ def all_msds2(data, frames=651):
                      'Mean_Intensity': []}
             new_data = pd.DataFrame(data=data1)
         except IndexError:
+            print('YOU DID NOT GET AND MSD2')
             data1 = {'Frame': [],
                      'Track_ID': [],
                      'X': [],
@@ -517,29 +524,29 @@ def geomean_msdisp(prefix, umppx=0.16, fps=100.02, upload=True,
     try:
         particles = int(max(merged['Track_ID']))
         frames = int(max(merged['Frame']))
-        ypos = np.zeros((particles+1, frames+1))
+        ypos = np.zeros((particles + 1, frames + 1))
 
-        for i in range(0, particles+1):
-            ypos[i, :] = merged.loc[merged.Track_ID == i, 'MSDs']*umppx*umppx
-            xpos = merged.loc[merged.Track_ID == i, 'Frame']/fps
+        for i in range(0, particles + 1):
+            ypos[i, :] = merged.loc[merged.Track_ID == i, 'MSDs'] * umppx * umppx
+            xpos = merged.loc[merged.Track_ID == i, 'Frame'] / fps
 
         geo_mean = np.nanmean(ma.log(ypos), axis=0)
         geo_stder = ma.masked_equal(stats.sem(ma.log(ypos), axis=0,
                                               nan_policy='omit'), 0.0)
 
     except ValueError:
-        geo_mean = np.nan*np.ones(backup_frames)
-        geo_stder = np.nan*np.ones(backup_frames)
+        geo_mean = np.nan * np.ones(backup_frames)
+        geo_stder = np.nan * np.ones(backup_frames)
 
     np.savetxt('geomean_{}.csv'.format(prefix), geo_mean, delimiter=",")
     np.savetxt('geoSEM_{}.csv'.format(prefix), geo_stder, delimiter=",")
 
     if upload:
         aws.upload_s3('geomean_{}.csv'.format(prefix),
-                      remote_folder+'/'+'geomean_{}.csv'.format(prefix),
+                      remote_folder + '/' + 'geomean_{}.csv'.format(prefix),
                       bucket_name=bucket)
         aws.upload_s3('geoSEM_{}.csv'.format(prefix),
-                      remote_folder+'/'+'geoSEM_{}.csv'.format(prefix),
+                      remote_folder + '/' + 'geoSEM_{}.csv'.format(prefix),
                       bucket_name=bucket)
 
     return geo_mean, geo_stder
@@ -569,12 +576,12 @@ def binning(experiments, wells=4, prefix='test'):
 
     total_videos = len(experiments)
     bins = {}
-    slices = int(total_videos/wells)
+    slices = int(total_videos / wells)
     bin_names = []
 
     for num in range(0, wells):
-        slice1 = num*slices
-        slice2 = (num+1)*(slices)
+        slice1 = num * slices
+        slice2 = (num + 1) * (slices)
         pref = '{}_W{}'.format(prefix, num)
         bins[pref] = experiments[slice1:slice2]
         bin_names.append(pref)
@@ -610,7 +617,7 @@ def precision_weight(group, geo_stder):
     video_counter = 0
     w_holder = np.zeros((slices, frames))
     for sample in group:
-        w_holder[video_counter, :] = 1/(geo_stder[sample]*geo_stder[sample])
+        w_holder[video_counter, :] = 1 / (geo_stder[sample] * geo_stder[sample])
         video_counter = video_counter + 1
 
     w_holder = ma.masked_equal(w_holder, 0.0)
@@ -657,12 +664,12 @@ def precision_averaging(group, geomean, geo_stder, weights, save=True,
     gstder_holder = np.zeros((slices, frames))
     w_holder = np.zeros((slices, frames))
     for sample in group:
-        w_holder[video_counter, :] = (1/(geo_stder[sample]*geo_stder[sample])
-                                      )/weights
+        w_holder[video_counter, :] = (1 / (geo_stder[sample] * geo_stder[sample])
+                                      ) / weights
         geo_holder[video_counter, :] = w_holder[video_counter, :
-                                                ] * geomean[sample]
-        gstder_holder[video_counter, :] = 1/(geo_stder[sample]*geo_stder[sample]
-                                             )
+                                       ] * geomean[sample]
+        gstder_holder[video_counter, :] = 1 / (geo_stder[sample] * geo_stder[sample]
+                                               )
         video_counter = video_counter + 1
 
     w_holder = ma.masked_equal(w_holder, 0.0)
@@ -673,7 +680,7 @@ def precision_averaging(group, geomean, geo_stder, weights, save=True,
     gstder_holder = ma.masked_equal(gstder_holder, 1.0)
 
     geo = ma.sum(geo_holder, axis=0)
-    geo_stder = ma.sqrt((1/ma.sum(gstder_holder, axis=0)))
+    geo_stder = ma.sqrt((1 / ma.sum(gstder_holder, axis=0)))
 
     if save:
         geo_f = 'geomean_{}.csv'.format(experiment)
@@ -691,8 +698,8 @@ def precision_averaging(group, geomean, geo_stder, weights, save=True,
 
 
 def plot_all_experiments(experiments, bucket='ccurtis.data', folder='test',
-                         yrange=(10**-1, 10**1), fps=100.02,
-                         xrange=(10**-2, 10**0), upload=True,
+                         yrange=(10 ** -1, 10 ** 1), fps=100.02,
+                         xrange=(10 ** -2, 10 ** 0), upload=True,
                          outfile='test.png', exponential=True,
                          labels=None, log=True):
     """Plots precision-weighted averages of MSD datasets.
@@ -722,7 +729,7 @@ def plot_all_experiments(experiments, bucket='ccurtis.data', folder='test',
 
     n = len(experiments)
 
-    if labels==None:
+    if labels == None:
         labels = experiments
 
     color = iter(cm.viridis(np.linspace(0, 0.9, n)))
@@ -749,21 +756,21 @@ def plot_all_experiments(experiments, bucket='ccurtis.data', folder='test',
         gstder[counter] = ma.masked_equal(gstder[counter], 0.0)
 
         frames = np.shape(gstder[counter])[0]
-        xpos = np.linspace(0, frames-1, frames)/fps
+        xpos = np.linspace(0, frames - 1, frames) / fps
         c = next(color)
 
         if exponential:
             ax.plot(xpos, np.exp(geo[counter]), c=c, linewidth=6,
                     label=labels[counter])
-            ax.fill_between(xpos, np.exp(geo[counter] - 1.96*gstder[counter]),
-                            np.exp(geo[counter] + 1.96*gstder[counter]),
+            ax.fill_between(xpos, np.exp(geo[counter] - 1.96 * gstder[counter]),
+                            np.exp(geo[counter] + 1.96 * gstder[counter]),
                             color=c, alpha=0.4)
 
         else:
             ax.plot(xpos, geo[counter], c=c, linewidth=6,
                     label=labels[counter])
-            ax.fill_between(xpos, geo[counter] - 1.96*gstder[counter],
-                            geo[counter] + 1.96*gstder[counter], color=c,
+            ax.fill_between(xpos, geo[counter] - 1.96 * gstder[counter],
+                            geo[counter] + 1.96 * gstder[counter], color=c,
                             alpha=0.4)
 
         counter = counter + 1
@@ -776,7 +783,7 @@ def plot_all_experiments(experiments, bucket='ccurtis.data', folder='test',
 
     if upload:
         fig.savefig(outfile, bbox_inches='tight')
-        aws.upload_s3(outfile, folder+'/'+outfile, bucket_name=bucket)
+        aws.upload_s3(outfile, folder + '/' + outfile, bucket_name=bucket)
 
 
 def checkerboard_mask(dims=(512, 512), squares=50, width=25):
@@ -817,11 +824,11 @@ def checkerboard_mask(dims=(512, 512), squares=50, width=25):
             if hix < 512 and hiy < 512:
                 zeros[loy:hiy, lox:hix] = False
             elif hix < 512:
-                zeros[loy:512-1, lox:hix] = False
+                zeros[loy:512 - 1, lox:hix] = False
             elif hiy < 512:
-                zeros[loy:hiy, lox:512-1] = False
+                zeros[loy:hiy, lox:512 - 1] = False
             else:
-                zeros[loy:512-1, lox:512-1] = False
+                zeros[loy:512 - 1, lox:512 - 1] = False
                 break
 
             lox = hix + width
@@ -863,7 +870,7 @@ def random_walk(nsteps=100, seed=None, start=(0, 0), step=1, mask=None,
 
     if type(mask) is np.ndarray:
         while not mask[start[0], start[1]]:
-            start = (start[0], start[1]+1)
+            start = (start[0], start[1] + 1)
         eumask = eudist(~mask)
 
     np.random.seed(seed=seed)
@@ -894,7 +901,7 @@ def random_walk(nsteps=100, seed=None, start=(0, 0), step=1, mask=None,
         for i in range(1, nsteps):
             val = rand.randint(1, 4)
             # If mask is being used, checks if entry is in mask or not
-            if mask[int(x[i-1]), int(y[i-1])]:
+            if mask[int(x[i - 1]), int(y[i - 1])]:
                 if val == 1:
                     x[i] = x[i - 1] + step
                     y[i] = y[i - 1]
@@ -1019,26 +1026,26 @@ def random_traj_dataset(nframes=100, nparts=30, seed=1, fsize=(0, 512),
     pseed = seed
 
     for i in range(nparts):
-        rand.seed(a=i+pseed)
+        rand.seed(a=i + pseed)
         start[0] = rand.randint(fsize[0], fsize[1])
-        rand.seed(a=i+3+pseed)
+        rand.seed(a=i + 3 + pseed)
         start[1] = rand.randint(fsize[0], fsize[1])
-        rand.seed(a=i+5+pseed)
+        rand.seed(a=i + 5 + pseed)
         weight = rand.normalvariate(mu=ndist[0], sigma=ndist[1])
 
-        trackid = np.append(trackid, np.array([i]*nframes))
+        trackid = np.append(trackid, np.array([i] * nframes))
         xi, yi = random_walk(nsteps=nframes, seed=i)
-        x = np.append(x, weight*xi+start[0])
-        y = np.append(y, weight*yi+start[1])
-        frames = np.append(frames, np.linspace(0, nframes-1, nframes))
+        x = np.append(x, weight * xi + start[0])
+        y = np.append(y, weight * yi + start[1])
+        frames = np.append(frames, np.linspace(0, nframes - 1, nframes))
 
     datai = {'Frame': frames,
              'Track_ID': trackid,
              'X': x,
              'Y': y,
-             'Quality': nframes*nparts*[10],
-             'SN_Ratio': nframes*nparts*[0.1],
-             'Mean_Intensity': nframes*nparts*[120]}
+             'Quality': nframes * nparts * [10],
+             'SN_Ratio': nframes * nparts * [0.1],
+             'Mean_Intensity': nframes * nparts * [120]}
     dataf = pd.DataFrame(data=datai)
 
     return dataf
