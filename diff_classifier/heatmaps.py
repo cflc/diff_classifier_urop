@@ -490,6 +490,7 @@ def plot_individual_msds(prefix, x_range=100, y_range=20, umppx=0.16, fps=100.02
     frames = int(max(merged['Frame']))
 
 #    y = merged['Y'].values.reshape((particles+1, frames+1))*umppx*umppx Y IS REPLACED IN LINE 502
+    
     x = merged['X'].values.resize((particles+1, frames+1))/fps
 #     for i in range(0, particles+1):
 #         y[i, :] = merged.loc[merged.Track_ID == i, 'MSDs']*umppx*umppx
