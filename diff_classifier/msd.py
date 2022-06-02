@@ -432,9 +432,6 @@ def all_msds2(data, frames=651):
                     meansd[frame + 1, :] = np.nanmean(xpos + ypos, axis=0)
                     gauss[frame + 1, :] = np.nanmean(xpos ** 2 + ypos ** 2, axis=0) / (2 * (meansd[frame + 1] ** 2))
 
-            print('XARRAY')
-            # print(xyft['xarray'])
-            print(xyft['xarray'].flatten('F'))
 
             data1 = {'Frame': xyft['farray'].flatten('F'),
                      'Track_ID': xyft['tarray'].flatten('F'),
