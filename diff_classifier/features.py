@@ -19,7 +19,7 @@ import diff_classifier.msd as msd
 
 
 def unmask_track(track):
-    """Removes empty frames from inpute trajectory datset.
+    """Removes empty frames from input trajectory dataset.
 
     Parameters
     ----------
