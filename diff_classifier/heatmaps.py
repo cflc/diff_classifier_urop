@@ -539,7 +539,7 @@ def plot_individual_msds(prefix, x_range=100, y_range=20, umppx=0.16, fps=100.02
 # Added Functions to better understand feature file
 ##########################################################
 
-def plot_individual_features(*args,
+def plot_individual_features(*args, col_list=["alpha"],
                              gen_dir="/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/"):
     """
     Plots the individual feature values for each track ID.
@@ -556,14 +556,14 @@ def plot_individual_features(*args,
     -------
     None: Plots features
     """
-
+    col_list.append('Track_ID')
     marker = itertools.cycle((',', '+', '.', 'o', '*'))
-    tt = pd.read_csv("{}{}/features_{}.csv".format(gen_dir, args[0], args[0]))
+    tt = pd.read_csv("{}{}/features_{}.csv".format(gen_dir, args[0], args[0]), usecols=col_list)
     features = list(tt.columns)  # gets the name of the features in the feature fill
 
     for feature in features:  # Creating a new plot for each feature
         for file in args:
-            df = pd.read_csv("{}{}/features_{}.csv".format(gen_dir, file, file))
+            df = pd.read_csv("{}{}/features_{}.csv".format(gen_dir, file, file), usecols=col_list)
             if list(df[feature]):  # Making sure that the feature has data points
                 rgb = (random.random(), random.random(),
                        random.random())  # Generate a random color for diff feature files
@@ -576,6 +576,8 @@ def plot_individual_features(*args,
         plt.ylabel(feature)
         plt.title(feature)
         plt.tight_layout()
+        if len(args) ==1:
+            plt.savefig("{}/{}_plot_individual_features".format(args[0],feature))  # Saving Figure
         plt.savefig("{}_plot_individual_features".format(feature))  # Saving Figure
         plt.close()  # Clears up the figure for not overlapping points
 
@@ -603,7 +605,7 @@ def calc_min_cost_distance(calc, compare, feature):
     spatial_distance = cdist(df, df_compare)
     # Searches for the pair of coordinates that decreases Costs
     row_ind, assignment = linear_sum_assignment(spatial_distance)
-    return assignment
+    return assignment, spatial_distance
 
 
 def plot_compare_individual_features(prefix, compare_to,
@@ -633,25 +635,51 @@ def plot_compare_individual_features(prefix, compare_to,
     for feature in features:  # for each feature in the file
         if not all(i != i for i in list(calc[feature])):  # Making sure that the feature has data points
             if not all(i != i for i in list(compare[feature])):
-                assignment = calc_min_cost_distance(calc[feature], compare[feature], feature)  # Get pair assignments
+                compare_l = list(compare[feature])
+                calc_l = list(calc[feature])
+                # Gertting rid of NaN and Infinite values
+                for i in range(len(calc_l)):
+
+                    if math.isnan(calc_l[i]):
+                        calc_l[i] = 0
+
+                    if not np.isfinite(calc[feature][i]):
+                        calc_l[i] = 0
+
+                for i in range(len(compare_l)):
+                    if not np.isfinite(compare_l[i]):
+                        compare_l[i] = 0
+
+                    if math.isnan(compare_l[i]):
+                        compare_l[i] = 0
+                assignment, distances = calc_min_cost_distance(calc_l, compare_l, feature)  # Get pair assignments
+
                 # Generate coordinate tuples
                 df = np.array([list(ele) for ele in list(zip(calc["Track_ID"], calc[feature]))])
                 df_compare = np.array([list(ele) for ele in list(zip(compare["Track_ID"], compare[feature]))])
 
-                N = df.shape[0]
+                N = min(df.shape[0], df_compare.shape[0])
                 # Plot points
-                plt.plot(df[:, 0], df[:, 1], 'bo')
-                plt.plot(df_compare[:, 0], df_compare[:, 1], 'rs')
+                plt.plot(df[:N, 0], df[:N, 1], 'bo')
+                plt.plot(df_compare[:N, 0], df_compare[:N, 1], 'rs')
 
                 for point in range(N):  # Plot the lines connecting the pair points
-                    plt.plot([df[point, 0], df_compare[assignment[point], 0]],
-                             [df[point, 1], df_compare[assignment[point], 1]], 'k')
+                    try:
+                        print(df[point, 0], df_compare[assignment[point], 0])
+                        print('tt', df[point, 1], df_compare[assignment[point], 1])
+                        plt.plot([df[point, 0], df_compare[assignment[point], 0]],
+                                 [df[point, 1], df_compare[assignment[point], 1]], 'k')
+                    except:
+                        print("Can't plot")
+
                 plt.xlabel('Track_ID')
                 plt.ylabel(feature)
                 plt.title(feature)
                 plt.tight_layout()
-                plt.savefig("{}_plot_compare_individual_features".format(feature))
+                os.mkdir("{}_vs_{}".format(prefix, compare_to))
+                plt.savefig("{}_vs_{}/{}_plot_compare_individual_features".format(prefix, compare_to, feature))
                 plt.close()
+
 
             else:
                 print('There has been an exception with:{}'.format(feature))
@@ -659,7 +687,7 @@ def plot_compare_individual_features(prefix, compare_to,
             print('There has been an exception with:{}'.format(feature))
 
 
-def plot_compare_features(prefix, compare_to,
+def plot_compare_features(prefix, compare_to, name_file,
                           gen_dir="/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/"):
     """
     Creates a bar plot that determines a difference factor for each of the different features.
@@ -688,67 +716,208 @@ def plot_compare_features(prefix, compare_to,
     calc = pd.read_csv('{}{}/features_{}.csv'.format(gen_dir, prefix, prefix))
     compare = pd.read_csv('{}{}/features_{}.csv'.format(gen_dir, compare_to, compare_to))
 
-    features = list(calc.columns)  # gets the name of the features in the feature fill
+    features = list(compare.columns)  # gets the name of the features in the feature fill
 
     diff_factor = {}  # Initialize directory
 
     # normalize values in a range of 0-1 so that the magnitude difference between features does not affect
     # the difference factor
-    normalized_track = preprocessing.normalize([np.array(calc["Track_ID"])])  # Normalizing Track ID
-    normalized_track = normalized_track.tolist()
-
-    normalized_track_comp = preprocessing.normalize([np.array(compare["Track_ID"])])  # Normalizing Track ID
-    normalized_track_comp = normalized_track_comp.tolist()
 
     for feature in features:
 
         if not all(i != i for i in list(calc[feature])):  # Making sure that the feature has data points
             if not all(i != i for i in list(compare[feature])):
-
                 distance = 0  # Re-initializes distance between features
+                print(feature)
+                compare_l = list(compare[feature])
+                calc_l = list(calc[feature])
+                # Getting rid of NaN and infinite values
+                for i in range(len(calc_l)):
 
-                # normalize values in a range of 0-1 so that the magnitude difference between features does not affect
-                # the difference factor
-                normalized_df = preprocessing.normalize([np.array(calc[feature])])
+                    if math.isnan(calc_l[i]):
+                        calc_l[i] = 0
+
+                    if not np.isfinite(calc[feature][i]):
+                        calc_l[i] = 0
+
+                for i in range(len(compare_l)):
+                    if not np.isfinite(compare_l[i]):
+                        compare_l[i] = 0
+
+                    if math.isnan(compare_l[i]):
+                        compare_l[i] = 0
+
+                normalized_df = preprocessing.normalize([np.array(calc_l)], norm='max')
                 normalized_df = normalized_df.tolist()
 
-                normalized_df_compare = preprocessing.normalize(np.array([compare[feature]]))
+                normalized_df_compare = preprocessing.normalize(np.array([compare_l]), norm="max")
                 normalized_df_compare = normalized_df_compare.tolist()
-
                 # Generate coordinate tuples
-                df = np.array([list(ele) for ele in list(zip(normalized_track[0], normalized_df[0]))])
+                df = np.array([list(ele) for ele in list(zip(calc["Track_ID"], normalized_df[0]))])
                 df_compare = np.array(
-                    [list(ele) for ele in list(zip(normalized_track_comp[0], normalized_df_compare[0]))])
+                    [list(ele) for ele in list(zip(compare["Track_ID"], normalized_df_compare[0]))])
 
-                N = df.shape[0]
                 # Get pair assignments
-                assignment = calc_min_cost_distance(normalized_df[0], normalized_df_compare[0], feature)
 
+                assignment, distances = calc_min_cost_distance(calc_l, compare_l, feature)
+                N = len(assignment)
                 for point in range(N):
                     # Add the distances between all the points
-                    p = [df[point, 0], df[point, 1]]
-                    q = [df_compare[assignment[point], 0], df_compare[assignment[point], 1]]
-                    distance += abs(math.dist(p, q))
+                    distance += abs(df[point, 1] - df_compare[assignment[point], 1])
 
-                diff_factor[feature] = distance / N
+                print(distance)
+                try:
+                    penalty = diff_factor["Track_ID"]  # Penalty for tracking more or less particles
+                    diff_factor[feature] = (distance / N) + penalty
+                except:
+                    diff_factor[feature] = (distance / N)
+
 
             else:
                 print('There has been an exception with:{}'.format(feature))
 
         else:
             print('There has been an exception with:{}'.format(feature))
-
+    diff_factor['num_particle_diff'] = abs(max(calc["Track_ID"]) - max(compare["Track_ID"]))
     # creating the bar plot
     plt.figure(figsize=(18, 15))
+    plt.text(0, 0.5, "TOT_NUM_DIFF_PARTICLES={}".format(diff_factor['num_particle_diff']), style='italic')
     plt.bar(list(diff_factor.keys()), list(diff_factor.values()), width=0.8)
+    plt.ylim((0, 1))
+    plt.title("{} vs {}".format(prefix, compare_to))
     plt.xticks(list(diff_factor.keys()), rotation='vertical')
     plt.xlabel("Features", fontsize=25)
     plt.ylabel("Difference Factor", fontsize=25)
     plt.tight_layout()
-    plt.savefig("Difference Factors of Features")
+    plt.savefig("Difference Factors of Features {}".format(name_file))
     plt.close()
 
     return diff_factor
+
+
+def make_labels(ax, boxplot):
+    """
+    Prints the statistical values  in the boxplot and returns dictionary of them.
+    Parameters
+    ----------
+    :param ax: Figure in which we are writing to
+    :param boxplot: The boxplot of our data
+
+    Returns
+    -------
+    :return: a dictionary of realevant statistical values iqr, caps, median, outliers, and mean
+    """
+    # Grab the relevant Line2D instances from the boxplot dictionary
+    iqr = boxplot['boxes'][0]
+    caps = boxplot['caps']
+    med = boxplot['medians'][0]
+    fly = boxplot['fliers'][0]
+    mean = boxplot['means'][0]
+
+    # The x position of the median line
+    xpos = med.get_xdata()
+
+    # horizontal offset which is some fraction of the width of the box
+    xoff = 0.10 * (xpos[1] - xpos[0])
+
+    # The x position of the labels
+    xlabel = xpos[1] + xoff
+
+    # The median is the y-position of the median line
+    median = med.get_ydata()[1]
+
+    # The mean y potisiton
+    mean_ = mean.get_ydata()[0]
+
+    # The 25th and 75th percentiles are found from the
+    # top and bottom (max and min) of the box
+    pc25 = iqr.get_ydata().min()
+    pc75 = iqr.get_ydata().max()
+
+    # The caps give the vertical position of the ends of the whiskers
+    capbottom = caps[0].get_ydata()[0]
+    captop = caps[1].get_ydata()[0]
+
+    # Make some labels on the figure using the values derived above
+    ax.text(xlabel, median,
+            'Median = {:6.3g}'.format(median), va='center')
+    ax.text(xlabel, pc25,
+            '25th percentile = {:6.3g}'.format(pc25), va='center')
+    ax.text(xlabel + 0.15, mean_,
+            'mean = {:6.3g}'.format(mean_), va='center')
+    ax.text(xlabel, pc75,
+            '75th percentile = {:6.3g}'.format(pc75), va='center')
+    ax.text(xlabel, capbottom,
+            'Bottom cap = {:6.3g}'.format(capbottom), va='center')
+    ax.text(xlabel, captop,
+            'Top cap = {:6.3g}'.format(captop), va='center')
+
+    # Many fliers, so we loop over them and create a label for each one
+    for outlier in fly.get_ydata():
+        ax.text(1 + xoff, outlier,
+                'Outlier = {:6.3g}'.format(outlier), va='center')
+    return {"median": median, "pc25": pc25, "pc75": pc75, "mean": mean_, "capbottom": capbottom, "captop": captop}
+
+
+def boxplot_feature(prefix, col_list=["alpha"]):
+    """
+    Plots the Box and Wiskers plot for the list of features given. It prints all relevant values: median, mean, iqrs,
+    caps, std and outliers.
+
+    Parameters
+    -----------
+    :param prefix: The dataset name that we are analysing
+    :param col_list: The feature names that we want to analyze
+
+    Returns
+    -----------
+    :return: a dictionary of dictionaries with all the relevant statistical values of the features
+    """
+
+    df = pd.read_csv('{}/features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
+    df.dropna(inplace=True)  # Remove all NaN values
+    stds = df.std(axis=0)  # Get a list of  standard deviations for each feature
+
+    # Plot set up
+    red_circle = dict(markerfacecolor='red', marker='o')  # Make outliers red circles
+    mean_shape = dict(markerfacecolor='green', marker='D', markeredgecolor='green')  # Plots Mean as a green square
+
+    # Dictionary of Dictionaries for the features
+    stat_features = {}
+    if len(col_list) > 1:
+        fig, axs = plt.subplots(1, len(df.columns), figsize=(20, 10))  # Create the Figure
+
+        for i, ax in enumerate(axs.flat):  # For each of the features
+            feat_plot = ax.boxplot(df.iloc[:, i], flierprops=red_circle, showmeans=True, meanprops=mean_shape)
+            xpos = feat_plot['medians'][0].get_xdata()  # The x position of the median line
+            xoff = 0.10 * (xpos[1] - xpos[0])  # horizontal offset which is some fraction of the width of the box
+            xlabel = xpos[1] + xoff - 0.3  # The x position of the std
+            text = 'σ={:.2f}'.format(stds[i])  # Standard Deviation
+            ax.annotate(text, xy=(xlabel, feat_plot['means'][0].get_ydata()))  # Write the std value
+            ax.set_title(df.columns[i], fontsize=20, fontweight='bold')  # Title of the boxplot
+            ax.tick_params(axis='y', labelsize=14)
+            labels = make_labels(ax, feat_plot)  # Dictionary of stat vals and write them in plot
+            labels['std'] = stds[i]  # Add std val to dictionary
+            stat_features[df.columns[i]] = labels  # Append dictionary to corresponding feature
+    else:  # if there is only one feature that we want to plot
+        fig, ax = plt.subplots(1, len(df.columns), figsize=(20, 10))  # Create the Figure
+        feat_plot = ax.boxplot(df, flierprops=red_circle, showmeans=True, meanprops=mean_shape)
+        xpos = feat_plot['medians'][0].get_xdata()  # The x position of the median line
+        xoff = 0.10 * (xpos[1] - xpos[0])  # horizontal offset which is some fraction of the width of the box
+        xlabel = xpos[1] + xoff - 0.3  # The x position of the std
+        text = 'σ={:.2f}'.format(stds[0])  # Standard Deviation
+        ax.annotate(text, xy=(xlabel, feat_plot['means'][0].get_ydata()))  # Write the std value
+        ax.set_title(df.columns[0], fontsize=20, fontweight='bold')  # Title of the boxplot
+        ax.tick_params(axis='y', labelsize=14)
+        labels = make_labels(ax, feat_plot)  # Dictionary of stat vals and write them in plot
+        labels['std'] = stds[0]  # Add std val to dictionary
+        stat_features[df.columns[0]] = labels  # Append dictionary to corresponding feature
+
+    plt.tight_layout()
+    plt.savefig("{}/Box&Wiskers_of_".format(prefix) + '_'.join(col_list))
+    plt.show()
+    plt.close()
+    return stat_features
 
 
 def compile_figures(prefix, row_size=10):
@@ -769,8 +938,8 @@ def compile_figures(prefix, row_size=10):
     """
 
     margin = 3  # Distance between plots
-    filenames = glob.glob('*{}*'.format(prefix))    # Get all the plot's names
-    images = [Image.open(filename) for filename in filenames]   # Open images
+    filenames = glob.glob('*{}*'.format(prefix))  # Get all the plot's names
+    images = [Image.open(filename) for filename in filenames]  # Open images
 
     # determines how wide and tall the png will have to be
     width = max(image.size[0] + margin for image in images) * row_size
@@ -798,13 +967,18 @@ def compile_figures(prefix, row_size=10):
             offset_x += margin + image.size[0]
 
     montage = montage.crop((0, 0, max_x, max_y))
-    montage.save("{}_Image_Compilation.png")
+    montage.save("{}_Image_Compilation.png".format(prefix))
 
 
 def main():
     os.chdir(
-        '/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/Dextran-Red-2micron-confocal----10x')
-    plot_compare_features('Dextran-Red-2micron-confocal----10x', '1micrometerRedPNPsConfocal500x500_cropArea40x_20s')
+        '/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/')
+    boxplot_feature("4-06092022-Matrigel-40microlit-100nmYG-1068x1068-4_0xCA-8("
+                    "21)fps-pixelSize0_15micromet-SR-4Y-20x-MG850V-Airyscan-Processing",
+                    col_list=["alpha","Mean alpha"])
+    plot_individual_features("4-06092022-Matrigel-40microlit-100nmYG-1068x1068-4_0xCA-8("
+                             "21)fps-pixelSize0_15micromet-SR-4Y-20x-MG850V-Airyscan-Processing",
+                             col_list=["alpha","Mean alpha"])
 
 
 if __name__ == "__main__":
