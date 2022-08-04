@@ -19,7 +19,8 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
-from mpl_toolkits.mplot3d import Axes3D
+import pandas as pd
+import os
 
 
 class Bunch:
@@ -86,7 +87,7 @@ def partial_corr(mtrx):
     pcorr = np.zeros((pfeat, pfeat), dtype=np.float)
     for i in range(pfeat):
         pcorr[i, i] = 1
-        for j in range(i+1, pfeat):
+        for j in range(i + 1, pfeat):
             idx = np.ones(pfeat, dtype=np.bool)
             idx[i] = False
             idx[j] = False
@@ -142,7 +143,7 @@ def kmo(dataset):
     cols = matrix.shape[1]
     rij = np.sum(matrix) - np.trace(matrix)
     uij = np.sum(pcorr) - np.trace(pcorr)
-    kmostat = rij/(rij+uij)
+    kmostat = rij / (rij + uij)
     print(kmostat)
     return kmostat
 
@@ -199,10 +200,10 @@ def pca_analysis(dataset, dropcols=[], imputenans=True, scale=True,
 
                 counter = 0
                 for x in dataset_num[col]:
-                    if x > xmean + out_thresh*xstd:
+                    if x > xmean + out_thresh * xstd:
                         dataset[col][counter] = np.nan
                         dataset_num[col][counter] = np.nan
-                    if x < xmean - out_thresh*xstd:
+                    if x < xmean - out_thresh * xstd:
                         dataset[col][counter] = np.nan
                         dataset_num[col][counter] = np.nan
                     counter = counter + 1
@@ -211,7 +212,7 @@ def pca_analysis(dataset, dropcols=[], imputenans=True, scale=True,
 
     # Fill in NaN values
     if imputenans:
-        imp = SimpleImputer(missing_values='NaN', strategy='mean', axis=0)
+        imp = SimpleImputer(missing_values=np.nan, strategy='mean')
         imp.fit(dataset_raw)
         dataset_clean = imp.transform(dataset_raw)
     else:
@@ -252,7 +253,7 @@ def pca_analysis(dataset, dropcols=[], imputenans=True, scale=True,
     pcadataset.components = pd.DataFrame(comps.transpose())
     for num in range(0, n_components):
         highest = np.abs(pcadataset.components[
-                         num]).values.argsort()[-5:][::-1]
+                             num]).values.argsort()[-5:][::-1]
         pels = []
         pcadataset.prvals[num] = pcadataset.components[num].values[highest]
         for col in highest:
@@ -318,10 +319,10 @@ def plot_pca(datasets, figsize=(8, 8), lwidth=8.0,
     fig = plt.figure(figsize=figsize)
     for key in datasets:
         N = datasets[key].shape[0]
-    width = (2*np.pi) / N
+    width = (2 * np.pi) / N
     color = iter(cm.viridis(np.linspace(0, 0.9, len(datasets))))
 
-    theta = np.linspace(0.0, 2 * np.pi, N+1, endpoint=True)
+    theta = np.linspace(0.0, 2 * np.pi, N + 1, endpoint=True)
     radii = {}
     bars = {}
 
@@ -334,15 +335,15 @@ def plot_pca(datasets, figsize=(8, 8), lwidth=8.0,
                             label=labels[counter])
         counter = counter + 1
     plt.legend(bbox_to_anchor=(1, 1), loc=2, borderaxespad=0.,
-               frameon=False, fontsize=labelsize+4)
+               frameon=False, fontsize=labelsize + 4)
 
     # # Use custom colors and opacity
     # for r, bar in zip(radii, bars):
     #     bar.set_facecolor(plt.cm.jet(np.abs(r / 2.5)))
     #     bar.set_alpha(0.8)
-    ax.set_xticks(np.pi/180. * np.linspace(0, 360, N, endpoint=False))
+    ax.set_xticks(np.pi / 180. * np.linspace(0, 360, N, endpoint=False))
     ax.set_xticklabels(list(range(0, N)), fontsize=labelsize)
-    ax.set_ylim([min(rticks), max(rticks)+1])
+    ax.set_ylim([min(rticks), max(rticks) + 1])
     ax.set_yticks(rticks)
     ax.yaxis.set_tick_params(labelsize=labelsize)
 
@@ -353,8 +354,8 @@ def plot_pca(datasets, figsize=(8, 8), lwidth=8.0,
 
 
 def build_model(rawdata, feature, featvals, equal_sampling=True,
-                    tsize=20, from_end=True, input_cols=6, model='KNN',
-                    **kwargs):
+                tsize=20, from_end=True, input_cols=6, model='KNN',
+                **kwargs):
     """Builds a K-nearest neighbor model using an input dataset.
 
     Parameters
@@ -434,9 +435,9 @@ def build_model(rawdata, feature, featvals, equal_sampling=True,
         X = test[to_plot, :]
         y = rawdata[feature].values[to_plot]
 
-    if model is 'KNN':
+    if model == 'KNN':
         clf = neighbors.KNeighborsClassifier(kwargs['n_neighbors'])
-    elif model is 'MLP':
+    elif model == 'MLP':
         clf = MLPClassifier(solver=kwargs['NNsolver'], alpha=kwargs['NNalpha'],
                             hidden_layer_sizes=kwargs['NNhidden_layer'],
                             random_state=kwargs['NNrandom_state'])
@@ -536,7 +537,7 @@ def feature_violin(df, label='label', lvals=['yes', 'no'], fsubset=3, **kwargs):
 
     for feat in frange:
         groupsize.extend(df[label].values)
-        featcol.extend([feat]*df[label].values.shape[0])
+        featcol.extend([feat] * df[label].values.shape[0])
         valcol.extend(df[feat].values)
 
     to_violind = {'label': groupsize, 'Feature': featcol,
@@ -617,6 +618,7 @@ def feature_plot_2D(dataset, label, features=[0, 1], lvals=['PEG', 'PS'],
     labels = dataset[label].unique()
     for lval in lvals:
         tgroups[counter] = dataset[dataset[label] == lval]
+        print(dataset[label])
         counter = counter + 1
 
     N = len(tgroups)
@@ -726,11 +728,11 @@ def feature_plot_3D(dataset, label, features=[0, 1, 2], lvals=['PEG', 'PS'],
     tgroups = {}
     xy = {}
     counter = 0
-    #labels = dataset[label].unique()
+    # labels = dataset[label].unique()
     for lval in lvals:
         tgroups[counter] = dataset[dataset[label] == lval]
-        #print(lval)
-        #print(tgroups[counter].shape)
+        # print(lval)
+        # print(tgroups[counter].shape)
         counter = counter + 1
 
     N = len(tgroups)
@@ -741,7 +743,7 @@ def feature_plot_3D(dataset, label, features=[0, 1, 2], lvals=['PEG', 'PS'],
         c = next(color)
         xy = []
         if randsel:
-            #print(range(0, len(tgroups[key][0].tolist())))
+            # print(range(0, len(tgroups[key][0].tolist())))
             to_plot = random.sample(range(0, len(tgroups[key][0].tolist())),
                                     randcount)
             for key2 in features:
@@ -752,7 +754,8 @@ def feature_plot_3D(dataset, label, features=[0, 1, 2], lvals=['PEG', 'PS'],
 
         acount = 0
         for ax in axes:
-            axes[ax].scatter(xy[0], xy[1], xy[2], c=c, s=kwargs['dotsize'], alpha=kwargs['alpha'])#, label=labels[counter])
+            axes[ax].scatter(xy[0], xy[1], xy[2], c=c, s=kwargs['dotsize'],
+                             alpha=kwargs['alpha'])  # , label=labels[counter])
             if kwargs['xlim'] is not None:
                 axes[ax].set_xlim3d(kwargs['xlim'][0], kwargs['xlim'][1])
             if kwargs['ylim'] is not None:
@@ -785,3 +788,40 @@ def feature_plot_3D(dataset, label, features=[0, 1, 2], lvals=['PEG', 'PS'],
         plt.show()
     else:
         plt.savefig(kwargs['fname'], dpi=kwargs['dpi'])
+
+
+def main():
+
+    os.chdir(
+        '/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/orig_P10F_10uM_6h_slice_1_cortex_vid_1')
+    filename = "features_orig_P10F_10uM_6h_slice_1_cortex_vid_1.csv"
+    fstats = pd.read_csv(filename, encoding="ISO-8859-1", index_col='Unnamed: 0')
+    nonnum = []
+    fstats_num = fstats.drop(nonnum, axis=1)
+    fstats_raw = fstats.values
+    pcadataset = pca_analysis(fstats, dropcols=nonnum, n_components=6)
+    kmostat = kmo(pcadataset.scaled)
+    test = np.exp(np.nanmean(np.log(pcadataset.final[pcadataset.final['frames'] > 100].values), axis=0))[-6:]
+    test1 = np.exp(np.nanmean(np.log(pcadataset.final[pcadataset.final['frames'] < 100].values), axis=0))[-6:]
+    dicti = {}
+    dicti[0] = test
+    dicti[1] = test1
+    # plot_pca(dicti, savefig=True, labels=['Long T', 'Short T'])
+    # print(pcadataset.prcomps)
+    # feature_plot_3D(fstats, "alpha", features=[0, 1, 2], lvals=['PEG', 'PS'],randsel=True, randcount=200, )
+
+    np.random.seed(seed=1)
+    dataset = {'label': 250 * ['yes'] + 250 * ['no'],
+               0: np.random.normal(0.5, 1, size=500),
+               1: np.random.normal(1, 2, size=500),
+               2: np.random.normal(3, 10, size=500)
+               }
+
+    df = pd.DataFrame(data=dataset)
+    print(df)
+    # feature_plot_2D(df, label='label', features=[0, 1], randsel=True,
+    #                        lvals=['yes', 'no'])
+
+
+if __name__ == "__main__":
+    main()

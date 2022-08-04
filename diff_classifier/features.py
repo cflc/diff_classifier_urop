@@ -7,7 +7,9 @@ https://imagej.net/TraJClassifier.
 """
 
 import math
+from math import pi, log
 import struct
+import os
 
 import pandas as pd
 import numpy as np
@@ -106,7 +108,7 @@ def alpha_calc(track):
     xpos = track['Frame']
 
     def msd_alpha(xpos, alph, dcoef):
-        return 4*dcoef*(xpos**alph)
+        return 4 * dcoef * (xpos ** alph)
 
     try:
         popt, pcov = curve_fit(msd_alpha, xpos, ypos)
@@ -178,15 +180,15 @@ def gyration_tensor(track):
     assert dframe.shape[0] > 0, "track must not be empty."
 
     matrixa = np.sum((dframe['X'] - np.mean(
-                     dframe['X']))**2)/dframe['X'].shape[0]
+        dframe['X'])) ** 2) / dframe['X'].shape[0]
     matrixb = np.sum((dframe['Y'] - np.mean(
-                     dframe['Y']))**2)/dframe['Y'].shape[0]
+        dframe['Y'])) ** 2) / dframe['Y'].shape[0]
     matrixab = np.sum((dframe['X'] - np.mean(
-                      dframe['X']))*(dframe['Y'] - np.mean(
-                                     dframe['Y'])))/dframe['X'].shape[0]
+        dframe['X'])) * (dframe['Y'] - np.mean(
+        dframe['Y']))) / dframe['X'].shape[0]
 
     eigvals, eigvecs = LA.eig(np.array([[matrixa, matrixab],
-                                       [matrixab, matrixb]]))
+                                        [matrixab, matrixb]]))
     dom = np.argmax(np.abs(eigvals))
     rec = np.argmin(np.abs(eigvals))
     eig1 = eigvals[dom]
@@ -243,10 +245,10 @@ def kurtosis(track):
     assert dframe.shape[0] > 0, "track must not be empty."
 
     eig1, eig2, eigv1, eigv2 = gyration_tensor(dframe)
-    projection = dframe['X']*eigv1[0] + dframe['Y']*eigv1[1]
+    projection = dframe['X'] * eigv1[0] + dframe['Y'] * eigv1[1]
 
     kurt = np.mean((projection - np.mean(
-                   projection))**4/(np.std(projection)**4))
+        projection)) ** 4 / (np.std(projection) ** 4))
 
     return kurt
 
@@ -310,9 +312,9 @@ def asymmetry(track):
     assert dframe.shape[0] > 0, "track must not be empty."
 
     eig1, eig2, eigv1, eigv2 = gyration_tensor(track)
-    asym1 = (eig1**2 - eig2**2)**2/(eig1**2 + eig2**2)**2
-    asym2 = eig2/eig1
-    asym3 = -np.log(1-((eig1-eig2)**2)/(2*(eig1+eig2)**2))
+    asym1 = (eig1 ** 2 - eig2 ** 2) ** 2 / (eig1 ** 2 + eig2 ** 2) ** 2
+    asym2 = eig2 / eig1
+    asym3 = -np.log(1 - ((eig1 - eig2) ** 2) / (2 * (eig1 + eig2) ** 2))
 
     return eig1, eig2, asym1, asym2, asym3
 
@@ -394,16 +396,16 @@ def minboundrect(track):
      Y column."
     assert dframe.shape[0] > 0, "track must not be empty."
 
-    df2 = np.zeros((dframe.shape[0]+1, 2))
+    df2 = np.zeros((dframe.shape[0] + 1, 2))
     df2[:-1, :] = dframe[['X', 'Y']].values
     df2[-1, :] = dframe[['X', 'Y']].values[0, :]
     hull_points_2d = df2
 
-    edges = np.zeros((len(hull_points_2d)-1, 2))
+    edges = np.zeros((len(hull_points_2d) - 1, 2))
 
     for i in range(len(edges)):
-        edge_x = hull_points_2d[i+1, 0] - hull_points_2d[i, 0]
-        edge_y = hull_points_2d[i+1, 1] - hull_points_2d[i, 1]
+        edge_x = hull_points_2d[i + 1, 0] - hull_points_2d[i, 0]
+        edge_y = hull_points_2d[i + 1, 1] - hull_points_2d[i, 1]
         edges[i] = [edge_x, edge_y]
 
     edge_angles = np.zeros((len(edges)))
@@ -416,9 +418,9 @@ def minboundrect(track):
     min_bbox = (0, start_area, 0, 0, 0, 0, 0, 0)
     for i in range(len(edge_angles)):
         rads = np.array([[math.cos(edge_angles[i]),
-                          math.cos(edge_angles[i]-(math.pi/2))],
-                        [math.cos(edge_angles[i]+(math.pi/2)),
-                         math.cos(edge_angles[i])]])
+                          math.cos(edge_angles[i] - (math.pi / 2))],
+                         [math.cos(edge_angles[i] + (math.pi / 2)),
+                          math.cos(edge_angles[i])]])
 
         rot_points = np.dot(rads, np.transpose(hull_points_2d))
 
@@ -429,23 +431,23 @@ def minboundrect(track):
 
         width = max_x - min_x
         height = max_y - min_y
-        area = width*height
+        area = width * height
 
         if area < min_bbox[1]:
             min_bbox = (edge_angles[i], area, width, height,
                         min_x, max_x, min_y, max_y)
 
     angle = min_bbox[0]
-    rads = np.array([[math.cos(angle), math.cos(angle-(math.pi/2))],
-                     [math.cos(angle+(math.pi/2)), math.cos(angle)]])
+    rads = np.array([[math.cos(angle), math.cos(angle - (math.pi / 2))],
+                     [math.cos(angle + (math.pi / 2)), math.cos(angle)]])
 
     min_x = min_bbox[4]
     max_x = min_bbox[5]
     min_y = min_bbox[6]
     max_y = min_bbox[7]
 
-    center_x = (min_x + max_x)/2
-    center_y = (min_y + max_y)/2
+    center_x = (min_x + max_x) / 2
+    center_y = (min_y + max_y) / 2
     center_point = np.dot([center_x, center_y], rads)
 
     corner_pts = np.zeros((4, 2))
@@ -507,12 +509,12 @@ def aspectratio(track):
     assert dframe.shape[0] > 0, "track must not be empty."
 
     rangle, area, width, height, center_point, corner_pts = minboundrect(track)
-    aspratio = width/height
+    aspratio = width / height
     if aspratio > 1:
         aspratio = aspratio
     else:
-        aspratio = 1/aspratio
-    elong = 1 - (1/aspratio)
+        aspratio = 1 / aspratio
+    elong = 1 - (1 / aspratio)
 
     return aspratio, elong, center_point
 
@@ -587,21 +589,21 @@ def boundedness(track, framerate=1):
         length = dframe.shape[0]
         distance = np.zeros((length, length))
 
-        for frame in range(0, length-1):
-            distance[frame, 0:length-frame-1] =\
-             (np.sqrt(msd.nth_diff(dframe['X'], frame+1)**2 +
-              msd.nth_diff(dframe['Y'], frame+1)**2).values)
+        for frame in range(0, length - 1):
+            distance[frame, 0:length - frame - 1] = \
+                (np.sqrt(msd.nth_diff(dframe['X'], frame + 1) ** 2 +
+                         msd.nth_diff(dframe['Y'], frame + 1) ** 2).values)
 
-        netdisp = np.sum((np.sqrt(msd.nth_diff(dframe['X'], 1)**2 +
-                                  msd.nth_diff(dframe['Y'], 1)**2).values))
-        rad = np.max(distance)/2
-        N = dframe['Frame'][dframe['Frame'].shape[0]-1]
-        fram = N*framerate
-        dcoef = dframe['MSDs'][2]/(4*fram)
+        netdisp = np.sum((np.sqrt(msd.nth_diff(dframe['X'], 1) ** 2 +
+                                  msd.nth_diff(dframe['Y'], 1) ** 2).values))
+        rad = np.max(distance) / 2
+        N = dframe['Frame'][dframe['Frame'].shape[0] - 1]
+        fram = N * framerate
+        dcoef = dframe['MSDs'][2] / (4 * fram)
 
-        bound = dcoef*fram/(rad**2)
-        fractd = np.log(N)/np.log(N*2*rad/netdisp)
-        probf = 1 - np.exp(0.2048 - 0.25117*(dcoef*fram/(rad**2)))
+        bound = dcoef * fram / (rad ** 2)
+        fractd = np.log(N) / np.log(N * 2 * rad / netdisp)
+        probf = 1 - np.exp(0.2048 - 0.25117 * (dcoef * fram / (rad ** 2)))
     else:
         bound = np.nan
         fractd = np.nan
@@ -655,17 +657,17 @@ def efficiency(track):
     dframe = track
     length = dframe.shape[0]
     num = (msd.nth_diff(dframe['X'],
-                        length-1)**2 + msd.nth_diff(dframe['Y'],
-                                                    length-1)**2)[0]
+                        length - 1) ** 2 + msd.nth_diff(dframe['Y'],
+                                                        length - 1) ** 2)[0]
     num2 = np.sqrt(num)
 
     den = np.sum(msd.nth_diff(dframe['X'],
-                              1)**2 + msd.nth_diff(dframe['Y'], 1)**2)
+                              1) ** 2 + msd.nth_diff(dframe['Y'], 1) ** 2)
     den2 = np.sum(np.sqrt(msd.nth_diff(dframe['X'],
-                          1)**2 + msd.nth_diff(dframe['Y'], 1)**2))
+                                       1) ** 2 + msd.nth_diff(dframe['Y'], 1) ** 2))
 
-    eff = num/den
-    strait = num2/den2
+    eff = num / den
+    strait = num2 / den2
     return eff, strait
 
 
@@ -714,8 +716,8 @@ def msd_ratio(track, fram1=3, fram2=100):
 
     dframe = track
     assert fram1 < fram2, "fram1 must be less than fram2"
-    ratio = (dframe['MSDs'][fram1]/dframe['MSDs'][fram2]) - (
-             dframe['Frame'][fram1]/dframe['Frame'][fram2])
+    ratio = (dframe['MSDs'][fram1] / dframe['MSDs'][fram2]) - (
+            dframe['Frame'][fram1] / dframe['Frame'][fram2])
     return ratio
 
 
@@ -728,7 +730,7 @@ def calculate_features(dframe, framerate=1, frame=(10, 100), mean_values=True):
     dframe : pandas.core.frame.DataFrame
         Output from msd.all_msds2.  Must have at a minimum the following
         columns:
-        Track_ID, Frame, X, Y, and MSDs.
+        Track_ID, Frame, X, Y, and MSDs.1
     framerate : int or float
         Framerate of the input videos from which trajectories were calculated.
         Required for accurate calculation of some features.  Default is 1.
@@ -785,12 +787,12 @@ def calculate_features(dframe, framerate=1, frame=(10, 100), mean_values=True):
     partcount = trackids.shape[0]
 
     for particle in range(0, partcount):
-        single_track_masked =\
-         dframe.loc[dframe['Track_ID'] ==
-                    trackids[particle]].sort_values(['Track_ID', 'Frame'],
-                                                    ascending=[
-                                                    1,
-                                                    1]).reset_index(drop=True)
+        single_track_masked = \
+            dframe.loc[dframe['Track_ID'] ==
+                       trackids[particle]].sort_values(['Track_ID', 'Frame'],
+                                                       ascending=[
+                                                           1,
+                                                           1]).reset_index(drop=True)
         single_track = unmask_track(single_track_masked)
         (datai['alpha'][particle],
          datai['D_fit'][particle]) = alpha_calc(single_track)
@@ -806,29 +808,34 @@ def calculate_features(dframe, framerate=1, frame=(10, 100), mean_values=True):
         (datai['efficiency'][particle],
          datai['straightness'][particle]) = efficiency(single_track)
         datai['frames'][particle] = single_track.shape[0]
-        if single_track['Frame'][single_track.shape[0]-2] > 2:
+        if single_track['Frame'][single_track.shape[0] - 2] > 2:
             datai['MSD_ratio'][particle] = msd_ratio(single_track, 2,
                                                      single_track['Frame'][
-                                                      single_track.shape[0]-2])
+                                                         single_track.shape[0] - 2])
         else:
             datai['MSD_ratio'][particle] = np.nan
 
         try:
-            datai['Deff1'][particle] = single_track['MSDs'][frame[0]] / (4*frame[0])
+            datai['Deff1'][particle] = single_track['MSDs'][frame[0]] / (4 * frame[0])
+            print("frame 0 {}".format(frame[0]))
+            print("frame 1 {}".format(frame[1]))
         except:
             datai['Deff1'][particle] = np.nan
 
         try:
-            datai['Deff2'][particle] = single_track['MSDs'][frame[1]] / (4*frame[1])
+            datai['Deff2'][particle] = single_track['MSDs'][frame[1]] / (4 * frame[1])
         except:
             datai['Deff2'][particle] = np.nan
 
         datai['Mean_Intensity'][particle] = np.nanmean(single_track[
-              'Mean_Intensity'].replace([np.inf, -np.inf], np.nan).dropna(how="all").values)
+                                                           'Mean_Intensity'].replace([np.inf, -np.inf], np.nan).dropna(
+            how="all").values)
         datai['Quality'][particle] = np.nanmean(single_track[
-              'Quality'].replace([np.inf, -np.inf], np.nan).dropna(how="all").values)
+                                                    'Quality'].replace([np.inf, -np.inf], np.nan).dropna(
+            how="all").values)
         datai['SN_Ratio'][particle] = np.nanmean(single_track[
-              'SN_Ratio'].replace([np.inf, -np.inf], np.nan).dropna(how="all").values)
+                                                     'SN_Ratio'].replace([np.inf, -np.inf], np.nan).dropna(
+            how="all").values)
 
     if mean_values:
         nonnum = ['Track_ID']
@@ -839,14 +846,14 @@ def calculate_features(dframe, framerate=1, frame=(10, 100), mean_values=True):
 
         for xrange in range(0, 16):
             for yrange in range(0, 16):
-                bitesize = datai[(datai['X'] >= 128*xrange) & (datai['X'] < 128*(xrange+1)) &
-                                 (datai['Y'] >= 128*yrange) & (datai['Y'] < 128*(yrange+1))]
+                bitesize = datai[(datai['X'] >= 128 * xrange) & (datai['X'] < 128 * (xrange + 1)) &
+                                 (datai['Y'] >= 128 * yrange) & (datai['Y'] < 128 * (yrange + 1))]
                 bitesize.replace([np.inf, -np.inf], np.nan)
-                #print(bitesize.shape)
+                # print(bitesize.shape)
                 for col in bitesize.columns:
                     if col not in nonnum and 'Mean' not in col and 'Std' not in col:
-                        datai['Mean '+ col][bitesize.index] = np.nanmean(bitesize[col])
-                        datai['Std '+ col][bitesize.index] = np.nanstd(bitesize[col])
+                        datai['Mean ' + col][bitesize.index] = np.nanmean(bitesize[col])
+                        datai['Std ' + col][bitesize.index] = np.nanstd(bitesize[col])
 
     return datai
 
@@ -877,7 +884,8 @@ def feature_violin(tgroups, feature='boundedness',
     pos = []
     counter = 1
     for key in tgroups:
-        to_graph.append(tgroups[key][feature][tgroups[key][feature] < 10000].replace([np.inf, -np.inf], np.nan).dropna().values)
+        to_graph.append(
+            tgroups[key][feature][tgroups[key][feature] < 10000].replace([np.inf, -np.inf], np.nan).dropna().values)
         pos.append(counter)
         counter = counter + 1
 
@@ -899,3 +907,65 @@ def feature_violin(tgroups, feature='boundedness',
     axes.set_yticks(majorticks)
 
     plt.show()
+
+
+def pore_size(prefix, rs, rf, DC = "DiffCoeffBM", umppx = 1):
+    """
+    Pore Size Calculated using the Amsden obstruction-scaling model
+
+    D_eff : diffusion coefficients within ECM
+    D_0 : diffusion coefficients a free medium. D_0 was calculated as the theoretical diffusion coefficient of
+    nanoparticles in water at 20C using the Stokes-Einstein equation
+    r_s : critical limiting radius (radius of the nanoparticle probe in this instance). The intensity-mean hydrodynamic
+    radius of the PS-PEG nanoparticles, as determined by DLS, was used as the critical limiting radius.
+    r_f : the radius of the polymer chains
+    mesh : average mesh size of the network For the purposes of this study,
+    rad : radius of the nanoparticle
+
+    Assumptions:
+    1.	The nanoparticles are hard spheres.
+    2.	The intermolecular forces of attraction between nanoparticles and polymer chains are negligible.
+    3.	The polymer chains act only as steric obstacles to diffusion.
+    4.	The polymer chains are immobile relative to the mobility of the nanoparticles over the time scale of the
+    diffusion process.
+    5.	The distribution of pores between polymer chains can be approximated by a random
+    distribution of straight fibers, described by the Ogston expression
+
+    :return:
+    """
+    pore_sizes = []
+    if DC == "DiffCoeffBM":
+        df = pd.read_csv('DiffCoeffBM_{}.csv'.format(prefix))
+        D_eff = df[DC]
+    else:
+        df = pd.read_csv('features_{}.csv'.format(prefix))
+        D_eff = df[DC] * umppx
+    kB = 1.380649 * 10 ** (-23)  # Boltzmann's constant in m2*kg*s^-2*K^-1
+    T = 293.15  # 20C in Kelvin
+    mu = 1.0016 * 10 ** (-3)  # viscosity of water
+    D0 = kB * T / (6 * pi * mu * rs) * 10 ** (12)  # Stokes-Einstein equation
+
+    i = 0
+    print("Esintein_stokes Value {}".format(D0))
+    for D in D_eff:
+        if D > D0:
+            i += 1
+            print("not good")
+        else:
+            pore_sizes.append(((rs + rf) * ((1 / pi) * log(D0 / D)) ** (-0.5) - 2 * rf))
+
+    mesh = pd.DataFrame({'Mesh_{}'.format(DC): pore_sizes})
+    mesh.to_csv('Mesh_{}.csv'.format(prefix), index=False)
+    return pore_sizes, i
+
+
+def main():
+    prefix = "HUVEC-FbChipRED-PEG-PNPS2umFULLAUTO"
+    os.chdir(
+        '/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/{}'.format(prefix))
+    #print(pore_size(prefix, rs=1 * 10 ** (-6), rf=0.3 * 10 ** (-9), DC = "DiffCoeffBM", umppx = 0.075))
+    calculate_features(pd.read_csv("msd_HUVEC-FbChipRED-PEG-PNPS2umFULLAUTO.csv"))
+
+
+if __name__ == "__main__":
+    main()

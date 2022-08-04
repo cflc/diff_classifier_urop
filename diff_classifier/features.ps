@@ -1,0 +1,6038 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 24 24 571 818
+%%Title: Enscript Output
+%%For: Claudia Lozano
+%%Creator: GNU Enscript 1.6.6
+%%CreationDate: Fri Jul 29 18:15:53 2022
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: A4 595 842 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6 6
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6 6
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Courier-Bold
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Times-Roman /F-gs-font MF
+/F-gs-font 8 8 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [595 842] 
+  >> setpagedevice
+} if
+/d_page_w 547 def
+/d_page_h 794 def
+/d_header_x 0 def
+/d_header_y 794 def
+/d_header_w 547 def
+/d_header_h 0 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 547 def
+/d_footer_h 0 def
+/d_output_w 547 def
+/d_output_h 794 def
+/cols 2 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 1 def
+/fname (features.py) def
+/fdir (.) def
+/ftail (features.py) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+22 783 M (1:) s
+/Times-Bold 8 8 SUF
+34.448 783 M
+("""Functions to calculate trajectory features from input trajectory ) s
+/F-gs-font 8 8 SF
+22 774 M (2:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+22 765 M (3:) s
+/Times-Bold 8 8 SUF
+34.448 765 M
+(This module provides functions to calculate trajectory features base) s
+/F-gs-font 8 8 SF
+22 756 M (4:) s
+/Times-Bold 8 8 SUF
+34.448 756 M
+(ImageJ plugin TrajClassifer by Thorsten Wagner. See details at) s
+/F-gs-font 8 8 SF
+22 747 M (5:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(https://imagej.net/TraJClassifier.) s
+/F-gs-font 8 8 SF
+22 738 M (6:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+22 729 M (7:) s
+/Times-Bold 8 8 SUF
+34.448 729 M
+(""") s
+/F-gs-font 8 8 SF
+22 720 M (8:) s
+22 711 M (9:) s
+/Times-Bold 8 8 SUF
+34.448 711 M
+(import) s
+/F-gs-font 8 8 SF
+58 711 M
+( math) s
+18 702 M (10:) s
+/Times-Bold 8 8 SUF
+34.448 702 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 702 M
+( math ) s
+/Times-Bold 8 8 SUF
+71.328 702 M
+(import) s
+/F-gs-font 8 8 SF
+94.88 702 M
+( pi, log) s
+18 693 M (11:) s
+/Times-Bold 8 8 SUF
+34.448 693 M
+(import) s
+/F-gs-font 8 8 SF
+58 693 M
+( struct) s
+18 684 M (12:) s
+/Times-Bold 8 8 SUF
+34.448 684 M
+(import) s
+/F-gs-font 8 8 SF
+58 684 M
+( os) s
+18 675 M (13:) s
+18 666 M (14:) s
+/Times-Bold 8 8 SUF
+34.448 666 M
+(import) s
+/F-gs-font 8 8 SF
+58 666 M
+( pandas as pd) s
+18 657 M (15:) s
+/Times-Bold 8 8 SUF
+34.448 657 M
+(import) s
+/F-gs-font 8 8 SF
+58 657 M
+( numpy as np) s
+18 648 M (16:) s
+/Times-Bold 8 8 SUF
+34.448 648 M
+(import) s
+/F-gs-font 8 8 SF
+58 648 M
+( numpy.linalg as LA) s
+18 639 M (17:) s
+/Times-Bold 8 8 SUF
+34.448 639 M
+(import) s
+/F-gs-font 8 8 SF
+58 639 M
+( numpy.ma as ma) s
+18 630 M (18:) s
+/Times-Bold 8 8 SUF
+34.448 630 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 630 M
+( scipy.optimize ) s
+/Times-Bold 8 8 SUF
+102.216 630 M
+(import) s
+/F-gs-font 8 8 SF
+125.768 630 M
+( curve_fit) s
+18 621 M (19:) s
+/Times-Bold 8 8 SUF
+34.448 621 M
+(import) s
+/F-gs-font 8 8 SF
+58 621 M
+( matplotlib.pyplot as plt) s
+18 612 M (20:) s
+/Times-Bold 8 8 SUF
+34.448 612 M
+(import) s
+/F-gs-font 8 8 SF
+58 612 M
+( diff_classifier.msd as msd) s
+18 603 M (21:) s
+18 594 M (22:) s
+18 585 M (23:) s
+/Times-Bold 8 8 SUF
+34.448 585 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 585 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 585 M
+(unmask_track) s
+/F-gs-font 8 8 SF
+96.448 585 M
+(\(track\):) s
+18 576 M (24:) s
+34.448 576 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 576 M
+("""Removes empty frames from input trajectory dataset.) s
+/F-gs-font 8 8 SF
+18 567 M (25:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 558 M (26:) s
+/Times-Bold 8 8 SUF
+34.448 558 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+18 549 M (27:) s
+/Times-Bold 8 8 SUF
+34.448 549 M
+(    ----------) s
+/F-gs-font 8 8 SF
+18 540 M (28:) s
+/Times-Bold 8 8 SUF
+34.448 540 M
+(    track : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+18 531 M (29:) s
+/Times-Bold 8 8 SUF
+34.448 531 M
+(        At a minimum, must contain a Frame, Track_ID, X, Y, MSDs, ) s
+/F-gs-font 8 8 SF
+18 522 M (30:) s
+/Times-Bold 8 8 SUF
+34.448 522 M
+(        Gauss column.) s
+/F-gs-font 8 8 SF
+18 513 M (31:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 504 M (32:) s
+/Times-Bold 8 8 SUF
+34.448 504 M
+(    Returns) s
+/F-gs-font 8 8 SF
+18 495 M (33:) s
+/Times-Bold 8 8 SUF
+34.448 495 M
+(    -------) s
+/F-gs-font 8 8 SF
+18 486 M (34:) s
+/Times-Bold 8 8 SUF
+34.448 486 M
+(    comp_track : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+18 477 M (35:) s
+/Times-Bold 8 8 SUF
+34.448 477 M
+(        Similar to track, but has all masked components removed.) s
+/F-gs-font 8 8 SF
+18 468 M (36:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 459 M (37:) s
+/Times-Bold 8 8 SUF
+34.448 459 M
+(    """) s
+/F-gs-font 8 8 SF
+18 450 M (38:) s
+34.448 450 M
+(    xpos = ma.masked_invalid\(track[) s
+/Times-Bold 8 8 SUF
+149.832 450 M
+('X') s
+/F-gs-font 8 8 SF
+160.936 450 M
+(]\)) s
+18 441 M (39:) s
+34.448 441 M
+(    msds = ma.masked_invalid\(track[) s
+/Times-Bold 8 8 SUF
+151.168 441 M
+('MSDs') s
+/F-gs-font 8 8 SF
+177.384 441 M
+(]\)) s
+18 432 M (40:) s
+34.448 432 M
+(    x_mask = ma.getmask\(xpos\)) s
+18 423 M (41:) s
+34.448 423 M
+(    msd_mask = ma.getmask\(msds\)) s
+18 414 M (42:) s
+34.448 414 M
+(    comp_frame = ma.compressed\(ma.masked_where\(msd_mask, track[) s
+/Times-Bold 8 8 SUF
+262.904 414 M
+(') s
+/F-gs-font 8 8 SF
+18 405 M (43:) s
+/Times-Bold 8 8 SUF
+34.448 405 M
+(    compid = ma.compressed\(ma.masked_where\(msd_mask, track[) s
+/Times-Bold 8 8 SUF
+259.424 405 M
+('T) s
+/F-gs-font 8 8 SF
+18 396 M (44:) s
+/Times-Bold 8 8 SUF
+34.448 396 M
+(    comp_x = ma.compressed\(ma.masked_where\(x_mask, track[) s
+/Times-Bold 8 8 SUF
+250.528 396 M
+('X') s
+/F-gs-font 8 8 SF
+261.632 396 M
+(]\)) s
+18 387 M (45:) s
+34.448 387 M
+(    comp_y = ma.compressed\(ma.masked_where\(x_mask, track[) s
+/Times-Bold 8 8 SUF
+238.912 387 M
+('Y') s
+/F-gs-font 8 8 SF
+250.016 387 M
+(]\)\)) s
+18 378 M (46:) s
+34.448 378 M
+(    comp_msd = ma.compressed\(ma.masked_where\(msd_mask, track[) s
+/Times-Bold 8 8 SUF
+257.584 378 M
+('M) s
+/F-gs-font 8 8 SF
+18 369 M (47:) s
+/Times-Bold 8 8 SUF
+34.448 369 M
+(    comp_gauss = ma.compressed\(ma.masked_where\(msd_mask, tra) s
+/F-gs-font 8 8 SF
+18 360 M (48:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(    comp_qual = ma.compressed\(ma.masked_where\(x_mask, track[) s
+/Times-Bold 8 8 SUF
+261.648 360 M
+(') s
+/F-gs-font 8 8 SF
+18 351 M (49:) s
+/Times-Bold 8 8 SUF
+34.448 351 M
+(    comp_snr = ma.compressed\(ma.masked_where\(x_mask, track[) s
+/Times-Bold 8 8 SUF
+257.64 351 M
+('S) s
+/F-gs-font 8 8 SF
+18 342 M (50:) s
+/Times-Bold 8 8 SUF
+34.448 342 M
+(    comp_meani = ma.compressed\(ma.masked_where\(x_mask,) s
+/F-gs-font 8 8 SF
+18 333 M (51:) s
+/Times-Bold 8 8 SUF
+34.448 333 M
+(                                               track[) s
+/Times-Bold 8 8 SUF
+149.328 333 M
+('Mean_Intensity') s
+/F-gs-font 8 8 SF
+208.432 333 M
+(]\)\)) s
+18 324 M (52:) s
+18 315 M (53:) s
+34.448 315 M
+(    data1 = {) s
+/Times-Bold 8 8 SUF
+72.128 315 M
+('Frame') s
+/F-gs-font 8 8 SF
+100.112 315 M
+(: comp_frame,) s
+18 306 M (54:) s
+34.448 306 M
+(             ) s
+/Times-Bold 8 8 SUF
+60.448 306 M
+('Track_ID') s
+/F-gs-font 8 8 SF
+99.552 306 M
+(: compid,) s
+18 297 M (55:) s
+34.448 297 M
+(             ) s
+/Times-Bold 8 8 SUF
+60.448 297 M
+('X') s
+/F-gs-font 8 8 SF
+71.552 297 M
+(: comp_x,) s
+18 288 M (56:) s
+34.448 288 M
+(             ) s
+/Times-Bold 8 8 SUF
+60.448 288 M
+('Y') s
+/F-gs-font 8 8 SF
+71.552 288 M
+(: comp_y,) s
+18 279 M (57:) s
+34.448 279 M
+(             ) s
+/Times-Bold 8 8 SUF
+60.448 279 M
+('MSDs') s
+/F-gs-font 8 8 SF
+86.664 279 M
+(: comp_msd,) s
+18 270 M (58:) s
+34.448 270 M
+(             ) s
+/Times-Bold 8 8 SUF
+60.448 270 M
+('Gauss') s
+/F-gs-font 8 8 SF
+86.672 270 M
+(: comp_gauss,) s
+18 261 M (59:) s
+34.448 261 M
+(             ) s
+/Times-Bold 8 8 SUF
+60.448 261 M
+('Quality') s
+/F-gs-font 8 8 SF
+91.56 261 M
+(: comp_qual,) s
+18 252 M (60:) s
+34.448 252 M
+(             ) s
+/Times-Bold 8 8 SUF
+60.448 252 M
+('SN_Ratio') s
+/F-gs-font 8 8 SF
+98.664 252 M
+(: comp_snr,) s
+18 243 M (61:) s
+34.448 243 M
+(             ) s
+/Times-Bold 8 8 SUF
+60.448 243 M
+('Mean_Intensity') s
+/F-gs-font 8 8 SF
+119.552 243 M
+(: comp_meani) s
+18 234 M (62:) s
+34.448 234 M
+(             }) s
+18 225 M (63:) s
+34.448 225 M
+(    comp_track = pd.DataFrame\(data=data1\)) s
+18 216 M (64:) s
+34.448 216 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 216 M
+(return) s
+/F-gs-font 8 8 SF
+64.664 216 M
+( comp_track) s
+18 207 M (65:) s
+18 198 M (66:) s
+18 189 M (67:) s
+/Times-Bold 8 8 SUF
+34.448 189 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 189 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 189 M
+(alpha_calc) s
+/F-gs-font 8 8 SF
+83.56 189 M
+(\(track\):) s
+18 180 M (68:) s
+34.448 180 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 180 M
+("""Calculates alpha, the exponential fit parameter for MSD data) s
+/F-gs-font 8 8 SF
+18 171 M (69:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 162 M (70:) s
+/Times-Bold 8 8 SUF
+34.448 162 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+18 153 M (71:) s
+/Times-Bold 8 8 SUF
+34.448 153 M
+(    ----------) s
+/F-gs-font 8 8 SF
+18 144 M (72:) s
+/Times-Bold 8 8 SUF
+34.448 144 M
+(    track : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+18 135 M (73:) s
+/Times-Bold 8 8 SUF
+34.448 135 M
+(        At a minimum, must contain a Frames and a MSDs column.  T) s
+/F-gs-font 8 8 SF
+18 126 M (74:) s
+/Times-Bold 8 8 SUF
+34.448 126 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+18 117 M (75:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 108 M (76:) s
+/Times-Bold 8 8 SUF
+34.448 108 M
+(    Returns) s
+/F-gs-font 8 8 SF
+18 99 M (77:) s
+/Times-Bold 8 8 SUF
+34.448 99 M
+(    -------) s
+/F-gs-font 8 8 SF
+18 90 M (78:) s
+/Times-Bold 8 8 SUF
+34.448 90 M
+(    alph : numpy.float64) s
+/F-gs-font 8 8 SF
+18 81 M (79:) s
+/Times-Bold 8 8 SUF
+34.448 81 M
+(        The anomalous exponent derived by fitting MSD values to the f) s
+/F-gs-font 8 8 SF
+18 72 M (80:) s
+/Times-Bold 8 8 SUF
+34.448 72 M
+(        <rad**2\(n\)> = 4*dcoef*\(n*delt\)**alph) s
+/F-gs-font 8 8 SF
+18 63 M (81:) s
+/Times-Bold 8 8 SUF
+34.448 63 M
+(    dcoef : numpy.float64) s
+/F-gs-font 8 8 SF
+18 54 M (82:) s
+/Times-Bold 8 8 SUF
+34.448 54 M
+(        The fitted diffusion coefficient derived by fitting MSD values to) s
+/F-gs-font 8 8 SF
+18 45 M (83:) s
+/Times-Bold 8 8 SUF
+34.448 45 M
+(        function above.) s
+/F-gs-font 8 8 SF
+18 36 M (84:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 27 M (85:) s
+/Times-Bold 8 8 SUF
+34.448 27 M
+(    Examples) s
+/F-gs-font 8 8 SF
+18 18 M (86:) s
+/Times-Bold 8 8 SUF
+34.448 18 M
+(    --------) s
+/F-gs-font 8 8 SF
+18 9 M (87:) s
+/Times-Bold 8 8 SUF
+34.448 9 M
+(    >>> frames = 5) s
+/F-gs-font 8 8 SF
+291.5 783 M (88:) s
+/Times-Bold 8 8 SUF
+307.948 783 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+291.5 774 M (89:) s
+/Times-Bold 8 8 SUF
+307.948 774 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+291.5 765 M (90:) s
+/Times-Bold 8 8 SUF
+307.948 765 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+291.5 756 M (91:) s
+/Times-Bold 8 8 SUF
+307.948 756 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+291.5 747 M (92:) s
+/Times-Bold 8 8 SUF
+307.948 747 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+291.5 738 M (93:) s
+/Times-Bold 8 8 SUF
+307.948 738 M
+(    >>> alpha_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+291.5 729 M (94:) s
+/Times-Bold 8 8 SUF
+307.948 729 M
+(    \(2.0000000000000004, 0.4999999999999999\)) s
+/F-gs-font 8 8 SF
+291.5 720 M (95:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+291.5 711 M (96:) s
+/Times-Bold 8 8 SUF
+307.948 711 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+291.5 702 M (97:) s
+/Times-Bold 8 8 SUF
+307.948 702 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+291.5 693 M (98:) s
+/Times-Bold 8 8 SUF
+307.948 693 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)+3\),) s
+/F-gs-font 8 8 SF
+291.5 684 M (99:) s
+/Times-Bold 8 8 SUF
+307.948 684 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)+3\)}) s
+/F-gs-font 8 8 SF
+287.5 675 M (100:) s
+/Times-Bold 8 8 SUF
+307.948 675 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 666 M (101:) s
+/Times-Bold 8 8 SUF
+307.948 666 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 657 M (102:) s
+/Times-Bold 8 8 SUF
+307.948 657 M
+(    >>> alpha_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 648 M (103:) s
+/Times-Bold 8 8 SUF
+307.948 648 M
+(    \(0.023690002018364065, 0.5144436515510022\)) s
+/F-gs-font 8 8 SF
+287.5 639 M (104:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 630 M (105:) s
+/Times-Bold 8 8 SUF
+307.948 630 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 621 M (106:) s
+287.5 612 M (107:) s
+307.948 612 M
+(    ypos = track[) s
+/Times-Bold 8 8 SUF
+358.228 612 M
+('MSDs') s
+/F-gs-font 8 8 SF
+384.444 612 M
+(]) s
+287.5 603 M (108:) s
+307.948 603 M
+(    xpos = track[) s
+/Times-Bold 8 8 SUF
+358.228 603 M
+('Frame') s
+/F-gs-font 8 8 SF
+386.212 603 M
+(]) s
+287.5 594 M (109:) s
+287.5 585 M (110:) s
+307.948 585 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 585 M
+(def) s
+/F-gs-font 8 8 SF
+326.612 585 M
+( ) s
+/Times-Bold 8 8 SUF
+328.612 585 M
+(msd_alpha) s
+/F-gs-font 8 8 SF
+365.956 585 M
+(\(xpos, alph, dcoef\):) s
+287.5 576 M (111:) s
+307.948 576 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 576 M
+(return) s
+/F-gs-font 8 8 SF
+346.164 576 M
+( 4 * dcoef * \(xpos ** alph\)) s
+287.5 567 M (112:) s
+287.5 558 M (113:) s
+307.948 558 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 558 M
+(try) s
+/F-gs-font 8 8 SF
+326.164 558 M
+(:) s
+287.5 549 M (114:) s
+307.948 549 M
+(        popt, pcov = curve_fit\(msd_alpha, xpos, ypos\)) s
+287.5 540 M (115:) s
+307.948 540 M
+(        alph = popt[0]) s
+287.5 531 M (116:) s
+307.948 531 M
+(        dcoef = popt[1]) s
+287.5 522 M (117:) s
+307.948 522 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 522 M
+(except) s
+/F-gs-font 8 8 SF
+337.716 522 M
+( RuntimeError:) s
+287.5 513 M (118:) s
+307.948 513 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 513 M
+(print) s
+/F-gs-font 8 8 SF
+341.284 513 M
+(\() s
+/Times-Bold 8 8 SUF
+343.948 513 M
+('Optimal parameters not found. Print NaN instead.') s
+/F-gs-font 8 8 SF
+521.716 513 M
+(\)) s
+287.5 504 M (119:) s
+307.948 504 M
+(        alph = np.nan) s
+287.5 495 M (120:) s
+307.948 495 M
+(        dcoef = np.nan) s
+287.5 486 M (121:) s
+307.948 486 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 486 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 486 M
+( alph, dcoef) s
+287.5 477 M (122:) s
+287.5 468 M (123:) s
+287.5 459 M (124:) s
+/Times-Bold 8 8 SUF
+307.948 459 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 459 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 459 M
+(gyration_tensor) s
+/F-gs-font 8 8 SF
+374.828 459 M
+(\(track\):) s
+287.5 450 M (125:) s
+307.948 450 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 450 M
+("""Calculates the eigenvalues and eigenvectors of the gyration te) s
+/F-gs-font 8 8 SF
+287.5 441 M (126:) s
+/Times-Bold 8 8 SUF
+307.948 441 M
+(    input trajectory.) s
+/F-gs-font 8 8 SF
+287.5 432 M (127:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 423 M (128:) s
+/Times-Bold 8 8 SUF
+307.948 423 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 414 M (129:) s
+/Times-Bold 8 8 SUF
+307.948 414 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 405 M (130:) s
+/Times-Bold 8 8 SUF
+307.948 405 M
+(    track : pandas DataFrame) s
+/F-gs-font 8 8 SF
+287.5 396 M (131:) s
+/Times-Bold 8 8 SUF
+307.948 396 M
+(        At a minimum, must contain an X and Y column.  The function) s
+/F-gs-font 8 8 SF
+287.5 387 M (132:) s
+/Times-Bold 8 8 SUF
+307.948 387 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+287.5 378 M (133:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 369 M (134:) s
+/Times-Bold 8 8 SUF
+307.948 369 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 360 M (135:) s
+/Times-Bold 8 8 SUF
+307.948 360 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 351 M (136:) s
+/Times-Bold 8 8 SUF
+307.948 351 M
+(    eig1 : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 342 M (137:) s
+/Times-Bold 8 8 SUF
+307.948 342 M
+(        Dominant eigenvalue of the gyration tensor.) s
+/F-gs-font 8 8 SF
+287.5 333 M (138:) s
+/Times-Bold 8 8 SUF
+307.948 333 M
+(    eig2 : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 324 M (139:) s
+/Times-Bold 8 8 SUF
+307.948 324 M
+(        Secondary eigenvalue of the gyration tensor.) s
+/F-gs-font 8 8 SF
+287.5 315 M (140:) s
+/Times-Bold 8 8 SUF
+307.948 315 M
+(    eigv1 : numpy.ndarray) s
+/F-gs-font 8 8 SF
+287.5 306 M (141:) s
+/Times-Bold 8 8 SUF
+307.948 306 M
+(        Dominant eigenvector of the gyration tensor.) s
+/F-gs-font 8 8 SF
+287.5 297 M (142:) s
+/Times-Bold 8 8 SUF
+307.948 297 M
+(    eigv2 : numpy.ndarray) s
+/F-gs-font 8 8 SF
+287.5 288 M (143:) s
+/Times-Bold 8 8 SUF
+307.948 288 M
+(        Secondary eigenvector of the gyration tensor.) s
+/F-gs-font 8 8 SF
+287.5 279 M (144:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 270 M (145:) s
+/Times-Bold 8 8 SUF
+307.948 270 M
+(    Examples) s
+/F-gs-font 8 8 SF
+287.5 261 M (146:) s
+/Times-Bold 8 8 SUF
+307.948 261 M
+(    --------) s
+/F-gs-font 8 8 SF
+287.5 252 M (147:) s
+/Times-Bold 8 8 SUF
+307.948 252 M
+(    >>> frames = 5) s
+/F-gs-font 8 8 SF
+287.5 243 M (148:) s
+/Times-Bold 8 8 SUF
+307.948 243 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+287.5 234 M (149:) s
+/Times-Bold 8 8 SUF
+307.948 234 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+287.5 225 M (150:) s
+/Times-Bold 8 8 SUF
+307.948 225 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+287.5 216 M (151:) s
+/Times-Bold 8 8 SUF
+307.948 216 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 207 M (152:) s
+/Times-Bold 8 8 SUF
+307.948 207 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 198 M (153:) s
+/Times-Bold 8 8 SUF
+307.948 198 M
+(    >>> gyration_tensor\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 189 M (154:) s
+/Times-Bold 8 8 SUF
+307.948 189 M
+(    \(4.0,) s
+/F-gs-font 8 8 SF
+287.5 180 M (155:) s
+/Times-Bold 8 8 SUF
+307.948 180 M
+(    4.4408920985006262e-16,) s
+/F-gs-font 8 8 SF
+287.5 171 M (156:) s
+/Times-Bold 8 8 SUF
+307.948 171 M
+(    array\([ 0.70710678, -0.70710678]\),) s
+/F-gs-font 8 8 SF
+287.5 162 M (157:) s
+/Times-Bold 8 8 SUF
+307.948 162 M
+(    array\([ 0.70710678,  0.70710678]\)\)) s
+/F-gs-font 8 8 SF
+287.5 153 M (158:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 144 M (159:) s
+/Times-Bold 8 8 SUF
+307.948 144 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+287.5 135 M (160:) s
+/Times-Bold 8 8 SUF
+307.948 135 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+287.5 126 M (161:) s
+/Times-Bold 8 8 SUF
+307.948 126 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)+3\),) s
+/F-gs-font 8 8 SF
+287.5 117 M (162:) s
+/Times-Bold 8 8 SUF
+307.948 117 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)+3\)}) s
+/F-gs-font 8 8 SF
+287.5 108 M (163:) s
+/Times-Bold 8 8 SUF
+307.948 108 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 99 M (164:) s
+/Times-Bold 8 8 SUF
+307.948 99 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 90 M (165:) s
+/Times-Bold 8 8 SUF
+307.948 90 M
+(    >>> gyration_tensor\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 81 M (166:) s
+/Times-Bold 8 8 SUF
+307.948 81 M
+(    \(0.53232560128104522,) s
+/F-gs-font 8 8 SF
+287.5 72 M (167:) s
+/Times-Bold 8 8 SUF
+307.948 72 M
+(    0.42766829138901619,) s
+/F-gs-font 8 8 SF
+287.5 63 M (168:) s
+/Times-Bold 8 8 SUF
+307.948 63 M
+(    array\([ 0.6020119 , -0.79848711]\),) s
+/F-gs-font 8 8 SF
+287.5 54 M (169:) s
+/Times-Bold 8 8 SUF
+307.948 54 M
+(    array\([-0.79848711, -0.6020119 ]\)\)) s
+/F-gs-font 8 8 SF
+287.5 45 M (170:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 36 M (171:) s
+/Times-Bold 8 8 SUF
+307.948 36 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 27 M (172:) s
+287.5 18 M (173:) s
+307.948 18 M
+(    dframe = track) s
+287.5 9 M (174:) s
+307.948 9 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 9 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 9 M
+( isinstance\(dframe, pd.core.frame.DataFrame\), ) s
+/Times-Bold 8 8 SUF
+487.444 9 M
+("track must be ) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 2 def
+/fname (features.py) def
+/fdir (.) def
+/ftail (features.py) def
+/Times-Bold 8 8 SUF
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+/F-gs-font 8 8 SF
+14 783 M (175:) s
+/Times-Bold 8 8 SUF
+34.448 783 M
+(     dataframe.") s
+/F-gs-font 8 8 SF
+14 774 M (176:) s
+34.448 774 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 774 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 774 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+123.976 774 M
+('X') s
+/F-gs-font 8 8 SF
+135.08 774 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+213.944 774 M
+("track must co) s
+/F-gs-font 8 8 SF
+14 765 M (177:) s
+/Times-Bold 8 8 SUF
+34.448 765 M
+(     X column.") s
+/F-gs-font 8 8 SF
+14 756 M (178:) s
+34.448 756 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 756 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 756 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+123.976 756 M
+('Y') s
+/F-gs-font 8 8 SF
+135.08 756 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+213.944 756 M
+("track must co) s
+/F-gs-font 8 8 SF
+14 747 M (179:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(     Y column.") s
+/F-gs-font 8 8 SF
+14 738 M (180:) s
+34.448 738 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 738 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 738 M
+( dframe.shape[0] > 0, ) s
+/Times-Bold 8 8 SUF
+133.152 738 M
+("track must not be empty.") s
+/F-gs-font 8 8 SF
+14 729 M (181:) s
+14 720 M (182:) s
+34.448 720 M
+(    matrixa = np.sum\(\(dframe[) s
+/Times-Bold 8 8 SUF
+129.384 720 M
+('X') s
+/F-gs-font 8 8 SF
+140.488 720 M
+(] - np.mean\() s
+14 711 M (183:) s
+34.448 711 M
+(        dframe[) s
+/Times-Bold 8 8 SUF
+75.768 711 M
+('X') s
+/F-gs-font 8 8 SF
+86.872 711 M
+(]\)\) ** 2\) / dframe[) s
+/Times-Bold 8 8 SUF
+145.072 711 M
+('X') s
+/F-gs-font 8 8 SF
+156.176 711 M
+(].shape[0]) s
+14 702 M (184:) s
+34.448 702 M
+(    matrixb = np.sum\(\(dframe[) s
+/Times-Bold 8 8 SUF
+129.832 702 M
+('Y') s
+/F-gs-font 8 8 SF
+140.936 702 M
+(] - np.mean\() s
+14 693 M (185:) s
+34.448 693 M
+(        dframe[) s
+/Times-Bold 8 8 SUF
+75.768 693 M
+('Y') s
+/F-gs-font 8 8 SF
+86.872 693 M
+(]\)\) ** 2\) / dframe[) s
+/Times-Bold 8 8 SUF
+145.072 693 M
+('Y') s
+/F-gs-font 8 8 SF
+156.176 693 M
+(].shape[0]) s
+14 684 M (186:) s
+34.448 684 M
+(    matrixab = np.sum\(\(dframe[) s
+/Times-Bold 8 8 SUF
+133.384 684 M
+('X') s
+/F-gs-font 8 8 SF
+144.488 684 M
+(] - np.mean\() s
+14 675 M (187:) s
+34.448 675 M
+(        dframe[) s
+/Times-Bold 8 8 SUF
+75.768 675 M
+('X') s
+/F-gs-font 8 8 SF
+86.872 675 M
+(]\)\) * \(dframe[) s
+/Times-Bold 8 8 SUF
+130.848 675 M
+('Y') s
+/F-gs-font 8 8 SF
+141.952 675 M
+(] - np.mean\() s
+14 666 M (188:) s
+34.448 666 M
+(        dframe[) s
+/Times-Bold 8 8 SUF
+75.768 666 M
+('Y') s
+/F-gs-font 8 8 SF
+86.872 666 M
+(]\)\)\) / dframe[) s
+/Times-Bold 8 8 SUF
+129.072 666 M
+('X') s
+/F-gs-font 8 8 SF
+140.176 666 M
+(].shape[0]) s
+14 657 M (189:) s
+14 648 M (190:) s
+34.448 648 M
+(    eigvals, eigvecs = LA.eig\(np.array\([[matrixa, matrixab],) s
+14 639 M (191:) s
+34.448 639 M
+(                                        [matrixab, matrixb]]\)\)) s
+14 630 M (192:) s
+34.448 630 M
+(    dom = np.argmax\(np.abs\(eigvals\)\)) s
+14 621 M (193:) s
+34.448 621 M
+(    rec = np.argmin\(np.abs\(eigvals\)\)) s
+14 612 M (194:) s
+34.448 612 M
+(    eig1 = eigvals[dom]) s
+14 603 M (195:) s
+34.448 603 M
+(    eig2 = eigvals[rec]) s
+14 594 M (196:) s
+34.448 594 M
+(    eigv1 = eigvecs[dom]) s
+14 585 M (197:) s
+34.448 585 M
+(    eigv2 = eigvecs[rec]) s
+14 576 M (198:) s
+34.448 576 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 576 M
+(return) s
+/F-gs-font 8 8 SF
+64.664 576 M
+( eig1, eig2, eigv1, eigv2) s
+14 567 M (199:) s
+14 558 M (200:) s
+14 549 M (201:) s
+/Times-Bold 8 8 SUF
+34.448 549 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 549 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 549 M
+(kurtosis) s
+/F-gs-font 8 8 SF
+74.672 549 M
+(\(track\):) s
+14 540 M (202:) s
+34.448 540 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 540 M
+("""Calculates the kurtosis of input track.) s
+/F-gs-font 8 8 SF
+14 531 M (203:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 522 M (204:) s
+/Times-Bold 8 8 SUF
+34.448 522 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+14 513 M (205:) s
+/Times-Bold 8 8 SUF
+34.448 513 M
+(    ----------) s
+/F-gs-font 8 8 SF
+14 504 M (206:) s
+/Times-Bold 8 8 SUF
+34.448 504 M
+(    track : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+14 495 M (207:) s
+/Times-Bold 8 8 SUF
+34.448 495 M
+(        At a minimum, must contain an X and Y column.  The function) s
+/F-gs-font 8 8 SF
+14 486 M (208:) s
+/Times-Bold 8 8 SUF
+34.448 486 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+14 477 M (209:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 468 M (210:) s
+/Times-Bold 8 8 SUF
+34.448 468 M
+(    Returns) s
+/F-gs-font 8 8 SF
+14 459 M (211:) s
+/Times-Bold 8 8 SUF
+34.448 459 M
+(    -------) s
+/F-gs-font 8 8 SF
+14 450 M (212:) s
+/Times-Bold 8 8 SUF
+34.448 450 M
+(    kurt : numpy.float64) s
+/F-gs-font 8 8 SF
+14 441 M (213:) s
+/Times-Bold 8 8 SUF
+34.448 441 M
+(        Kurtosis of the input track.  Calculation based on projected 2D) s
+/F-gs-font 8 8 SF
+14 432 M (214:) s
+/Times-Bold 8 8 SUF
+34.448 432 M
+(        positions on the dominant eigenvector of the radius of gyration ) s
+/F-gs-font 8 8 SF
+14 423 M (215:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 414 M (216:) s
+/Times-Bold 8 8 SUF
+34.448 414 M
+(    Examples) s
+/F-gs-font 8 8 SF
+14 405 M (217:) s
+/Times-Bold 8 8 SUF
+34.448 405 M
+(    --------) s
+/F-gs-font 8 8 SF
+14 396 M (218:) s
+/Times-Bold 8 8 SUF
+34.448 396 M
+(    >>> frames = 5) s
+/F-gs-font 8 8 SF
+14 387 M (219:) s
+/Times-Bold 8 8 SUF
+34.448 387 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+14 378 M (220:) s
+/Times-Bold 8 8 SUF
+34.448 378 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+14 369 M (221:) s
+/Times-Bold 8 8 SUF
+34.448 369 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+14 360 M (222:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+14 351 M (223:) s
+/Times-Bold 8 8 SUF
+34.448 351 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+14 342 M (224:) s
+/Times-Bold 8 8 SUF
+34.448 342 M
+(    >>> kurtosis\(dframe\)) s
+/F-gs-font 8 8 SF
+14 333 M (225:) s
+/Times-Bold 8 8 SUF
+34.448 333 M
+(    2.5147928994082829) s
+/F-gs-font 8 8 SF
+14 324 M (226:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 315 M (227:) s
+/Times-Bold 8 8 SUF
+34.448 315 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+14 306 M (228:) s
+/Times-Bold 8 8 SUF
+34.448 306 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+14 297 M (229:) s
+/Times-Bold 8 8 SUF
+34.448 297 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)+3\),) s
+/F-gs-font 8 8 SF
+14 288 M (230:) s
+/Times-Bold 8 8 SUF
+34.448 288 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)+3\)}) s
+/F-gs-font 8 8 SF
+14 279 M (231:) s
+/Times-Bold 8 8 SUF
+34.448 279 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+14 270 M (232:) s
+/Times-Bold 8 8 SUF
+34.448 270 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+14 261 M (233:) s
+/Times-Bold 8 8 SUF
+34.448 261 M
+(    >>> kurtosis\(dframe\)) s
+/F-gs-font 8 8 SF
+14 252 M (234:) s
+/Times-Bold 8 8 SUF
+34.448 252 M
+(    1.8515139698652476) s
+/F-gs-font 8 8 SF
+14 243 M (235:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 234 M (236:) s
+/Times-Bold 8 8 SUF
+34.448 234 M
+(    """) s
+/F-gs-font 8 8 SF
+14 225 M (237:) s
+14 216 M (238:) s
+34.448 216 M
+(    dframe = track) s
+14 207 M (239:) s
+34.448 207 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 207 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 207 M
+( isinstance\(dframe, pd.core.frame.DataFrame\), ) s
+/Times-Bold 8 8 SUF
+213.944 207 M
+("track must be ) s
+/F-gs-font 8 8 SF
+14 198 M (240:) s
+/Times-Bold 8 8 SUF
+34.448 198 M
+(     dataframe.") s
+/F-gs-font 8 8 SF
+14 189 M (241:) s
+34.448 189 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 189 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 189 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+123.976 189 M
+('X') s
+/F-gs-font 8 8 SF
+135.08 189 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+213.944 189 M
+("track must co) s
+/F-gs-font 8 8 SF
+14 180 M (242:) s
+/Times-Bold 8 8 SUF
+34.448 180 M
+(     X column.") s
+/F-gs-font 8 8 SF
+14 171 M (243:) s
+34.448 171 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 171 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 171 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+123.976 171 M
+('Y') s
+/F-gs-font 8 8 SF
+135.08 171 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+213.944 171 M
+("track must co) s
+/F-gs-font 8 8 SF
+14 162 M (244:) s
+/Times-Bold 8 8 SUF
+34.448 162 M
+(     Y column.") s
+/F-gs-font 8 8 SF
+14 153 M (245:) s
+34.448 153 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 153 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 153 M
+( dframe.shape[0] > 0, ) s
+/Times-Bold 8 8 SUF
+133.152 153 M
+("track must not be empty.") s
+/F-gs-font 8 8 SF
+14 144 M (246:) s
+14 135 M (247:) s
+34.448 135 M
+(    eig1, eig2, eigv1, eigv2 = gyration_tensor\(dframe\)) s
+14 126 M (248:) s
+34.448 126 M
+(    projection = dframe[) s
+/Times-Bold 8 8 SUF
+108.72 126 M
+('X') s
+/F-gs-font 8 8 SF
+119.824 126 M
+(] * eigv1[0] + dframe[) s
+/Times-Bold 8 8 SUF
+191.424 126 M
+('Y') s
+/F-gs-font 8 8 SF
+202.528 126 M
+(] * eigv1[1]) s
+14 117 M (249:) s
+14 108 M (250:) s
+34.448 108 M
+(    kurt = np.mean\(\(projection - np.mean\() s
+14 99 M (251:) s
+34.448 99 M
+(        projection\)\) ** 4 / \(np.std\(projection\) ** 4\)\)) s
+14 90 M (252:) s
+14 81 M (253:) s
+34.448 81 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 81 M
+(return) s
+/F-gs-font 8 8 SF
+64.664 81 M
+( kurt) s
+14 72 M (254:) s
+14 63 M (255:) s
+14 54 M (256:) s
+/Times-Bold 8 8 SUF
+34.448 54 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 54 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 54 M
+(asymmetry) s
+/F-gs-font 8 8 SF
+85.32 54 M
+(\(track\):) s
+14 45 M (257:) s
+34.448 45 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 45 M
+("""Calculates the asymmetry of the trajectory.) s
+/F-gs-font 8 8 SF
+14 36 M (258:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 27 M (259:) s
+/Times-Bold 8 8 SUF
+34.448 27 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+14 18 M (260:) s
+/Times-Bold 8 8 SUF
+34.448 18 M
+(    ----------) s
+/F-gs-font 8 8 SF
+14 9 M (261:) s
+/Times-Bold 8 8 SUF
+34.448 9 M
+(    track : pandas DataFrame) s
+/F-gs-font 8 8 SF
+287.5 783 M (262:) s
+/Times-Bold 8 8 SUF
+307.948 783 M
+(        At a minimum, must contain an X and Y column.  The function) s
+/F-gs-font 8 8 SF
+287.5 774 M (263:) s
+/Times-Bold 8 8 SUF
+307.948 774 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+287.5 765 M (264:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 756 M (265:) s
+/Times-Bold 8 8 SUF
+307.948 756 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 747 M (266:) s
+/Times-Bold 8 8 SUF
+307.948 747 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 738 M (267:) s
+/Times-Bold 8 8 SUF
+307.948 738 M
+(    eig1 : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 729 M (268:) s
+/Times-Bold 8 8 SUF
+307.948 729 M
+(        Dominant eigenvalue of the gyration tensor.) s
+/F-gs-font 8 8 SF
+287.5 720 M (269:) s
+/Times-Bold 8 8 SUF
+307.948 720 M
+(    eig2 : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 711 M (270:) s
+/Times-Bold 8 8 SUF
+307.948 711 M
+(        Secondary eigenvalue of the gyration tensor.) s
+/F-gs-font 8 8 SF
+287.5 702 M (271:) s
+/Times-Bold 8 8 SUF
+307.948 702 M
+(    asym1 : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 693 M (272:) s
+/Times-Bold 8 8 SUF
+307.948 693 M
+(        asymmetry of the input track.  Equal to 0 for circularly symmet) s
+/F-gs-font 8 8 SF
+287.5 684 M (273:) s
+/Times-Bold 8 8 SUF
+307.948 684 M
+(        tracks, and 1 for linear tracks.) s
+/F-gs-font 8 8 SF
+287.5 675 M (274:) s
+/Times-Bold 8 8 SUF
+307.948 675 M
+(    asym2 : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 666 M (275:) s
+/Times-Bold 8 8 SUF
+307.948 666 M
+(        alternate definition of asymmetry.  Equal to 1 for circularly) s
+/F-gs-font 8 8 SF
+287.5 657 M (276:) s
+/Times-Bold 8 8 SUF
+307.948 657 M
+(        symmetric tracks, and 0 for linear tracks.) s
+/F-gs-font 8 8 SF
+287.5 648 M (277:) s
+/Times-Bold 8 8 SUF
+307.948 648 M
+(    asym3 : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 639 M (278:) s
+/Times-Bold 8 8 SUF
+307.948 639 M
+(        alternate definition of asymmetry.) s
+/F-gs-font 8 8 SF
+287.5 630 M (279:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 621 M (280:) s
+/Times-Bold 8 8 SUF
+307.948 621 M
+(    Examples) s
+/F-gs-font 8 8 SF
+287.5 612 M (281:) s
+/Times-Bold 8 8 SUF
+307.948 612 M
+(    --------) s
+/F-gs-font 8 8 SF
+287.5 603 M (282:) s
+/Times-Bold 8 8 SUF
+307.948 603 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+287.5 594 M (283:) s
+/Times-Bold 8 8 SUF
+307.948 594 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+287.5 585 M (284:) s
+/Times-Bold 8 8 SUF
+307.948 585 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+287.5 576 M (285:) s
+/Times-Bold 8 8 SUF
+307.948 576 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+287.5 567 M (286:) s
+/Times-Bold 8 8 SUF
+307.948 567 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 558 M (287:) s
+/Times-Bold 8 8 SUF
+307.948 558 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 549 M (288:) s
+/Times-Bold 8 8 SUF
+307.948 549 M
+(    >>> asymmetry\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 540 M (289:) s
+/Times-Bold 8 8 SUF
+307.948 540 M
+(    \(16.5, 0.0, 1.0, 0.0, 0.69314718055994529\)) s
+/F-gs-font 8 8 SF
+287.5 531 M (290:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 522 M (291:) s
+/Times-Bold 8 8 SUF
+307.948 522 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+287.5 513 M (292:) s
+/Times-Bold 8 8 SUF
+307.948 513 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+287.5 504 M (293:) s
+/Times-Bold 8 8 SUF
+307.948 504 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)+3\),) s
+/F-gs-font 8 8 SF
+287.5 495 M (294:) s
+/Times-Bold 8 8 SUF
+307.948 495 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)+3\)}) s
+/F-gs-font 8 8 SF
+287.5 486 M (295:) s
+/Times-Bold 8 8 SUF
+307.948 486 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 477 M (296:) s
+/Times-Bold 8 8 SUF
+307.948 477 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 468 M (297:) s
+/Times-Bold 8 8 SUF
+307.948 468 M
+(    >>> asymmetry\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 459 M (298:) s
+/Times-Bold 8 8 SUF
+307.948 459 M
+(    \(0.53232560128104522,) s
+/F-gs-font 8 8 SF
+287.5 450 M (299:) s
+/Times-Bold 8 8 SUF
+307.948 450 M
+(    0.42766829138901619,) s
+/F-gs-font 8 8 SF
+287.5 441 M (300:) s
+/Times-Bold 8 8 SUF
+307.948 441 M
+(    0.046430119259539708,) s
+/F-gs-font 8 8 SF
+287.5 432 M (301:) s
+/Times-Bold 8 8 SUF
+307.948 432 M
+(    0.80339606128247354,) s
+/F-gs-font 8 8 SF
+287.5 423 M (302:) s
+/Times-Bold 8 8 SUF
+307.948 423 M
+(    0.0059602683290953052\)) s
+/F-gs-font 8 8 SF
+287.5 414 M (303:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 405 M (304:) s
+/Times-Bold 8 8 SUF
+307.948 405 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 396 M (305:) s
+307.948 396 M
+(    dframe = track) s
+287.5 387 M (306:) s
+307.948 387 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 387 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 387 M
+( isinstance\(dframe, pd.core.frame.DataFrame\), ) s
+/Times-Bold 8 8 SUF
+487.444 387 M
+("track must be ) s
+/F-gs-font 8 8 SF
+287.5 378 M (307:) s
+/Times-Bold 8 8 SUF
+307.948 378 M
+(     dataframe.") s
+/F-gs-font 8 8 SF
+287.5 369 M (308:) s
+307.948 369 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 369 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 369 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+397.476 369 M
+('X') s
+/F-gs-font 8 8 SF
+408.58 369 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+487.444 369 M
+("track must co) s
+/F-gs-font 8 8 SF
+287.5 360 M (309:) s
+/Times-Bold 8 8 SUF
+307.948 360 M
+(     X column.") s
+/F-gs-font 8 8 SF
+287.5 351 M (310:) s
+307.948 351 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 351 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 351 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+397.476 351 M
+('Y') s
+/F-gs-font 8 8 SF
+408.58 351 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+487.444 351 M
+("track must co) s
+/F-gs-font 8 8 SF
+287.5 342 M (311:) s
+/Times-Bold 8 8 SUF
+307.948 342 M
+(     Y column.") s
+/F-gs-font 8 8 SF
+287.5 333 M (312:) s
+307.948 333 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 333 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 333 M
+( dframe.shape[0] > 0, ) s
+/Times-Bold 8 8 SUF
+406.652 333 M
+("track must not be empty.") s
+/F-gs-font 8 8 SF
+287.5 324 M (313:) s
+287.5 315 M (314:) s
+307.948 315 M
+(    eig1, eig2, eigv1, eigv2 = gyration_tensor\(track\)) s
+287.5 306 M (315:) s
+307.948 306 M
+(    asym1 = \(eig1 ** 2 - eig2 ** 2\) ** 2 / \(eig1 ** 2 + eig2 ** 2\) ** 2) s
+287.5 297 M (316:) s
+307.948 297 M
+(    asym2 = eig2 / eig1) s
+287.5 288 M (317:) s
+307.948 288 M
+(    asym3 = -np.log\(1 - \(\(eig1 - eig2\) ** 2\) / \(2 * \(eig1 + eig2\) ** 2\)\)) s
+287.5 279 M (318:) s
+287.5 270 M (319:) s
+307.948 270 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 270 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 270 M
+( eig1, eig2, asym1, asym2, asym3) s
+287.5 261 M (320:) s
+287.5 252 M (321:) s
+287.5 243 M (322:) s
+/Times-Bold 8 8 SUF
+307.948 243 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 243 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 243 M
+(minboundrect) s
+/F-gs-font 8 8 SF
+369.06 243 M
+(\(track\):) s
+287.5 234 M (323:) s
+307.948 234 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 234 M
+("""Calculates the minimum bounding rectangle of an input traje) s
+/F-gs-font 8 8 SF
+287.5 225 M (324:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 216 M (325:) s
+/Times-Bold 8 8 SUF
+307.948 216 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 207 M (326:) s
+/Times-Bold 8 8 SUF
+307.948 207 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 198 M (327:) s
+/Times-Bold 8 8 SUF
+307.948 198 M
+(    dframe : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+287.5 189 M (328:) s
+/Times-Bold 8 8 SUF
+307.948 189 M
+(        At a minimum, must contain an X and Y column.  The function) s
+/F-gs-font 8 8 SF
+287.5 180 M (329:) s
+/Times-Bold 8 8 SUF
+307.948 180 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+287.5 171 M (330:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 162 M (331:) s
+/Times-Bold 8 8 SUF
+307.948 162 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 153 M (332:) s
+/Times-Bold 8 8 SUF
+307.948 153 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 144 M (333:) s
+/Times-Bold 8 8 SUF
+307.948 144 M
+(    rot_angle : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 135 M (334:) s
+/Times-Bold 8 8 SUF
+307.948 135 M
+(        Angle of rotation of the bounding box.) s
+/F-gs-font 8 8 SF
+287.5 126 M (335:) s
+/Times-Bold 8 8 SUF
+307.948 126 M
+(    area : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 117 M (336:) s
+/Times-Bold 8 8 SUF
+307.948 117 M
+(        Area of the bounding box.) s
+/F-gs-font 8 8 SF
+287.5 108 M (337:) s
+/Times-Bold 8 8 SUF
+307.948 108 M
+(    width : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 99 M (338:) s
+/Times-Bold 8 8 SUF
+307.948 99 M
+(        Width of the bounding box.) s
+/F-gs-font 8 8 SF
+287.5 90 M (339:) s
+/Times-Bold 8 8 SUF
+307.948 90 M
+(    height : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 81 M (340:) s
+/Times-Bold 8 8 SUF
+307.948 81 M
+(        Height of the bounding box.) s
+/F-gs-font 8 8 SF
+287.5 72 M (341:) s
+/Times-Bold 8 8 SUF
+307.948 72 M
+(    center_point : numpy.ndarray) s
+/F-gs-font 8 8 SF
+287.5 63 M (342:) s
+/Times-Bold 8 8 SUF
+307.948 63 M
+(        Center point of the bounding box.) s
+/F-gs-font 8 8 SF
+287.5 54 M (343:) s
+/Times-Bold 8 8 SUF
+307.948 54 M
+(    corner_pts : numpy.ndarray) s
+/F-gs-font 8 8 SF
+287.5 45 M (344:) s
+/Times-Bold 8 8 SUF
+307.948 45 M
+(        Corner points of the bounding box.) s
+/F-gs-font 8 8 SF
+287.5 36 M (345:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 27 M (346:) s
+/Times-Bold 8 8 SUF
+307.948 27 M
+(    Examples) s
+/F-gs-font 8 8 SF
+287.5 18 M (347:) s
+/Times-Bold 8 8 SUF
+307.948 18 M
+(    --------) s
+/F-gs-font 8 8 SF
+287.5 9 M (348:) s
+/Times-Bold 8 8 SUF
+307.948 9 M
+(    >>> frames = 10) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 3 def
+/fname (features.py) def
+/fdir (.) def
+/ftail (features.py) def
+/Times-Bold 8 8 SUF
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+/F-gs-font 8 8 SF
+14 783 M (349:) s
+/Times-Bold 8 8 SUF
+34.448 783 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+14 774 M (350:) s
+/Times-Bold 8 8 SUF
+34.448 774 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+14 765 M (351:) s
+/Times-Bold 8 8 SUF
+34.448 765 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+14 756 M (352:) s
+/Times-Bold 8 8 SUF
+34.448 756 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+14 747 M (353:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+14 738 M (354:) s
+/Times-Bold 8 8 SUF
+34.448 738 M
+(    >>> minboundrect\(dframe\)) s
+/F-gs-font 8 8 SF
+14 729 M (355:) s
+/Times-Bold 8 8 SUF
+34.448 729 M
+(    \(-2.3561944901923448,) s
+/F-gs-font 8 8 SF
+14 720 M (356:) s
+/Times-Bold 8 8 SUF
+34.448 720 M
+(    2.8261664256307952e-14,) s
+/F-gs-font 8 8 SF
+14 711 M (357:) s
+/Times-Bold 8 8 SUF
+34.448 711 M
+(    12.727922061357855,) s
+/F-gs-font 8 8 SF
+14 702 M (358:) s
+/Times-Bold 8 8 SUF
+34.448 702 M
+(    2.2204460492503131e-15,) s
+/F-gs-font 8 8 SF
+14 693 M (359:) s
+/Times-Bold 8 8 SUF
+34.448 693 M
+(    array\([ 10.5,   8.5]\),) s
+/F-gs-font 8 8 SF
+14 684 M (360:) s
+/Times-Bold 8 8 SUF
+34.448 684 M
+(    array\([[  6.,   4.],) s
+/F-gs-font 8 8 SF
+14 675 M (361:) s
+/Times-Bold 8 8 SUF
+34.448 675 M
+(           [ 15.,  13.],) s
+/F-gs-font 8 8 SF
+14 666 M (362:) s
+/Times-Bold 8 8 SUF
+34.448 666 M
+(           [ 15.,  13.],) s
+/F-gs-font 8 8 SF
+14 657 M (363:) s
+/Times-Bold 8 8 SUF
+34.448 657 M
+(           [  6.,   4.]]\)\)) s
+/F-gs-font 8 8 SF
+14 648 M (364:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 639 M (365:) s
+/Times-Bold 8 8 SUF
+34.448 639 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+14 630 M (366:) s
+/Times-Bold 8 8 SUF
+34.448 630 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+14 621 M (367:) s
+/Times-Bold 8 8 SUF
+34.448 621 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)\)+3,) s
+/F-gs-font 8 8 SF
+14 612 M (368:) s
+/Times-Bold 8 8 SUF
+34.448 612 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)\)+3}) s
+/F-gs-font 8 8 SF
+14 603 M (369:) s
+/Times-Bold 8 8 SUF
+34.448 603 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+14 594 M (370:) s
+/Times-Bold 8 8 SUF
+34.448 594 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+14 585 M (371:) s
+/Times-Bold 8 8 SUF
+34.448 585 M
+(    >>> minboundrect\(dframe\)) s
+/F-gs-font 8 8 SF
+14 576 M (372:) s
+/Times-Bold 8 8 SUF
+34.448 576 M
+(    \(0.78318530717958657,) s
+/F-gs-font 8 8 SF
+14 567 M (373:) s
+/Times-Bold 8 8 SUF
+34.448 567 M
+(    3.6189901131223992,) s
+/F-gs-font 8 8 SF
+14 558 M (374:) s
+/Times-Bold 8 8 SUF
+34.448 558 M
+(    1.9949899732081091,) s
+/F-gs-font 8 8 SF
+14 549 M (375:) s
+/Times-Bold 8 8 SUF
+34.448 549 M
+(    1.8140392491811692,) s
+/F-gs-font 8 8 SF
+14 540 M (376:) s
+/Times-Bold 8 8 SUF
+34.448 540 M
+(    array\([ 3.02076903,  2.97913884]\),) s
+/F-gs-font 8 8 SF
+14 531 M (377:) s
+/Times-Bold 8 8 SUF
+34.448 531 M
+(    array\([[ 4.3676025 ,  3.04013439],) s
+/F-gs-font 8 8 SF
+14 522 M (378:) s
+/Times-Bold 8 8 SUF
+34.448 522 M
+(           [ 2.95381341,  1.63258851],) s
+/F-gs-font 8 8 SF
+14 513 M (379:) s
+/Times-Bold 8 8 SUF
+34.448 513 M
+(           [ 1.67393557,  2.9181433 ],) s
+/F-gs-font 8 8 SF
+14 504 M (380:) s
+/Times-Bold 8 8 SUF
+34.448 504 M
+(           [ 3.08772466,  4.32568917]]\)\)) s
+/F-gs-font 8 8 SF
+14 495 M (381:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 486 M (382:) s
+/Times-Bold 8 8 SUF
+34.448 486 M
+(    Notes) s
+/F-gs-font 8 8 SF
+14 477 M (383:) s
+/Times-Bold 8 8 SUF
+34.448 477 M
+(    -----) s
+/F-gs-font 8 8 SF
+14 468 M (384:) s
+/Times-Bold 8 8 SUF
+34.448 468 M
+(    Based off of code from the following repo:) s
+/F-gs-font 8 8 SF
+14 459 M (385:) s
+/Times-Bold 8 8 SUF
+34.448 459 M
+(    https://github.com/dbworth/minimum-area-bounding-rectangle/b) s
+/F-gs-font 8 8 SF
+14 450 M (386:) s
+/Times-Bold 8 8 SUF
+34.448 450 M
+(    python/min_bounding_rect.py) s
+/F-gs-font 8 8 SF
+14 441 M (387:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 432 M (388:) s
+/Times-Bold 8 8 SUF
+34.448 432 M
+(    """) s
+/F-gs-font 8 8 SF
+14 423 M (389:) s
+14 414 M (390:) s
+34.448 414 M
+(    dframe = track) s
+14 405 M (391:) s
+34.448 405 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 405 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 405 M
+( isinstance\(dframe, pd.core.frame.DataFrame\), ) s
+/Times-Bold 8 8 SUF
+213.944 405 M
+("track must be ) s
+/F-gs-font 8 8 SF
+14 396 M (392:) s
+/Times-Bold 8 8 SUF
+34.448 396 M
+(     dataframe.") s
+/F-gs-font 8 8 SF
+14 387 M (393:) s
+34.448 387 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 387 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 387 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+123.976 387 M
+('X') s
+/F-gs-font 8 8 SF
+135.08 387 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+213.944 387 M
+("track must co) s
+/F-gs-font 8 8 SF
+14 378 M (394:) s
+/Times-Bold 8 8 SUF
+34.448 378 M
+(     X column.") s
+/F-gs-font 8 8 SF
+14 369 M (395:) s
+34.448 369 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 369 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 369 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+123.976 369 M
+('Y') s
+/F-gs-font 8 8 SF
+135.08 369 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+213.944 369 M
+("track must co) s
+/F-gs-font 8 8 SF
+14 360 M (396:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(     Y column.") s
+/F-gs-font 8 8 SF
+14 351 M (397:) s
+34.448 351 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 351 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 351 M
+( dframe.shape[0] > 0, ) s
+/Times-Bold 8 8 SUF
+133.152 351 M
+("track must not be empty.") s
+/F-gs-font 8 8 SF
+14 342 M (398:) s
+14 333 M (399:) s
+34.448 333 M
+(    df2 = np.zeros\(\(dframe.shape[0] + 1, 2\)\)) s
+14 324 M (400:) s
+34.448 324 M
+(    df2[:-1, :] = dframe[[) s
+/Times-Bold 8 8 SUF
+110.048 324 M
+('X') s
+/F-gs-font 8 8 SF
+121.152 324 M
+(, ) s
+/Times-Bold 8 8 SUF
+125.152 324 M
+('Y') s
+/F-gs-font 8 8 SF
+136.256 324 M
+(]].values) s
+14 315 M (401:) s
+34.448 315 M
+(    df2[-1, :] = dframe[[) s
+/Times-Bold 8 8 SUF
+107.824 315 M
+('X') s
+/F-gs-font 8 8 SF
+118.928 315 M
+(, ) s
+/Times-Bold 8 8 SUF
+122.928 315 M
+('Y') s
+/F-gs-font 8 8 SF
+134.032 315 M
+(]].values[0, :]) s
+14 306 M (402:) s
+34.448 306 M
+(    hull_points_2d = df2) s
+14 297 M (403:) s
+14 288 M (404:) s
+34.448 288 M
+(    edges = np.zeros\(\(len\(hull_points_2d\) - 1, 2\)\)) s
+14 279 M (405:) s
+14 270 M (406:) s
+34.448 270 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 270 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 270 M
+( i ) s
+/Times-Bold 8 8 SUF
+58.888 270 M
+(in) s
+/F-gs-font 8 8 SF
+65.56 270 M
+( range\(len\(edges\)\):) s
+14 261 M (407:) s
+34.448 261 M
+(        edge_x = hull_points_2d[i + 1, 0] - hull_points_2d[i, 0]) s
+14 252 M (408:) s
+34.448 252 M
+(        edge_y = hull_points_2d[i + 1, 1] - hull_points_2d[i, 1]) s
+14 243 M (409:) s
+34.448 243 M
+(        edges[i] = [edge_x, edge_y]) s
+14 234 M (410:) s
+14 225 M (411:) s
+34.448 225 M
+(    edge_angles = np.zeros\(\(len\(edges\)\)\)) s
+14 216 M (412:) s
+14 207 M (413:) s
+34.448 207 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 207 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 207 M
+( i ) s
+/Times-Bold 8 8 SUF
+58.888 207 M
+(in) s
+/F-gs-font 8 8 SF
+65.56 207 M
+( range\(len\(edge_angles\)\):) s
+14 198 M (414:) s
+34.448 198 M
+(        edge_angles[i] = math.atan2\(edges[i, 1], edges[i, 0]\)) s
+14 189 M (415:) s
+34.448 189 M
+(    edge_angles = np.unique\(edge_angles\)) s
+14 180 M (416:) s
+14 171 M (417:) s
+34.448 171 M
+(    start_area = 2 ** \(struct.Struct\() s
+/Times-Bold 8 8 SUF
+142.272 171 M
+('i') s
+/F-gs-font 8 8 SF
+149.824 171 M
+(\).size * 8 - 1\) - 1) s
+14 162 M (418:) s
+34.448 162 M
+(    min_bbox = \(0, start_area, 0, 0, 0, 0, 0, 0\)) s
+14 153 M (419:) s
+34.448 153 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 153 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 153 M
+( i ) s
+/Times-Bold 8 8 SUF
+58.888 153 M
+(in) s
+/F-gs-font 8 8 SF
+65.56 153 M
+( range\(len\(edge_angles\)\):) s
+14 144 M (420:) s
+34.448 144 M
+(        rads = np.array\([[math.cos\(edge_angles[i]\),) s
+14 135 M (421:) s
+34.448 135 M
+(                          math.cos\(edge_angles[i] - \(math.pi / 2\)\)],) s
+14 126 M (422:) s
+34.448 126 M
+(                         [math.cos\(edge_angles[i] + \(math.pi / 2\)\),) s
+14 117 M (423:) s
+34.448 117 M
+(                          math.cos\(edge_angles[i]\)]]\)) s
+14 108 M (424:) s
+14 99 M (425:) s
+34.448 99 M
+(        rot_points = np.dot\(rads, np.transpose\(hull_points_2d\)\)) s
+14 90 M (426:) s
+14 81 M (427:) s
+34.448 81 M
+(        min_x = np.nanmin\(rot_points[0], axis=0\)) s
+14 72 M (428:) s
+34.448 72 M
+(        max_x = np.nanmax\(rot_points[0], axis=0\)) s
+14 63 M (429:) s
+34.448 63 M
+(        min_y = np.nanmin\(rot_points[1], axis=0\)) s
+14 54 M (430:) s
+34.448 54 M
+(        max_y = np.nanmax\(rot_points[1], axis=0\)) s
+14 45 M (431:) s
+14 36 M (432:) s
+34.448 36 M
+(        width = max_x - min_x) s
+14 27 M (433:) s
+34.448 27 M
+(        height = max_y - min_y) s
+14 18 M (434:) s
+34.448 18 M
+(        area = width * height) s
+14 9 M (435:) s
+287.5 783 M (436:) s
+307.948 783 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 783 M
+(if) s
+/F-gs-font 8 8 SF
+328.836 783 M
+( area < min_bbox[1]:) s
+287.5 774 M (437:) s
+307.948 774 M
+(            min_bbox = \(edge_angles[i], area, width, height,) s
+287.5 765 M (438:) s
+307.948 765 M
+(                        min_x, max_x, min_y, max_y\)) s
+287.5 756 M (439:) s
+287.5 747 M (440:) s
+307.948 747 M
+(    angle = min_bbox[0]) s
+287.5 738 M (441:) s
+307.948 738 M
+(    rads = np.array\([[math.cos\(angle\), math.cos\(angle - \(math.pi / 2\)\)],) s
+287.5 729 M (442:) s
+307.948 729 M
+(                     [math.cos\(angle + \(math.pi / 2\)\), math.cos\(angle\)]]\)) s
+287.5 720 M (443:) s
+287.5 711 M (444:) s
+307.948 711 M
+(    min_x = min_bbox[4]) s
+287.5 702 M (445:) s
+307.948 702 M
+(    max_x = min_bbox[5]) s
+287.5 693 M (446:) s
+307.948 693 M
+(    min_y = min_bbox[6]) s
+287.5 684 M (447:) s
+307.948 684 M
+(    max_y = min_bbox[7]) s
+287.5 675 M (448:) s
+287.5 666 M (449:) s
+307.948 666 M
+(    center_x = \(min_x + max_x\) / 2) s
+287.5 657 M (450:) s
+307.948 657 M
+(    center_y = \(min_y + max_y\) / 2) s
+287.5 648 M (451:) s
+307.948 648 M
+(    center_point = np.dot\([center_x, center_y], rads\)) s
+287.5 639 M (452:) s
+287.5 630 M (453:) s
+307.948 630 M
+(    corner_pts = np.zeros\(\(4, 2\)\)) s
+287.5 621 M (454:) s
+307.948 621 M
+(    corner_pts[0] = np.dot\([max_x, min_y], rads\)) s
+287.5 612 M (455:) s
+307.948 612 M
+(    corner_pts[1] = np.dot\([min_x, min_y], rads\)) s
+287.5 603 M (456:) s
+307.948 603 M
+(    corner_pts[2] = np.dot\([min_x, max_y], rads\)) s
+287.5 594 M (457:) s
+307.948 594 M
+(    corner_pts[3] = np.dot\([max_x, max_y], rads\)) s
+287.5 585 M (458:) s
+287.5 576 M (459:) s
+307.948 576 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 576 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 576 M
+( \(angle, min_bbox[1], min_bbox[2], min_bbox[3],) s
+287.5 567 M (460:) s
+307.948 567 M
+(            center_point, corner_pts\)) s
+287.5 558 M (461:) s
+287.5 549 M (462:) s
+287.5 540 M (463:) s
+/Times-Bold 8 8 SUF
+307.948 540 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 540 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 540 M
+(aspectratio) s
+/F-gs-font 8 8 SF
+358.38 540 M
+(\(track\):) s
+287.5 531 M (464:) s
+307.948 531 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 531 M
+("""Calculates the aspect ratio of the rectangle containing the inp) s
+/F-gs-font 8 8 SF
+287.5 522 M (465:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 513 M (466:) s
+/Times-Bold 8 8 SUF
+307.948 513 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 504 M (467:) s
+/Times-Bold 8 8 SUF
+307.948 504 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 495 M (468:) s
+/Times-Bold 8 8 SUF
+307.948 495 M
+(    track : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+287.5 486 M (469:) s
+/Times-Bold 8 8 SUF
+307.948 486 M
+(        At a minimum, must contain an X and Y column.  The function) s
+/F-gs-font 8 8 SF
+287.5 477 M (470:) s
+/Times-Bold 8 8 SUF
+307.948 477 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+287.5 468 M (471:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 459 M (472:) s
+/Times-Bold 8 8 SUF
+307.948 459 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 450 M (473:) s
+/Times-Bold 8 8 SUF
+307.948 450 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 441 M (474:) s
+/Times-Bold 8 8 SUF
+307.948 441 M
+(    aspratio : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 432 M (475:) s
+/Times-Bold 8 8 SUF
+307.948 432 M
+(        aspect ratio of the trajectory.  Always >= 1.) s
+/F-gs-font 8 8 SF
+287.5 423 M (476:) s
+/Times-Bold 8 8 SUF
+307.948 423 M
+(    elong : numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 414 M (477:) s
+/Times-Bold 8 8 SUF
+307.948 414 M
+(        elongation of the trajectory.  A transformation of the aspect rat) s
+/F-gs-font 8 8 SF
+287.5 405 M (478:) s
+/Times-Bold 8 8 SUF
+307.948 405 M
+(        given by 1 - aspratio**-1.) s
+/F-gs-font 8 8 SF
+287.5 396 M (479:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 387 M (480:) s
+/Times-Bold 8 8 SUF
+307.948 387 M
+(    Examples) s
+/F-gs-font 8 8 SF
+287.5 378 M (481:) s
+/Times-Bold 8 8 SUF
+307.948 378 M
+(    --------) s
+/F-gs-font 8 8 SF
+287.5 369 M (482:) s
+/Times-Bold 8 8 SUF
+307.948 369 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+287.5 360 M (483:) s
+/Times-Bold 8 8 SUF
+307.948 360 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+287.5 351 M (484:) s
+/Times-Bold 8 8 SUF
+307.948 351 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+287.5 342 M (485:) s
+/Times-Bold 8 8 SUF
+307.948 342 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+287.5 333 M (486:) s
+/Times-Bold 8 8 SUF
+307.948 333 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 324 M (487:) s
+/Times-Bold 8 8 SUF
+307.948 324 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 315 M (488:) s
+/Times-Bold 8 8 SUF
+307.948 315 M
+(    >>> aspectratio\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 306 M (489:) s
+/Times-Bold 8 8 SUF
+307.948 306 M
+(    \(5732146505273195.0, 0.99999999999999978\)) s
+/F-gs-font 8 8 SF
+287.5 297 M (490:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 288 M (491:) s
+/Times-Bold 8 8 SUF
+307.948 288 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+287.5 279 M (492:) s
+/Times-Bold 8 8 SUF
+307.948 279 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+287.5 270 M (493:) s
+/Times-Bold 8 8 SUF
+307.948 270 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)\)+3,) s
+/F-gs-font 8 8 SF
+287.5 261 M (494:) s
+/Times-Bold 8 8 SUF
+307.948 261 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)\)+3}) s
+/F-gs-font 8 8 SF
+287.5 252 M (495:) s
+/Times-Bold 8 8 SUF
+307.948 252 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 243 M (496:) s
+/Times-Bold 8 8 SUF
+307.948 243 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 234 M (497:) s
+/Times-Bold 8 8 SUF
+307.948 234 M
+(    >>> aspectratio\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 225 M (498:) s
+/Times-Bold 8 8 SUF
+307.948 225 M
+(    \(1.0997501702946164, 0.090702573174318291\)) s
+/F-gs-font 8 8 SF
+287.5 216 M (499:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 207 M (500:) s
+/Times-Bold 8 8 SUF
+307.948 207 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 198 M (501:) s
+287.5 189 M (502:) s
+307.948 189 M
+(    dframe = track) s
+287.5 180 M (503:) s
+307.948 180 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 180 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 180 M
+( isinstance\(dframe, pd.core.frame.DataFrame\), ) s
+/Times-Bold 8 8 SUF
+487.444 180 M
+("track must be ) s
+/F-gs-font 8 8 SF
+287.5 171 M (504:) s
+/Times-Bold 8 8 SUF
+307.948 171 M
+(     dataframe.") s
+/F-gs-font 8 8 SF
+287.5 162 M (505:) s
+307.948 162 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 162 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 162 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+397.476 162 M
+('X') s
+/F-gs-font 8 8 SF
+408.58 162 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+487.444 162 M
+("track must co) s
+/F-gs-font 8 8 SF
+287.5 153 M (506:) s
+/Times-Bold 8 8 SUF
+307.948 153 M
+(     X column.") s
+/F-gs-font 8 8 SF
+287.5 144 M (507:) s
+307.948 144 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 144 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 144 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+397.476 144 M
+('Y') s
+/F-gs-font 8 8 SF
+408.58 144 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+487.444 144 M
+("track must co) s
+/F-gs-font 8 8 SF
+287.5 135 M (508:) s
+/Times-Bold 8 8 SUF
+307.948 135 M
+(     Y column.") s
+/F-gs-font 8 8 SF
+287.5 126 M (509:) s
+307.948 126 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 126 M
+(assert) s
+/F-gs-font 8 8 SF
+335.94 126 M
+( dframe.shape[0] > 0, ) s
+/Times-Bold 8 8 SUF
+406.652 126 M
+("track must not be empty.") s
+/F-gs-font 8 8 SF
+287.5 117 M (510:) s
+287.5 108 M (511:) s
+307.948 108 M
+(    rangle, area, width, height, center_point, corner_pts = minboundrect\(t) s
+287.5 99 M (512:) s
+307.948 99 M
+(    aspratio = width / height) s
+287.5 90 M (513:) s
+307.948 90 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 90 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 90 M
+( aspratio > 1:) s
+287.5 81 M (514:) s
+307.948 81 M
+(        aspratio = aspratio) s
+287.5 72 M (515:) s
+307.948 72 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 72 M
+(else) s
+/F-gs-font 8 8 SF
+328.388 72 M
+(:) s
+287.5 63 M (516:) s
+307.948 63 M
+(        aspratio = 1 / aspratio) s
+287.5 54 M (517:) s
+307.948 54 M
+(    elong = 1 - \(1 / aspratio\)) s
+287.5 45 M (518:) s
+287.5 36 M (519:) s
+307.948 36 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 36 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 36 M
+( aspratio, elong, center_point) s
+287.5 27 M (520:) s
+287.5 18 M (521:) s
+287.5 9 M (522:) s
+/Times-Bold 8 8 SUF
+307.948 9 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 9 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 9 M
+(boundedness) s
+/F-gs-font 8 8 SF
+364.628 9 M
+(\(track, framerate=1\):) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 4 def
+/fname (features.py) def
+/fdir (.) def
+/ftail (features.py) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+14 783 M (523:) s
+34.448 783 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 783 M
+("""Calculates the boundedness, fractal dimension, and trappedne) s
+/F-gs-font 8 8 SF
+14 774 M (524:) s
+/Times-Bold 8 8 SUF
+34.448 774 M
+(    input track.) s
+/F-gs-font 8 8 SF
+14 765 M (525:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 756 M (526:) s
+/Times-Bold 8 8 SUF
+34.448 756 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+14 747 M (527:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(    ----------) s
+/F-gs-font 8 8 SF
+14 738 M (528:) s
+/Times-Bold 8 8 SUF
+34.448 738 M
+(    track : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+14 729 M (529:) s
+/Times-Bold 8 8 SUF
+34.448 729 M
+(        At a minimum, must contain a Frames and a MSDs column.  T) s
+/F-gs-font 8 8 SF
+14 720 M (530:) s
+/Times-Bold 8 8 SUF
+34.448 720 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+14 711 M (531:) s
+/Times-Bold 8 8 SUF
+34.448 711 M
+(    framerate : framrate of the video being analyzed.  Actually cancel) s
+/F-gs-font 8 8 SF
+14 702 M (532:) s
+/Times-Bold 8 8 SUF
+34.448 702 M
+(        why did I include this. Default is 1.) s
+/F-gs-font 8 8 SF
+14 693 M (533:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 684 M (534:) s
+/Times-Bold 8 8 SUF
+34.448 684 M
+(    Returns) s
+/F-gs-font 8 8 SF
+14 675 M (535:) s
+/Times-Bold 8 8 SUF
+34.448 675 M
+(    -------) s
+/F-gs-font 8 8 SF
+14 666 M (536:) s
+/Times-Bold 8 8 SUF
+34.448 666 M
+(    bound : float) s
+/F-gs-font 8 8 SF
+14 657 M (537:) s
+/Times-Bold 8 8 SUF
+34.448 657 M
+(        Boundedness of the input track.  Quantifies how much a particl) s
+/F-gs-font 8 8 SF
+14 648 M (538:) s
+/Times-Bold 8 8 SUF
+34.448 648 M
+(        diffusion coefficient dcoef is restricted by a circular confinemen) s
+/F-gs-font 8 8 SF
+14 639 M (539:) s
+/Times-Bold 8 8 SUF
+34.448 639 M
+(        radius rad when it diffuses for a time duration N*delt.  Defined ) s
+/F-gs-font 8 8 SF
+14 630 M (540:) s
+/Times-Bold 8 8 SUF
+34.448 630 M
+(        bound = dcoef*N*delt/rad**2. For this case, dcoef is the short ti) s
+/F-gs-font 8 8 SF
+14 621 M (541:) s
+/Times-Bold 8 8 SUF
+34.448 621 M
+(        diffusion coefficient \(after 2 frames\), and rad is half the maxim) s
+/F-gs-font 8 8 SF
+14 612 M (542:) s
+/Times-Bold 8 8 SUF
+34.448 612 M
+(        distance between any two positions.) s
+/F-gs-font 8 8 SF
+14 603 M (543:) s
+/Times-Bold 8 8 SUF
+34.448 603 M
+(    fractd : float) s
+/F-gs-font 8 8 SF
+14 594 M (544:) s
+/Times-Bold 8 8 SUF
+34.448 594 M
+(        The fractal path dimension defined as fractd = log\(N\)/log\(N*da) s
+/F-gs-font 8 8 SF
+14 585 M (545:) s
+/Times-Bold 8 8 SUF
+34.448 585 M
+(        where netdisp is the total length \(sum over all steplengths\), N is ) s
+/F-gs-font 8 8 SF
+14 576 M (546:) s
+/Times-Bold 8 8 SUF
+34.448 576 M
+(        number of steps, and data1 is the largest distance between any t) s
+/F-gs-font 8 8 SF
+14 567 M (547:) s
+/Times-Bold 8 8 SUF
+34.448 567 M
+(        positions.) s
+/F-gs-font 8 8 SF
+14 558 M (548:) s
+/Times-Bold 8 8 SUF
+34.448 558 M
+(    probf : float) s
+/F-gs-font 8 8 SF
+14 549 M (549:) s
+/Times-Bold 8 8 SUF
+34.448 549 M
+(        The probability that a particle with diffusion coefficient dcoef a) s
+/F-gs-font 8 8 SF
+14 540 M (550:) s
+/Times-Bold 8 8 SUF
+34.448 540 M
+(        traced for a period of time N*delt is trapped in region r0.  Give) s
+/F-gs-font 8 8 SF
+14 531 M (551:) s
+/Times-Bold 8 8 SUF
+34.448 531 M
+(        pt = 1 - exp\(0.2048 - 0.25117*\(dcoef*N*delt/r0**2\)\). For this ca) s
+/F-gs-font 8 8 SF
+14 522 M (552:) s
+/Times-Bold 8 8 SUF
+34.448 522 M
+(        dcoef is the short time diffusion coefficient, and r0 is half the) s
+/F-gs-font 8 8 SF
+14 513 M (553:) s
+/Times-Bold 8 8 SUF
+34.448 513 M
+(        maximum distance between any two positions.) s
+/F-gs-font 8 8 SF
+14 504 M (554:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 495 M (555:) s
+/Times-Bold 8 8 SUF
+34.448 495 M
+(    Examples) s
+/F-gs-font 8 8 SF
+14 486 M (556:) s
+/Times-Bold 8 8 SUF
+34.448 486 M
+(    --------) s
+/F-gs-font 8 8 SF
+14 477 M (557:) s
+/Times-Bold 8 8 SUF
+34.448 477 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+14 468 M (558:) s
+/Times-Bold 8 8 SUF
+34.448 468 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+14 459 M (559:) s
+/Times-Bold 8 8 SUF
+34.448 459 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+14 450 M (560:) s
+/Times-Bold 8 8 SUF
+34.448 450 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+14 441 M (561:) s
+/Times-Bold 8 8 SUF
+34.448 441 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+14 432 M (562:) s
+/Times-Bold 8 8 SUF
+34.448 432 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+14 423 M (563:) s
+/Times-Bold 8 8 SUF
+34.448 423 M
+(    >>> boundedness\(dframe\)) s
+/F-gs-font 8 8 SF
+14 414 M (564:) s
+/Times-Bold 8 8 SUF
+34.448 414 M
+(    \(1.0, 1.0000000000000002, 0.045311337970735499\)) s
+/F-gs-font 8 8 SF
+14 405 M (565:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 396 M (566:) s
+/Times-Bold 8 8 SUF
+34.448 396 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+14 387 M (567:) s
+/Times-Bold 8 8 SUF
+34.448 387 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+14 378 M (568:) s
+/Times-Bold 8 8 SUF
+34.448 378 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)+3\),) s
+/F-gs-font 8 8 SF
+14 369 M (569:) s
+/Times-Bold 8 8 SUF
+34.448 369 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)+3\)}) s
+/F-gs-font 8 8 SF
+14 360 M (570:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+14 351 M (571:) s
+/Times-Bold 8 8 SUF
+34.448 351 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+14 342 M (572:) s
+/Times-Bold 8 8 SUF
+34.448 342 M
+(    >>> boundedness\(dframe\)) s
+/F-gs-font 8 8 SF
+14 333 M (573:) s
+/Times-Bold 8 8 SUF
+34.448 333 M
+(    \(0.96037058689895005, 2.9989749477908401, 0.0357611837093231) s
+/F-gs-font 8 8 SF
+14 324 M (574:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 315 M (575:) s
+/Times-Bold 8 8 SUF
+34.448 315 M
+(    """) s
+/F-gs-font 8 8 SF
+14 306 M (576:) s
+14 297 M (577:) s
+34.448 297 M
+(    dframe = track) s
+14 288 M (578:) s
+34.448 288 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 288 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 288 M
+( isinstance\(dframe, pd.core.frame.DataFrame\), ) s
+/Times-Bold 8 8 SUF
+213.944 288 M
+("track must be ) s
+/F-gs-font 8 8 SF
+14 279 M (579:) s
+/Times-Bold 8 8 SUF
+34.448 279 M
+(     dataframe.") s
+/F-gs-font 8 8 SF
+14 270 M (580:) s
+34.448 270 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 270 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 270 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+123.976 270 M
+('X') s
+/F-gs-font 8 8 SF
+135.08 270 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+213.944 270 M
+("track must co) s
+/F-gs-font 8 8 SF
+14 261 M (581:) s
+/Times-Bold 8 8 SUF
+34.448 261 M
+(     X column.") s
+/F-gs-font 8 8 SF
+14 252 M (582:) s
+34.448 252 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 252 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 252 M
+( isinstance\(dframe[) s
+/Times-Bold 8 8 SUF
+123.976 252 M
+('Y') s
+/F-gs-font 8 8 SF
+135.08 252 M
+(], pd.core.series.Series\), ) s
+/Times-Bold 8 8 SUF
+213.944 252 M
+("track must co) s
+/F-gs-font 8 8 SF
+14 243 M (583:) s
+/Times-Bold 8 8 SUF
+34.448 243 M
+(     Y column.") s
+/F-gs-font 8 8 SF
+14 234 M (584:) s
+34.448 234 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 234 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 234 M
+( dframe.shape[0] > 0, ) s
+/Times-Bold 8 8 SUF
+133.152 234 M
+("track must not be empty.") s
+/F-gs-font 8 8 SF
+14 225 M (585:) s
+14 216 M (586:) s
+34.448 216 M
+(    dframe = track) s
+14 207 M (587:) s
+14 198 M (588:) s
+34.448 198 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 198 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 198 M
+( dframe.shape[0] > 2:) s
+14 189 M (589:) s
+34.448 189 M
+(        length = dframe.shape[0]) s
+14 180 M (590:) s
+34.448 180 M
+(        distance = np.zeros\(\(length, length\)\)) s
+14 171 M (591:) s
+14 162 M (592:) s
+34.448 162 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 162 M
+(for) s
+/F-gs-font 8 8 SF
+60.664 162 M
+( frame ) s
+/Times-Bold 8 8 SUF
+83.32 162 M
+(in) s
+/F-gs-font 8 8 SF
+89.992 162 M
+( range\(0, length - 1\):) s
+14 153 M (593:) s
+34.448 153 M
+(            distance[frame, 0:length - frame - 1] = \\) s
+14 144 M (594:) s
+34.448 144 M
+(                \(np.sqrt\(msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+162.872 144 M
+('X') s
+/F-gs-font 8 8 SF
+173.976 144 M
+(], frame + 1\) ** 2 +) s
+14 135 M (595:) s
+34.448 135 M
+(                         msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+153.544 135 M
+('Y') s
+/F-gs-font 8 8 SF
+164.648 135 M
+(], frame + 1\) ** 2\).values\)) s
+14 126 M (596:) s
+14 117 M (597:) s
+34.448 117 M
+(        netdisp = np.sum\(\(np.sqrt\(msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+204.496 117 M
+('X') s
+/F-gs-font 8 8 SF
+215.6 117 M
+(], 1\) ** 2 +) s
+14 108 M (598:) s
+34.448 108 M
+(                                  msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+171.544 108 M
+('Y') s
+/F-gs-font 8 8 SF
+182.648 108 M
+(], 1\) ** 2\).values\)\)) s
+14 99 M (599:) s
+34.448 99 M
+(        rad = np.max\(distance\) / 2) s
+14 90 M (600:) s
+34.448 90 M
+(        N = dframe[) s
+/Times-Bold 8 8 SUF
+90.056 90 M
+('Frame') s
+/F-gs-font 8 8 SF
+118.04 90 M
+(][dframe[) s
+/Times-Bold 8 8 SUF
+148.688 90 M
+('Frame') s
+/F-gs-font 8 8 SF
+176.672 90 M
+(].shape[0] - 1]) s
+14 81 M (601:) s
+34.448 81 M
+(        fram = N * framerate) s
+14 72 M (602:) s
+34.448 72 M
+(        dcoef = dframe[) s
+/Times-Bold 8 8 SUF
+102.048 72 M
+('MSDs') s
+/F-gs-font 8 8 SF
+128.264 72 M
+(][2] / \(4 * fram\)) s
+14 63 M (603:) s
+14 54 M (604:) s
+34.448 54 M
+(        bound = dcoef * fram / \(rad ** 2\)) s
+14 45 M (605:) s
+34.448 45 M
+(        fractd = np.log\(N\) / np.log\(N * 2 * rad / netdisp\)) s
+14 36 M (606:) s
+34.448 36 M
+(        probf = 1 - np.exp\(0.2048 - 0.25117 * \(dcoef * fram / \(rad ** 2\)\)\)) s
+14 27 M (607:) s
+34.448 27 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 27 M
+(else) s
+/F-gs-font 8 8 SF
+54.888 27 M
+(:) s
+14 18 M (608:) s
+34.448 18 M
+(        bound = np.nan) s
+14 9 M (609:) s
+34.448 9 M
+(        fractd = np.nan) s
+287.5 783 M (610:) s
+307.948 783 M
+(        probf = np.nan) s
+287.5 774 M (611:) s
+287.5 765 M (612:) s
+307.948 765 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 765 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 765 M
+( bound, fractd, probf) s
+287.5 756 M (613:) s
+287.5 747 M (614:) s
+287.5 738 M (615:) s
+/Times-Bold 8 8 SUF
+307.948 738 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 738 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 738 M
+(efficiency) s
+/F-gs-font 8 8 SF
+353.044 738 M
+(\(track\):) s
+287.5 729 M (616:) s
+307.948 729 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 729 M
+("""Calculates the efficiency and straitness of the input track) s
+/F-gs-font 8 8 SF
+287.5 720 M (617:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 711 M (618:) s
+/Times-Bold 8 8 SUF
+307.948 711 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 702 M (619:) s
+/Times-Bold 8 8 SUF
+307.948 702 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 693 M (620:) s
+/Times-Bold 8 8 SUF
+307.948 693 M
+(    track : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+287.5 684 M (621:) s
+/Times-Bold 8 8 SUF
+307.948 684 M
+(        At a minimum, must contain a Frames and a MSDs column.  T) s
+/F-gs-font 8 8 SF
+287.5 675 M (622:) s
+/Times-Bold 8 8 SUF
+307.948 675 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+287.5 666 M (623:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 657 M (624:) s
+/Times-Bold 8 8 SUF
+307.948 657 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 648 M (625:) s
+/Times-Bold 8 8 SUF
+307.948 648 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 639 M (626:) s
+/Times-Bold 8 8 SUF
+307.948 639 M
+(    eff : float) s
+/F-gs-font 8 8 SF
+287.5 630 M (627:) s
+/Times-Bold 8 8 SUF
+307.948 630 M
+(        Efficiency of the input track.  Relates the sum of squared step) s
+/F-gs-font 8 8 SF
+287.5 621 M (628:) s
+/Times-Bold 8 8 SUF
+307.948 621 M
+(        lengths.  Based on Helmuth et al. \(2007\) and defined as:) s
+/F-gs-font 8 8 SF
+287.5 612 M (629:) s
+/Times-Bold 8 8 SUF
+307.948 612 M
+(        E = |xpos\(N-1\)-xpos\(0\)|**2/SUM\(|xpos\(i\) - xpos\(i-1\)|**2) s
+/F-gs-font 8 8 SF
+287.5 603 M (630:) s
+/Times-Bold 8 8 SUF
+307.948 603 M
+(    strait : float) s
+/F-gs-font 8 8 SF
+287.5 594 M (631:) s
+/Times-Bold 8 8 SUF
+307.948 594 M
+(        Relates the net displacement netdisp to the sum of step lengths ) s
+/F-gs-font 8 8 SF
+287.5 585 M (632:) s
+/Times-Bold 8 8 SUF
+307.948 585 M
+(        defined as:) s
+/F-gs-font 8 8 SF
+287.5 576 M (633:) s
+/Times-Bold 8 8 SUF
+307.948 576 M
+(        S = |xpos\(N-1\)-xpos\(0\)|/SUM\(|xpos\(i\) - xpos\(i-1\)|) s
+/F-gs-font 8 8 SF
+287.5 567 M (634:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 558 M (635:) s
+/Times-Bold 8 8 SUF
+307.948 558 M
+(    Examples) s
+/F-gs-font 8 8 SF
+287.5 549 M (636:) s
+/Times-Bold 8 8 SUF
+307.948 549 M
+(    --------) s
+/F-gs-font 8 8 SF
+287.5 540 M (637:) s
+/Times-Bold 8 8 SUF
+307.948 540 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+287.5 531 M (638:) s
+/Times-Bold 8 8 SUF
+307.948 531 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+287.5 522 M (639:) s
+/Times-Bold 8 8 SUF
+307.948 522 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+287.5 513 M (640:) s
+/Times-Bold 8 8 SUF
+307.948 513 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+287.5 504 M (641:) s
+/Times-Bold 8 8 SUF
+307.948 504 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 495 M (642:) s
+/Times-Bold 8 8 SUF
+307.948 495 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 486 M (643:) s
+/Times-Bold 8 8 SUF
+307.948 486 M
+(    >>> ft.efficiency\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 477 M (644:) s
+/Times-Bold 8 8 SUF
+307.948 477 M
+(    \(9.0, 0.9999999999999999\)) s
+/F-gs-font 8 8 SF
+287.5 468 M (645:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 459 M (646:) s
+/Times-Bold 8 8 SUF
+307.948 459 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+287.5 450 M (647:) s
+/Times-Bold 8 8 SUF
+307.948 450 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+287.5 441 M (648:) s
+/Times-Bold 8 8 SUF
+307.948 441 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)\)+3,) s
+/F-gs-font 8 8 SF
+287.5 432 M (649:) s
+/Times-Bold 8 8 SUF
+307.948 432 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)\)+3}) s
+/F-gs-font 8 8 SF
+287.5 423 M (650:) s
+/Times-Bold 8 8 SUF
+307.948 423 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+287.5 414 M (651:) s
+/Times-Bold 8 8 SUF
+307.948 414 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 405 M (652:) s
+/Times-Bold 8 8 SUF
+307.948 405 M
+(    >>> ft.efficiency\(dframe\)) s
+/F-gs-font 8 8 SF
+287.5 396 M (653:) s
+/Times-Bold 8 8 SUF
+307.948 396 M
+(    \(0.46192924086141945, 0.22655125514290225\)) s
+/F-gs-font 8 8 SF
+287.5 387 M (654:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 378 M (655:) s
+/Times-Bold 8 8 SUF
+307.948 378 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 369 M (656:) s
+287.5 360 M (657:) s
+307.948 360 M
+(    dframe = track) s
+287.5 351 M (658:) s
+307.948 351 M
+(    length = dframe.shape[0]) s
+287.5 342 M (659:) s
+307.948 342 M
+(    num = \(msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+410.444 342 M
+('X') s
+/F-gs-font 8 8 SF
+421.548 342 M
+(],) s
+287.5 333 M (660:) s
+307.948 333 M
+(                        length - 1\) ** 2 + msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+482.884 333 M
+('Y') s
+/F-gs-font 8 8 SF
+493.988 333 M
+(],) s
+287.5 324 M (661:) s
+307.948 324 M
+(                                                        length - 1\) ** 2\)[0]) s
+287.5 315 M (662:) s
+307.948 315 M
+(    num2 = np.sqrt\(num\)) s
+287.5 306 M (663:) s
+287.5 297 M (664:) s
+307.948 297 M
+(    den = np.sum\(msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+431.108 297 M
+('X') s
+/F-gs-font 8 8 SF
+442.212 297 M
+(],) s
+287.5 288 M (665:) s
+307.948 288 M
+(                              1\) ** 2 + msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+468.22 288 M
+('Y') s
+/F-gs-font 8 8 SF
+479.324 288 M
+(], 1\) ** 2\)) s
+287.5 279 M (666:) s
+307.948 279 M
+(    den2 = np.sum\(np.sqrt\(msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+459.772 279 M
+('X') s
+/F-gs-font 8 8 SF
+470.876 279 M
+(],) s
+287.5 270 M (667:) s
+307.948 270 M
+(                                       1\) ** 2 + msd.nth_diff\(dframe[) s
+/Times-Bold 8 8 SUF
+486.22 270 M
+('Y') s
+/F-gs-font 8 8 SF
+497.324 270 M
+(], 1\) ** 2\)\)) s
+287.5 261 M (668:) s
+287.5 252 M (669:) s
+307.948 252 M
+(    eff = num / den) s
+287.5 243 M (670:) s
+307.948 243 M
+(    strait = num2 / den2) s
+287.5 234 M (671:) s
+307.948 234 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 234 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 234 M
+( eff, strait) s
+287.5 225 M (672:) s
+287.5 216 M (673:) s
+287.5 207 M (674:) s
+/Times-Bold 8 8 SUF
+307.948 207 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 207 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 207 M
+(msd_ratio) s
+/F-gs-font 8 8 SF
+355.276 207 M
+(\(track, fram1=3, fram2=100\):) s
+287.5 198 M (675:) s
+307.948 198 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 198 M
+("""Calculates the MSD ratio of the input track at the specified fr) s
+/F-gs-font 8 8 SF
+287.5 189 M (676:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 180 M (677:) s
+/Times-Bold 8 8 SUF
+307.948 180 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 171 M (678:) s
+/Times-Bold 8 8 SUF
+307.948 171 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 162 M (679:) s
+/Times-Bold 8 8 SUF
+307.948 162 M
+(    track : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+287.5 153 M (680:) s
+/Times-Bold 8 8 SUF
+307.948 153 M
+(        At a minimum, must contain a Frames and a MSDs column.  T) s
+/F-gs-font 8 8 SF
+287.5 144 M (681:) s
+/Times-Bold 8 8 SUF
+307.948 144 M
+(        msd_calc can be used to generate the correctly formatted pd da) s
+/F-gs-font 8 8 SF
+287.5 135 M (682:) s
+/Times-Bold 8 8 SUF
+307.948 135 M
+(    fram1 : int) s
+/F-gs-font 8 8 SF
+287.5 126 M (683:) s
+/Times-Bold 8 8 SUF
+307.948 126 M
+(        First frame at which to calculate the MSD ratio.) s
+/F-gs-font 8 8 SF
+287.5 117 M (684:) s
+/Times-Bold 8 8 SUF
+307.948 117 M
+(    fram2 : int) s
+/F-gs-font 8 8 SF
+287.5 108 M (685:) s
+/Times-Bold 8 8 SUF
+307.948 108 M
+(        Last frame at which to calculate the MSD ratio.) s
+/F-gs-font 8 8 SF
+287.5 99 M (686:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 90 M (687:) s
+/Times-Bold 8 8 SUF
+307.948 90 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 81 M (688:) s
+/Times-Bold 8 8 SUF
+307.948 81 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 72 M (689:) s
+/Times-Bold 8 8 SUF
+307.948 72 M
+(    ratio: numpy.float64) s
+/F-gs-font 8 8 SF
+287.5 63 M (690:) s
+/Times-Bold 8 8 SUF
+307.948 63 M
+(        MSD ratio as defined by) s
+/F-gs-font 8 8 SF
+287.5 54 M (691:) s
+/Times-Bold 8 8 SUF
+307.948 54 M
+(        [MSD\(fram1\)/MSD\(fram2\)] - [fram1/fram2]) s
+/F-gs-font 8 8 SF
+287.5 45 M (692:) s
+/Times-Bold 8 8 SUF
+307.948 45 M
+(        where fram1 < fram2.  For Brownian motion, it is 0; for restrict) s
+/F-gs-font 8 8 SF
+287.5 36 M (693:) s
+/Times-Bold 8 8 SUF
+307.948 36 M
+(        motion it is < 0.  For directed motion it is > 0.) s
+/F-gs-font 8 8 SF
+287.5 27 M (694:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 18 M (695:) s
+/Times-Bold 8 8 SUF
+307.948 18 M
+(    Examples) s
+/F-gs-font 8 8 SF
+287.5 9 M (696:) s
+/Times-Bold 8 8 SUF
+307.948 9 M
+(    --------) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 5 def
+/fname (features.py) def
+/fdir (.) def
+/ftail (features.py) def
+/Times-Bold 8 8 SUF
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+/F-gs-font 8 8 SF
+14 783 M (697:) s
+/Times-Bold 8 8 SUF
+34.448 783 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+14 774 M (698:) s
+/Times-Bold 8 8 SUF
+34.448 774 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+14 765 M (699:) s
+/Times-Bold 8 8 SUF
+34.448 765 M
+(    ...          'X': np.linspace\(1, frames, frames\)+5,) s
+/F-gs-font 8 8 SF
+14 756 M (700:) s
+/Times-Bold 8 8 SUF
+34.448 756 M
+(    ...          'Y': np.linspace\(1, frames, frames\)+3}) s
+/F-gs-font 8 8 SF
+14 747 M (701:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+14 738 M (702:) s
+/Times-Bold 8 8 SUF
+34.448 738 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+14 729 M (703:) s
+/Times-Bold 8 8 SUF
+34.448 729 M
+(    >>> ft.msd_ratio\(dframe, 1, 9\)) s
+/F-gs-font 8 8 SF
+14 720 M (704:) s
+/Times-Bold 8 8 SUF
+34.448 720 M
+(    -0.18765432098765433) s
+/F-gs-font 8 8 SF
+14 711 M (705:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 702 M (706:) s
+/Times-Bold 8 8 SUF
+34.448 702 M
+(    >>> frames = 10) s
+/F-gs-font 8 8 SF
+14 693 M (707:) s
+/Times-Bold 8 8 SUF
+34.448 693 M
+(    >>> data1 = {'Frame': np.linspace\(1, frames, frames\),) s
+/F-gs-font 8 8 SF
+14 684 M (708:) s
+/Times-Bold 8 8 SUF
+34.448 684 M
+(    ...          'X': np.sin\(np.linspace\(1, frames, frames\)\)+3,) s
+/F-gs-font 8 8 SF
+14 675 M (709:) s
+/Times-Bold 8 8 SUF
+34.448 675 M
+(    ...          'Y': np.cos\(np.linspace\(1, frames, frames\)\)+3}) s
+/F-gs-font 8 8 SF
+14 666 M (710:) s
+/Times-Bold 8 8 SUF
+34.448 666 M
+(    >>> dframe = pd.DataFrame\(data=data1\)) s
+/F-gs-font 8 8 SF
+14 657 M (711:) s
+/Times-Bold 8 8 SUF
+34.448 657 M
+(    >>> dframe['MSDs'], dframe['Gauss'] = msd_calc\(dframe\)) s
+/F-gs-font 8 8 SF
+14 648 M (712:) s
+/Times-Bold 8 8 SUF
+34.448 648 M
+(    >>> ft.msd_ratio\(dframe, 1, 9\)) s
+/F-gs-font 8 8 SF
+14 639 M (713:) s
+/Times-Bold 8 8 SUF
+34.448 639 M
+(    0.04053708075268797) s
+/F-gs-font 8 8 SF
+14 630 M (714:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 621 M (715:) s
+/Times-Bold 8 8 SUF
+34.448 621 M
+(    """) s
+/F-gs-font 8 8 SF
+14 612 M (716:) s
+14 603 M (717:) s
+34.448 603 M
+(    dframe = track) s
+14 594 M (718:) s
+34.448 594 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 594 M
+(assert) s
+/F-gs-font 8 8 SF
+62.44 594 M
+( fram1 < fram2, ) s
+/Times-Bold 8 8 SUF
+115.16 594 M
+("fram1 must be less than fram2") s
+/F-gs-font 8 8 SF
+14 585 M (719:) s
+34.448 585 M
+(    ratio = \(dframe[) s
+/Times-Bold 8 8 SUF
+93.608 585 M
+('MSDs') s
+/F-gs-font 8 8 SF
+119.824 585 M
+(][fram1] / dframe[) s
+/Times-Bold 8 8 SUF
+178.464 585 M
+('MSDs') s
+/F-gs-font 8 8 SF
+204.68 585 M
+(][fram2]\) - \() s
+14 576 M (720:) s
+34.448 576 M
+(            dframe[) s
+/Times-Bold 8 8 SUF
+83.768 576 M
+('Frame') s
+/F-gs-font 8 8 SF
+111.752 576 M
+(][fram1] / dframe[) s
+/Times-Bold 8 8 SUF
+170.392 576 M
+('Frame') s
+/F-gs-font 8 8 SF
+198.376 576 M
+(][fram2]\)) s
+14 567 M (721:) s
+34.448 567 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 567 M
+(return) s
+/F-gs-font 8 8 SF
+64.664 567 M
+( ratio) s
+14 558 M (722:) s
+14 549 M (723:) s
+14 540 M (724:) s
+/Times-Bold 8 8 SUF
+34.448 540 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 540 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 540 M
+(calculate_features) s
+/F-gs-font 8 8 SF
+108.872 540 M
+(\(dframe, framerate=1, frame=\(10, 100\), mean_va) s
+14 531 M (725:) s
+34.448 531 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 531 M
+("""test test test Calculates multiple features from input MSD dat) s
+/F-gs-font 8 8 SF
+14 522 M (726:) s
+/Times-Bold 8 8 SUF
+34.448 522 M
+(    dataframe.) s
+/F-gs-font 8 8 SF
+14 513 M (727:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 504 M (728:) s
+/Times-Bold 8 8 SUF
+34.448 504 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+14 495 M (729:) s
+/Times-Bold 8 8 SUF
+34.448 495 M
+(    ----------) s
+/F-gs-font 8 8 SF
+14 486 M (730:) s
+/Times-Bold 8 8 SUF
+34.448 486 M
+(    dframe : pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+14 477 M (731:) s
+/Times-Bold 8 8 SUF
+34.448 477 M
+(        Output from msd.all_msds2.  Must have at a minimum the follo) s
+/F-gs-font 8 8 SF
+14 468 M (732:) s
+/Times-Bold 8 8 SUF
+34.448 468 M
+(        columns:) s
+/F-gs-font 8 8 SF
+14 459 M (733:) s
+/Times-Bold 8 8 SUF
+34.448 459 M
+(        Track_ID, Frame, X, Y, and MSDs.) s
+/F-gs-font 8 8 SF
+14 450 M (734:) s
+/Times-Bold 8 8 SUF
+34.448 450 M
+(    framerate : int or float) s
+/F-gs-font 8 8 SF
+14 441 M (735:) s
+/Times-Bold 8 8 SUF
+34.448 441 M
+(        Framerate of the input videos from which trajectories were calc) s
+/F-gs-font 8 8 SF
+14 432 M (736:) s
+/Times-Bold 8 8 SUF
+34.448 432 M
+(        Required for accurate calculation of some features.  Default is 1) s
+/F-gs-font 8 8 SF
+14 423 M (737:) s
+/Times-Bold 8 8 SUF
+34.448 423 M
+(        Possibly not required. Ignore if performing all calcuations with) s
+/F-gs-font 8 8 SF
+14 414 M (738:) s
+/Times-Bold 8 8 SUF
+34.448 414 M
+(        units.) s
+/F-gs-font 8 8 SF
+14 405 M (739:) s
+/Times-Bold 8 8 SUF
+34.448 405 M
+(    frame : int) s
+/F-gs-font 8 8 SF
+14 396 M (740:) s
+/Times-Bold 8 8 SUF
+34.448 396 M
+(        Frame at which to calculate Deff) s
+/F-gs-font 8 8 SF
+14 387 M (741:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 378 M (742:) s
+/Times-Bold 8 8 SUF
+34.448 378 M
+(    Returns) s
+/F-gs-font 8 8 SF
+14 369 M (743:) s
+/Times-Bold 8 8 SUF
+34.448 369 M
+(    -------) s
+/F-gs-font 8 8 SF
+14 360 M (744:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(    datai: pandas.core.frame.DataFrame) s
+/F-gs-font 8 8 SF
+14 351 M (745:) s
+/Times-Bold 8 8 SUF
+34.448 351 M
+(        Contains a row for each trajectory in dframe.  Holds the followi) s
+/F-gs-font 8 8 SF
+14 342 M (746:) s
+/Times-Bold 8 8 SUF
+34.448 342 M
+(        features of each trajetory: Track_ID, alpha, D_fit, kurtosis,) s
+/F-gs-font 8 8 SF
+14 333 M (747:) s
+/Times-Bold 8 8 SUF
+34.448 333 M
+(        asymmetry1, asymmetry2, asymmetry3, aspect ratio \(AR\), elon) s
+/F-gs-font 8 8 SF
+14 324 M (748:) s
+/Times-Bold 8 8 SUF
+34.448 324 M
+(        boundedness, fractal dimension \(fractal_dim\), trappedness, effi) s
+/F-gs-font 8 8 SF
+14 315 M (749:) s
+/Times-Bold 8 8 SUF
+34.448 315 M
+(        straightness, MSD ratio, frames, X, and Y.) s
+/F-gs-font 8 8 SF
+14 306 M (750:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 297 M (751:) s
+/Times-Bold 8 8 SUF
+34.448 297 M
+(    Examples) s
+/F-gs-font 8 8 SF
+14 288 M (752:) s
+/Times-Bold 8 8 SUF
+34.448 288 M
+(    --------) s
+/F-gs-font 8 8 SF
+14 279 M (753:) s
+/Times-Bold 8 8 SUF
+34.448 279 M
+(    See example outputs from individual feature functions.) s
+/F-gs-font 8 8 SF
+14 270 M (754:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 261 M (755:) s
+/Times-Bold 8 8 SUF
+34.448 261 M
+(    """) s
+/F-gs-font 8 8 SF
+14 252 M (756:) s
+14 243 M (757:) s
+34.448 243 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 243 M
+(# Skeleton of Trajectory features metadata table.) s
+/F-gs-font 8 8 SF
+14 234 M (758:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 234 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 234 M
+(# Builds entry for each unique Track ID.) s
+/F-gs-font 8 8 SF
+14 225 M (759:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 225 M
+(    holder = dframe.Track_ID.unique\(\).astype\(float\)) s
+14 216 M (760:) s
+34.448 216 M
+(    die = {) s
+/Times-Bold 8 8 SUF
+64.576 216 M
+('Track_ID') s
+/F-gs-font 8 8 SF
+103.68 216 M
+(: holder,) s
+14 207 M (761:) s
+34.448 207 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 207 M
+('alpha') s
+/F-gs-font 8 8 SF
+80.896 207 M
+(: holder,) s
+14 198 M (762:) s
+34.448 198 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 198 M
+('D_fit') s
+/F-gs-font 8 8 SF
+79.104 198 M
+(: holder,) s
+14 189 M (763:) s
+34.448 189 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 189 M
+('kurtosis') s
+/F-gs-font 8 8 SF
+89.336 189 M
+(: holder,) s
+14 180 M (764:) s
+34.448 180 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 180 M
+('asymmetry1') s
+/F-gs-font 8 8 SF
+103.984 180 M
+(: holder,) s
+14 171 M (765:) s
+34.448 171 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 171 M
+('asymmetry2') s
+/F-gs-font 8 8 SF
+103.984 171 M
+(: holder,) s
+14 162 M (766:) s
+34.448 162 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 162 M
+('asymmetry3') s
+/F-gs-font 8 8 SF
+103.984 162 M
+(: holder,) s
+14 153 M (767:) s
+34.448 153 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 153 M
+('AR') s
+/F-gs-font 8 8 SF
+73.328 153 M
+(: holder,) s
+14 144 M (768:) s
+34.448 144 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 144 M
+('elongation') s
+/F-gs-font 8 8 SF
+97.336 144 M
+(: holder,) s
+14 135 M (769:) s
+34.448 135 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 135 M
+('boundedness') s
+/F-gs-font 8 8 SF
+105.792 135 M
+(: holder,) s
+14 126 M (770:) s
+34.448 126 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 126 M
+('fractal_dim') s
+/F-gs-font 8 8 SF
+101.768 126 M
+(: holder,) s
+14 117 M (771:) s
+34.448 117 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 117 M
+('trappedness') s
+/F-gs-font 8 8 SF
+103.112 117 M
+(: holder,) s
+14 108 M (772:) s
+34.448 108 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 108 M
+('efficiency') s
+/F-gs-font 8 8 SF
+94.208 108 M
+(: holder,) s
+14 99 M (773:) s
+34.448 99 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 99 M
+('straightness') s
+/F-gs-font 8 8 SF
+102.664 99 M
+(: holder,) s
+14 90 M (774:) s
+34.448 90 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 90 M
+('MSD_ratio') s
+/F-gs-font 8 8 SF
+99.992 90 M
+(: holder,) s
+14 81 M (775:) s
+34.448 81 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 81 M
+('frames') s
+/F-gs-font 8 8 SF
+85.32 81 M
+(: holder,) s
+14 72 M (776:) s
+34.448 72 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 72 M
+('X') s
+/F-gs-font 8 8 SF
+67.552 72 M
+(: holder,) s
+14 63 M (777:) s
+34.448 63 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 63 M
+('Y') s
+/F-gs-font 8 8 SF
+67.552 63 M
+(: holder,) s
+14 54 M (778:) s
+34.448 54 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 54 M
+('Quality') s
+/F-gs-font 8 8 SF
+87.56 54 M
+(: holder,) s
+14 45 M (779:) s
+34.448 45 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 45 M
+('Mean_Intensity') s
+/F-gs-font 8 8 SF
+115.552 45 M
+(: holder,) s
+14 36 M (780:) s
+34.448 36 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 36 M
+('SN_Ratio') s
+/F-gs-font 8 8 SF
+94.664 36 M
+(: holder,) s
+14 27 M (781:) s
+34.448 27 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 27 M
+('Deff1') s
+/F-gs-font 8 8 SF
+80.432 27 M
+(: holder,) s
+14 18 M (782:) s
+34.448 18 M
+(           ) s
+/Times-Bold 8 8 SUF
+56.448 18 M
+('Deff2') s
+/F-gs-font 8 8 SF
+80.432 18 M
+(: holder}) s
+14 9 M (783:) s
+287.5 783 M (784:) s
+307.948 783 M
+(    datai = pd.DataFrame\(data=die\)) s
+287.5 774 M (785:) s
+287.5 765 M (786:) s
+307.948 765 M
+(    trackids = dframe.Track_ID.unique\(\)) s
+287.5 756 M (787:) s
+307.948 756 M
+(    partcount = trackids.shape[0]) s
+287.5 747 M (788:) s
+287.5 738 M (789:) s
+307.948 738 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 738 M
+(for) s
+/F-gs-font 8 8 SF
+326.164 738 M
+( particle ) s
+/Times-Bold 8 8 SUF
+354.156 738 M
+(in) s
+/F-gs-font 8 8 SF
+360.828 738 M
+( range\(0, partcount\):) s
+287.5 729 M (790:) s
+307.948 729 M
+(        single_track_masked = \\) s
+287.5 720 M (791:) s
+307.948 720 M
+(            dframe.loc[dframe[) s
+/Times-Bold 8 8 SUF
+394.364 720 M
+('Track_ID') s
+/F-gs-font 8 8 SF
+433.468 720 M
+(] ==) s
+287.5 711 M (792:) s
+307.948 711 M
+(                       trackids[particle]].sort_values\([) s
+/Times-Bold 8 8 SUF
+455.028 711 M
+('Track_ID') s
+/F-gs-font 8 8 SF
+494.132 711 M
+(, ) s
+/Times-Bold 8 8 SUF
+498.132 711 M
+('Frame') s
+/F-gs-font 8 8 SF
+526.116 711 M
+(],) s
+287.5 702 M (793:) s
+307.948 702 M
+(                                                       ascending=[) s
+287.5 693 M (794:) s
+307.948 693 M
+(                                                           1,) s
+287.5 684 M (795:) s
+307.948 684 M
+(                                                           1]\).reset_index\(drop=True\)) s
+287.5 675 M (796:) s
+307.948 675 M
+(        single_track = unmask_track\(single_track_masked\)) s
+287.5 666 M (797:) s
+307.948 666 M
+(        \(datai[) s
+/Times-Bold 8 8 SUF
+344.828 666 M
+('alpha') s
+/F-gs-font 8 8 SF
+369.276 666 M
+(][particle],) s
+287.5 657 M (798:) s
+307.948 657 M
+(         datai[) s
+/Times-Bold 8 8 SUF
+344.164 657 M
+('D_fit') s
+/F-gs-font 8 8 SF
+366.82 657 M
+(][particle]\) = alpha_calc\(single_track\)) s
+287.5 648 M (799:) s
+307.948 648 M
+(        datai[) s
+/Times-Bold 8 8 SUF
+342.164 648 M
+('kurtosis') s
+/F-gs-font 8 8 SF
+375.052 648 M
+(][particle] = kurtosis\(single_track\)) s
+287.5 639 M (800:) s
+307.948 639 M
+(        \(eig1, eig2, datai[) s
+/Times-Bold 8 8 SUF
+380.38 639 M
+('asymmetry1') s
+/F-gs-font 8 8 SF
+427.916 639 M
+(][particle],) s
+287.5 630 M (801:) s
+307.948 630 M
+(         datai[) s
+/Times-Bold 8 8 SUF
+344.164 630 M
+('asymmetry2') s
+/F-gs-font 8 8 SF
+391.7 630 M
+(][particle],) s
+287.5 621 M (802:) s
+307.948 621 M
+(         datai[) s
+/Times-Bold 8 8 SUF
+344.164 621 M
+('asymmetry3') s
+/F-gs-font 8 8 SF
+391.7 621 M
+(][particle]\) = asymmetry\(single_track\)) s
+287.5 612 M (803:) s
+307.948 612 M
+(        \(datai[) s
+/Times-Bold 8 8 SUF
+344.828 612 M
+('AR') s
+/F-gs-font 8 8 SF
+361.708 612 M
+(][particle], datai[) s
+/Times-Bold 8 8 SUF
+415.908 612 M
+('elongation') s
+/F-gs-font 8 8 SF
+456.796 612 M
+(][particle],) s
+287.5 603 M (804:) s
+307.948 603 M
+(         \(datai[) s
+/Times-Bold 8 8 SUF
+346.828 603 M
+('X') s
+/F-gs-font 8 8 SF
+357.932 603 M
+(][particle],) s
+287.5 594 M (805:) s
+307.948 594 M
+(          datai[) s
+/Times-Bold 8 8 SUF
+346.164 594 M
+('Y') s
+/F-gs-font 8 8 SF
+357.268 594 M
+(][particle]\)\) = aspectratio\(single_track\)) s
+287.5 585 M (806:) s
+307.948 585 M
+(        \(datai[) s
+/Times-Bold 8 8 SUF
+344.828 585 M
+('boundedness') s
+/F-gs-font 8 8 SF
+394.172 585 M
+(][particle], datai[) s
+/Times-Bold 8 8 SUF
+448.372 585 M
+('fractal_dim') s
+/F-gs-font 8 8 SF
+493.692 585 M
+(][particle],) s
+287.5 576 M (807:) s
+307.948 576 M
+(         datai[) s
+/Times-Bold 8 8 SUF
+344.164 576 M
+('trappedness') s
+/F-gs-font 8 8 SF
+390.828 576 M
+(][particle]\) = boundedness\(single_track, frame) s
+287.5 567 M (808:) s
+307.948 567 M
+(        \(datai[) s
+/Times-Bold 8 8 SUF
+344.828 567 M
+('efficiency') s
+/F-gs-font 8 8 SF
+382.588 567 M
+(][particle],) s
+287.5 558 M (809:) s
+307.948 558 M
+(         datai[) s
+/Times-Bold 8 8 SUF
+344.164 558 M
+('straightness') s
+/F-gs-font 8 8 SF
+390.38 558 M
+(][particle]\) = efficiency\(single_track\)) s
+287.5 549 M (810:) s
+307.948 549 M
+(        datai[) s
+/Times-Bold 8 8 SUF
+342.164 549 M
+('frames') s
+/F-gs-font 8 8 SF
+371.036 549 M
+(][particle] = single_track.shape[0]) s
+287.5 540 M (811:) s
+307.948 540 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 540 M
+(if) s
+/F-gs-font 8 8 SF
+328.836 540 M
+( single_track[) s
+/Times-Bold 8 8 SUF
+372.604 540 M
+('Frame') s
+/F-gs-font 8 8 SF
+400.588 540 M
+(][single_track.shape[0] - 2] > 2:) s
+287.5 531 M (812:) s
+307.948 531 M
+(            datai[) s
+/Times-Bold 8 8 SUF
+350.164 531 M
+('MSD_ratio') s
+/F-gs-font 8 8 SF
+393.708 531 M
+(][particle] = msd_ratio\(single_track, 2,) s
+287.5 522 M (813:) s
+307.948 522 M
+(                                                     single_track[) s
+/Times-Bold 8 8 SUF
+455.716 522 M
+('Frame') s
+/F-gs-font 8 8 SF
+483.7 522 M
+(][) s
+287.5 513 M (814:) s
+307.948 513 M
+(                                                         single_track.shape[0] - 2]\)) s
+287.5 504 M (815:) s
+307.948 504 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 504 M
+(else) s
+/F-gs-font 8 8 SF
+336.388 504 M
+(:) s
+287.5 495 M (816:) s
+307.948 495 M
+(            datai[) s
+/Times-Bold 8 8 SUF
+350.164 495 M
+('MSD_ratio') s
+/F-gs-font 8 8 SF
+393.708 495 M
+(][particle] = np.nan) s
+287.5 486 M (817:) s
+287.5 477 M (818:) s
+307.948 477 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 477 M
+(try) s
+/F-gs-font 8 8 SF
+334.164 477 M
+(:) s
+287.5 468 M (819:) s
+307.948 468 M
+(            datai[) s
+/Times-Bold 8 8 SUF
+350.164 468 M
+('Deff1') s
+/F-gs-font 8 8 SF
+374.148 468 M
+(][particle] = single_track[) s
+/Times-Bold 8 8 SUF
+456.412 468 M
+('MSDs') s
+/F-gs-font 8 8 SF
+482.628 468 M
+(][frame[0]] / \(4 * ) s
+287.5 459 M (820:) s
+307.948 459 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 459 M
+(except) s
+/F-gs-font 8 8 SF
+345.716 459 M
+(:) s
+287.5 450 M (821:) s
+307.948 450 M
+(            datai[) s
+/Times-Bold 8 8 SUF
+350.164 450 M
+('Deff1') s
+/F-gs-font 8 8 SF
+374.148 450 M
+(][particle] = np.nan) s
+287.5 441 M (822:) s
+287.5 432 M (823:) s
+307.948 432 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 432 M
+(try) s
+/F-gs-font 8 8 SF
+334.164 432 M
+(:) s
+287.5 423 M (824:) s
+307.948 423 M
+(            datai[) s
+/Times-Bold 8 8 SUF
+350.164 423 M
+('Deff2') s
+/F-gs-font 8 8 SF
+374.148 423 M
+(][particle] = single_track[) s
+/Times-Bold 8 8 SUF
+456.412 423 M
+('MSDs') s
+/F-gs-font 8 8 SF
+482.628 423 M
+(][frame[1]] / \(4 * ) s
+287.5 414 M (825:) s
+307.948 414 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 414 M
+(except) s
+/F-gs-font 8 8 SF
+345.716 414 M
+(:) s
+287.5 405 M (826:) s
+307.948 405 M
+(            datai[) s
+/Times-Bold 8 8 SUF
+350.164 405 M
+('Deff2') s
+/F-gs-font 8 8 SF
+374.148 405 M
+(][particle] = np.nan) s
+287.5 396 M (827:) s
+287.5 387 M (828:) s
+307.948 387 M
+(        datai[) s
+/Times-Bold 8 8 SUF
+342.164 387 M
+('Mean_Intensity') s
+/F-gs-font 8 8 SF
+401.268 387 M
+(][particle] = np.nanmean\(single_track[) s
+287.5 378 M (829:) s
+307.948 378 M
+(                                                           ) s
+/Times-Bold 8 8 SUF
+425.948 378 M
+('Mean_Intensity') s
+/F-gs-font 8 8 SF
+485.052 378 M
+(].replace\([np.inf, ) s
+287.5 369 M (830:) s
+307.948 369 M
+(            how=) s
+/Times-Bold 8 8 SUF
+350.236 369 M
+("all") s
+/F-gs-font 8 8 SF
+367.564 369 M
+(\).values\)) s
+287.5 360 M (831:) s
+307.948 360 M
+(        datai[) s
+/Times-Bold 8 8 SUF
+342.164 360 M
+('Quality') s
+/F-gs-font 8 8 SF
+373.276 360 M
+(][particle] = np.nanmean\(single_track[) s
+287.5 351 M (832:) s
+307.948 351 M
+(                                                    ) s
+/Times-Bold 8 8 SUF
+411.948 351 M
+('Quality') s
+/F-gs-font 8 8 SF
+443.06 351 M
+(].replace\([np.inf, -np.inf], np.n) s
+287.5 342 M (833:) s
+307.948 342 M
+(            how=) s
+/Times-Bold 8 8 SUF
+350.236 342 M
+("all") s
+/F-gs-font 8 8 SF
+367.564 342 M
+(\).values\)) s
+287.5 333 M (834:) s
+307.948 333 M
+(        datai[) s
+/Times-Bold 8 8 SUF
+342.164 333 M
+('SN_Ratio') s
+/F-gs-font 8 8 SF
+380.38 333 M
+(][particle] = np.nanmean\(single_track[) s
+287.5 324 M (835:) s
+307.948 324 M
+(                                                     ) s
+/Times-Bold 8 8 SUF
+413.948 324 M
+('SN_Ratio') s
+/F-gs-font 8 8 SF
+452.164 324 M
+(].replace\([np.inf, -np.inf], n) s
+287.5 315 M (836:) s
+307.948 315 M
+(            how=) s
+/Times-Bold 8 8 SUF
+350.236 315 M
+("all") s
+/F-gs-font 8 8 SF
+367.564 315 M
+(\).values\)) s
+287.5 306 M (837:) s
+287.5 297 M (838:) s
+307.948 297 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 297 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 297 M
+( mean_values:) s
+287.5 288 M (839:) s
+307.948 288 M
+(        nonnum = [) s
+/Times-Bold 8 8 SUF
+361.348 288 M
+('Track_ID') s
+/F-gs-font 8 8 SF
+400.452 288 M
+(]) s
+287.5 279 M (840:) s
+307.948 279 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 279 M
+(for) s
+/F-gs-font 8 8 SF
+334.164 279 M
+( col ) s
+/Times-Bold 8 8 SUF
+347.94 279 M
+(in) s
+/F-gs-font 8 8 SF
+354.612 279 M
+( datai.columns:) s
+287.5 270 M (841:) s
+307.948 270 M
+(            ) s
+/Times-Bold 8 8 SUF
+331.948 270 M
+(if) s
+/F-gs-font 8 8 SF
+336.836 270 M
+( col ) s
+/Times-Bold 8 8 SUF
+350.612 270 M
+(not) s
+/F-gs-font 8 8 SF
+361.724 270 M
+( ) s
+/Times-Bold 8 8 SUF
+363.724 270 M
+(in) s
+/F-gs-font 8 8 SF
+370.396 270 M
+( nonnum:) s
+287.5 261 M (842:) s
+307.948 261 M
+(                datai[) s
+/Times-Bold 8 8 SUF
+358.164 261 M
+('Mean ') s
+/F-gs-font 8 8 SF
+385.044 261 M
+( + col] = np.nan) s
+287.5 252 M (843:) s
+307.948 252 M
+(                datai[) s
+/Times-Bold 8 8 SUF
+358.164 252 M
+('Std ') s
+/F-gs-font 8 8 SF
+377.052 252 M
+( + col] = np.nan) s
+287.5 243 M (844:) s
+287.5 234 M (845:) s
+307.948 234 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 234 M
+(for) s
+/F-gs-font 8 8 SF
+334.164 234 M
+( xrange ) s
+/Times-Bold 8 8 SUF
+359.932 234 M
+(in) s
+/F-gs-font 8 8 SF
+366.604 234 M
+( range\(0, 16\):) s
+287.5 225 M (846:) s
+307.948 225 M
+(            ) s
+/Times-Bold 8 8 SUF
+331.948 225 M
+(for) s
+/F-gs-font 8 8 SF
+342.164 225 M
+( yrange ) s
+/Times-Bold 8 8 SUF
+367.932 225 M
+(in) s
+/F-gs-font 8 8 SF
+374.604 225 M
+( range\(0, 16\):) s
+287.5 216 M (847:) s
+307.948 216 M
+(                bitesize = datai[\(datai[) s
+/Times-Bold 8 8 SUF
+411.996 216 M
+('X') s
+/F-gs-font 8 8 SF
+423.1 216 M
+(] >= 128 * xrange\) & \(datai[) s
+/Times-Bold 8 8 SUF
+514.324 216 M
+('X') s
+/F-gs-font 8 8 SF
+525.428 216 M
+(] < 1) s
+287.5 207 M (848:) s
+307.948 207 M
+(                                 \(datai[) s
+/Times-Bold 8 8 SUF
+394.828 207 M
+('Y') s
+/F-gs-font 8 8 SF
+405.932 207 M
+(] >= 128 * yrange\) & \(datai[) s
+/Times-Bold 8 8 SUF
+497.156 207 M
+('Y') s
+/F-gs-font 8 8 SF
+508.26 207 M
+(] < 128 * ) s
+287.5 198 M (849:) s
+307.948 198 M
+(                bitesize.replace\([np.inf, -np.inf], np.nan\)) s
+287.5 189 M (850:) s
+307.948 189 M
+(                ) s
+/Times-Italic 8 8 SUF
+339.948 189 M
+(# print\(bitesize.shape\)) s
+/F-gs-font 8 8 SF
+287.5 180 M (851:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 180 M
+(                ) s
+/Times-Bold 8 8 SUF
+339.948 180 M
+(for) s
+/F-gs-font 8 8 SF
+350.164 180 M
+( col ) s
+/Times-Bold 8 8 SUF
+363.94 180 M
+(in) s
+/F-gs-font 8 8 SF
+370.612 180 M
+( bitesize.columns:) s
+287.5 171 M (852:) s
+307.948 171 M
+(                    ) s
+/Times-Bold 8 8 SUF
+347.948 171 M
+(if) s
+/F-gs-font 8 8 SF
+352.836 171 M
+( col ) s
+/Times-Bold 8 8 SUF
+366.612 171 M
+(not) s
+/F-gs-font 8 8 SF
+377.724 171 M
+( ) s
+/Times-Bold 8 8 SUF
+379.724 171 M
+(in) s
+/F-gs-font 8 8 SF
+386.396 171 M
+( nonnum ) s
+/Times-Bold 8 8 SUF
+416.62 171 M
+(and) s
+/F-gs-font 8 8 SF
+429.516 171 M
+( ) s
+/Times-Bold 8 8 SUF
+431.516 171 M
+('Mean') s
+/F-gs-font 8 8 SF
+456.396 171 M
+( ) s
+/Times-Bold 8 8 SUF
+458.396 171 M
+(not) s
+/F-gs-font 8 8 SF
+469.508 171 M
+( ) s
+/Times-Bold 8 8 SUF
+471.508 171 M
+(in) s
+/F-gs-font 8 8 SF
+478.18 171 M
+( col ) s
+/Times-Bold 8 8 SUF
+491.956 171 M
+(and) s
+/F-gs-font 8 8 SF
+504.852 171 M
+( ) s
+/Times-Bold 8 8 SUF
+506.852 171 M
+('Std') s
+/F-gs-font 8 8 SF
+523.74 171 M
+( ) s
+/Times-Bold 8 8 SUF
+525.74 171 M
+(not) s
+/F-gs-font 8 8 SF
+536.852 171 M
+( ) s
+/Times-Bold 8 8 SUF
+538.852 171 M
+(i) s
+/F-gs-font 8 8 SF
+287.5 162 M (853:) s
+/Times-Bold 8 8 SUF
+307.948 162 M
+(                        datai[) s
+/Times-Bold 8 8 SUF
+375.948 162 M
+('Mean ') s
+/F-gs-font 8 8 SF
+402.828 162 M
+( + col][bitesize.index] = np.nanmean\(bitesi) s
+287.5 153 M (854:) s
+307.948 153 M
+(                        datai[) s
+/Times-Bold 8 8 SUF
+374.164 153 M
+('Std ') s
+/F-gs-font 8 8 SF
+393.052 153 M
+( + col][bitesize.index] = np.nanstd\(bitesize[co) s
+287.5 144 M (855:) s
+287.5 135 M (856:) s
+307.948 135 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 135 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 135 M
+( datai) s
+287.5 126 M (857:) s
+287.5 117 M (858:) s
+287.5 108 M (859:) s
+/Times-Bold 8 8 SUF
+307.948 108 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 108 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 108 M
+(feature_violin) s
+/F-gs-font 8 8 SF
+368.164 108 M
+(\(tgroups, feature=) s
+/Times-Bold 8 8 SUF
+425.548 108 M
+('boundedness') s
+/F-gs-font 8 8 SF
+474.892 108 M
+(,) s
+287.5 99 M (860:) s
+307.948 99 M
+(                   labels=[) s
+/Times-Bold 8 8 SUF
+371.788 99 M
+('sample 1') s
+/F-gs-font 8 8 SF
+407.116 99 M
+(, ) s
+/Times-Bold 8 8 SUF
+411.116 99 M
+('sample 2') s
+/F-gs-font 8 8 SF
+446.444 99 M
+(, ) s
+/Times-Bold 8 8 SUF
+450.444 99 M
+('sample 3') s
+/F-gs-font 8 8 SF
+485.772 99 M
+(],) s
+287.5 90 M (861:) s
+307.948 90 M
+(                   points=40, ylim=[0, 1], nticks=11\):) s
+287.5 81 M (862:) s
+307.948 81 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 81 M
+('''Plots violin plots of features in comparison groups) s
+/F-gs-font 8 8 SF
+287.5 72 M (863:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 63 M (864:) s
+/Times-Bold 8 8 SUF
+307.948 63 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 54 M (865:) s
+/Times-Bold 8 8 SUF
+307.948 54 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 45 M (866:) s
+/Times-Bold 8 8 SUF
+307.948 45 M
+(    tgroups : dict of pandas.core.frames.DataFrame) s
+/F-gs-font 8 8 SF
+287.5 36 M (867:) s
+/Times-Bold 8 8 SUF
+307.948 36 M
+(        Dictionary containing pandas dataframes containing trajectory) s
+/F-gs-font 8 8 SF
+287.5 27 M (868:) s
+/Times-Bold 8 8 SUF
+307.948 27 M
+(        features of subgroups to be plotted) s
+/F-gs-font 8 8 SF
+287.5 18 M (869:) s
+/Times-Bold 8 8 SUF
+307.948 18 M
+(    feature : string) s
+/F-gs-font 8 8 SF
+287.5 9 M (870:) s
+/Times-Bold 8 8 SUF
+307.948 9 M
+(        Feature to be compared) s
+_R
+S
+%%Page: (6) 6
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 6 def
+/fname (features.py) def
+/fdir (.) def
+/ftail (features.py) def
+/Times-Bold 8 8 SUF
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+/F-gs-font 8 8 SF
+14 783 M (871:) s
+/Times-Bold 8 8 SUF
+34.448 783 M
+(    labels : list of strings) s
+/F-gs-font 8 8 SF
+14 774 M (872:) s
+/Times-Bold 8 8 SUF
+34.448 774 M
+(        Labels of subgroups to be plotted.) s
+/F-gs-font 8 8 SF
+14 765 M (873:) s
+/Times-Bold 8 8 SUF
+34.448 765 M
+(    points : int) s
+/F-gs-font 8 8 SF
+14 756 M (874:) s
+/Times-Bold 8 8 SUF
+34.448 756 M
+(        Determines resolution of violin plot) s
+/F-gs-font 8 8 SF
+14 747 M (875:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(    ylim : list of int) s
+/F-gs-font 8 8 SF
+14 738 M (876:) s
+/Times-Bold 8 8 SUF
+34.448 738 M
+(        Y range of output plot) s
+/F-gs-font 8 8 SF
+14 729 M (877:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 720 M (878:) s
+/Times-Bold 8 8 SUF
+34.448 720 M
+(    ''') s
+/F-gs-font 8 8 SF
+14 711 M (879:) s
+14 702 M (880:) s
+34.448 702 M
+(    majorticks = np.linspace\(ylim[0], ylim[1], nticks\)) s
+14 693 M (881:) s
+34.448 693 M
+(    to_graph = []) s
+14 684 M (882:) s
+34.448 684 M
+(    pos = []) s
+14 675 M (883:) s
+34.448 675 M
+(    counter = 1) s
+14 666 M (884:) s
+34.448 666 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 666 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 666 M
+( key ) s
+/Times-Bold 8 8 SUF
+68.216 666 M
+(in) s
+/F-gs-font 8 8 SF
+74.888 666 M
+( tgroups:) s
+14 657 M (885:) s
+34.448 657 M
+(        to_graph.append\() s
+14 648 M (886:) s
+34.448 648 M
+(            tgroups[key][feature][tgroups[key][feature] < 10000].replace\([np) s
+14 639 M (887:) s
+34.448 639 M
+(        pos.append\(counter\)) s
+14 630 M (888:) s
+34.448 630 M
+(        counter = counter + 1) s
+14 621 M (889:) s
+14 612 M (890:) s
+34.448 612 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 612 M
+(def) s
+/F-gs-font 8 8 SF
+53.112 612 M
+( ) s
+/Times-Bold 8 8 SUF
+55.112 612 M
+(set_axis_style) s
+/F-gs-font 8 8 SF
+101.328 612 M
+(\(ax, labels\):) s
+14 603 M (891:) s
+34.448 603 M
+(        ax.get_xaxis\(\).set_tick_params\(direction=) s
+/Times-Bold 8 8 SUF
+185.6 603 M
+('out') s
+/F-gs-font 8 8 SF
+202.04 603 M
+(\)) s
+14 594 M (892:) s
+34.448 594 M
+(        ax.xaxis.set_ticks_position\() s
+/Times-Bold 8 8 SUF
+139.336 594 M
+('bottom') s
+/F-gs-font 8 8 SF
+169.104 594 M
+(\)) s
+14 585 M (893:) s
+34.448 585 M
+(        ax.set_xticks\(np.arange\(1, len\(labels\) + 1\)\)) s
+14 576 M (894:) s
+34.448 576 M
+(        ax.set_xticklabels\(labels\)) s
+14 567 M (895:) s
+34.448 567 M
+(        ax.set_xlim\(0.25, len\(labels\) + 0.75\)) s
+14 558 M (896:) s
+14 549 M (897:) s
+34.448 549 M
+(    fig, axes = plt.subplots\(nrows=1, ncols=1, figsize=\(6, 6\)\)) s
+14 540 M (898:) s
+14 531 M (899:) s
+34.448 531 M
+(    axes.violinplot\(to_graph, pos, points=points, widths=0.9,) s
+14 522 M (900:) s
+34.448 522 M
+(                    showmeans=True, showextrema=False\)) s
+14 513 M (901:) s
+34.448 513 M
+(    set_axis_style\(axes, labels\)) s
+14 504 M (902:) s
+34.448 504 M
+(    axes.tick_params\(axis=) s
+/Times-Bold 8 8 SUF
+117.832 504 M
+('both') s
+/F-gs-font 8 8 SF
+138.72 504 M
+(, which=) s
+/Times-Bold 8 8 SUF
+166.784 504 M
+('major') s
+/F-gs-font 8 8 SF
+192.992 504 M
+(,) s
+14 495 M (903:) s
+34.448 495 M
+(                     labelsize=16\)) s
+14 486 M (904:) s
+34.448 486 M
+(    axes.set_ylim\(ylim\)) s
+14 477 M (905:) s
+34.448 477 M
+(    axes.set_yticks\(majorticks\)) s
+14 468 M (906:) s
+14 459 M (907:) s
+34.448 459 M
+(    plt.show\(\)) s
+14 450 M (908:) s
+14 441 M (909:) s
+14 432 M (910:) s
+/Times-Bold 8 8 SUF
+34.448 432 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 432 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 432 M
+(pore_size) s
+/F-gs-font 8 8 SF
+79.104 432 M
+(\(prefix, rs, rf\):) s
+14 423 M (911:) s
+34.448 423 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 423 M
+(""") s
+/F-gs-font 8 8 SF
+14 414 M (912:) s
+/Times-Bold 8 8 SUF
+34.448 414 M
+(    Pore Size Calculated using the Amsden obstruction-scaling model) s
+/F-gs-font 8 8 SF
+14 405 M (913:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 396 M (914:) s
+/Times-Bold 8 8 SUF
+34.448 396 M
+(    D_eff : diffusion coefficients within ECM) s
+/F-gs-font 8 8 SF
+14 387 M (915:) s
+/Times-Bold 8 8 SUF
+34.448 387 M
+(    D_0 : diffusion coefficients a free medium. D_0 was calculated as t) s
+/F-gs-font 8 8 SF
+14 378 M (916:) s
+/Times-Bold 8 8 SUF
+34.448 378 M
+(    nanoparticles in water at 20C using the Stokes-Einstein equation) s
+/F-gs-font 8 8 SF
+14 369 M (917:) s
+/Times-Bold 8 8 SUF
+34.448 369 M
+(    r_s : critical limiting radius \(radius of the nanoparticle probe in t) s
+/F-gs-font 8 8 SF
+14 360 M (918:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(    radius of the PS-PEG nanoparticles, as determined by DLS, was u) s
+/F-gs-font 8 8 SF
+14 351 M (919:) s
+/Times-Bold 8 8 SUF
+34.448 351 M
+(    r_f : the radius of the polymer chains) s
+/F-gs-font 8 8 SF
+14 342 M (920:) s
+/Times-Bold 8 8 SUF
+34.448 342 M
+(    mesh : average mesh size of the network For the purposes of this s) s
+/F-gs-font 8 8 SF
+14 333 M (921:) s
+/Times-Bold 8 8 SUF
+34.448 333 M
+(    rad : radius of the nanoparticle) s
+/F-gs-font 8 8 SF
+14 324 M (922:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 315 M (923:) s
+/Times-Bold 8 8 SUF
+34.448 315 M
+(    Assumptions:) s
+/F-gs-font 8 8 SF
+14 306 M (924:) s
+/Times-Bold 8 8 SUF
+34.448 306 M
+(    1.) s
+53 306 M
+(The nanoparticles are hard spheres.) s
+/F-gs-font 8 8 SF
+14 297 M (925:) s
+/Times-Bold 8 8 SUF
+34.448 297 M
+(    2.) s
+53 297 M
+(The intermolecular forces of attraction between nanoparticles ) s
+/F-gs-font 8 8 SF
+14 288 M (926:) s
+/Times-Bold 8 8 SUF
+34.448 288 M
+(    3.) s
+53 288 M
+(The polymer chains act only as steric obstacles to diffusion.) s
+/F-gs-font 8 8 SF
+14 279 M (927:) s
+/Times-Bold 8 8 SUF
+34.448 279 M
+(    4.) s
+53 279 M
+(The polymer chains are immobile relative to the mobility of th) s
+/F-gs-font 8 8 SF
+14 270 M (928:) s
+/Times-Bold 8 8 SUF
+34.448 270 M
+(    diffusion process.) s
+/F-gs-font 8 8 SF
+14 261 M (929:) s
+/Times-Bold 8 8 SUF
+34.448 261 M
+(    5.) s
+53 261 M
+(The distribution of pores between polymer chains can be appr) s
+/F-gs-font 8 8 SF
+14 252 M (930:) s
+/Times-Bold 8 8 SUF
+34.448 252 M
+(    distribution of straight fibers, described by the Ogston expression) s
+/F-gs-font 8 8 SF
+14 243 M (931:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 234 M (932:) s
+/Times-Bold 8 8 SUF
+34.448 234 M
+(    :return:) s
+/F-gs-font 8 8 SF
+14 225 M (933:) s
+/Times-Bold 8 8 SUF
+34.448 225 M
+(    """) s
+/F-gs-font 8 8 SF
+14 216 M (934:) s
+34.448 216 M
+(    pore_sizes = []) s
+14 207 M (935:) s
+34.448 207 M
+(    df = pd.read_csv\() s
+/Times-Bold 8 8 SUF
+98.72 207 M
+('features_{}.csv') s
+/F-gs-font 8 8 SF
+154.56 207 M
+(.format\(prefix\)\)) s
+14 198 M (936:) s
+34.448 198 M
+(    kB = 1.380649 * 10 ** \(-23\)  ) s
+/Times-Italic 8 8 SUF
+138.288 198 M
+(# Boltzmann's constant in m2*kg*s^-2*) s
+/F-gs-font 8 8 SF
+14 189 M (937:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 189 M
+(    kB = 1.380649 * 10 ** \(-23\)  ) s
+/Times-Italic 8 8 SUF
+138.288 189 M
+(# Boltzmann's constant in m2*kg*s^-2*) s
+/F-gs-font 8 8 SF
+14 180 M (938:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 180 M
+(    T = 293.15  ) s
+/Times-Italic 8 8 SUF
+81.848 180 M
+(# 20C in Kelvin) s
+/F-gs-font 8 8 SF
+14 171 M (939:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 171 M
+(    mu = 1.0016*10**\(-3\)  ) s
+/Times-Italic 8 8 SUF
+119.176 171 M
+(# viscosity of water) s
+/F-gs-font 8 8 SF
+14 162 M (940:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 162 M
+(    D0 = kB * T / \(6 * pi * mu * rs\) *10**\(12\)   ) s
+/Times-Italic 8 8 SUF
+186.064 162 M
+(# Stokes-Einstein equatio) s
+/F-gs-font 8 8 SF
+14 153 M (941:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 153 M
+(    D_eff = df[) s
+/Times-Bold 8 8 SUF
+78.944 153 M
+("Mean D_fit") s
+/F-gs-font 8 8 SF
+126.704 153 M
+(]) s
+14 144 M (942:) s
+34.448 144 M
+(    not_good) s
+14 135 M (943:) s
+34.448 135 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 135 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 135 M
+( D ) s
+/Times-Bold 8 8 SUF
+62.44 135 M
+(in) s
+/F-gs-font 8 8 SF
+69.112 135 M
+( D_eff:) s
+14 126 M (944:) s
+34.448 126 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 126 M
+(if) s
+/F-gs-font 8 8 SF
+55.336 126 M
+( D_eff <= D0:) s
+14 117 M (945:) s
+34.448 117 M
+(            pore_sizes.append\(\(\(rs + rf\) * \(\(1 / pi\) * log\(D0 / D\)\) ** \(-0.5\) - ) s
+14 108 M (946:) s
+34.448 108 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 108 M
+(else) s
+/F-gs-font 8 8 SF
+62.888 108 M
+(:) s
+14 99 M (947:) s
+34.448 99 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 99 M
+(print) s
+/F-gs-font 8 8 SF
+75.784 99 M
+(\() s
+/Times-Bold 8 8 SUF
+78.448 99 M
+("not good") s
+/F-gs-font 8 8 SF
+116.888 99 M
+(\)) s
+14 90 M (948:) s
+34.448 90 M
+(        ) s
+/Times-Italic 8 8 SUF
+50.448 90 M
+(# pore_sizes.append\(-rf*1/\(log\(D/D0\)\)\)) s
+/F-gs-font 8 8 SF
+14 81 M (949:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+14 72 M (950:) s
+34.448 72 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 72 M
+(print) s
+/F-gs-font 8 8 SF
+59.784 72 M
+(\(D0\)) s
+14 63 M (951:) s
+34.448 63 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 63 M
+(print) s
+/F-gs-font 8 8 SF
+59.784 63 M
+(\(D_eff\)) s
+14 54 M (952:) s
+34.448 54 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 54 M
+(print) s
+/F-gs-font 8 8 SF
+59.784 54 M
+(\(pore_sizes\)) s
+14 45 M (953:) s
+34.448 45 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 45 M
+(return) s
+/F-gs-font 8 8 SF
+64.664 45 M
+( pore_sizes) s
+14 36 M (954:) s
+14 27 M (955:) s
+14 18 M (956:) s
+/Times-Bold 8 8 SUF
+34.448 18 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 18 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 18 M
+(main) s
+/F-gs-font 8 8 SF
+64.448 18 M
+(\(\):) s
+14 9 M (957:) s
+34.448 9 M
+(    prefix = ) s
+/Times-Bold 8 8 SUF
+70.064 9 M
+("06092022-Matrigel-100microlit-40nmYG-520x520-4_1x) s
+/F-gs-font 8 8 SF
+287.5 783 M (958:) s
+/Times-Bold 8 8 SUF
+307.948 783 M
+(    os.chdir\() s
+/F-gs-font 8 8 SF
+287.5 774 M (959:) s
+/Times-Bold 8 8 SUF
+307.948 774 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 774 M
+('/Users/claudialozano/Dropbox/PycharmProjects/AD_nanopart) s
+/F-gs-font 8 8 SF
+287.5 765 M (960:) s
+/Times-Bold 8 8 SUF
+307.948 765 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 765 M
+(print) s
+/F-gs-font 8 8 SF
+333.284 765 M
+(\(pore_size\(prefix, rs = 100 * 10 ** \(-9\), rf = 0.3 * 10 ** \(-9\)\)\)) s
+287.5 756 M (961:) s
+287.5 747 M (962:) s
+287.5 738 M (963:) s
+/Times-Bold 8 8 SUF
+307.948 738 M
+(if) s
+/F-gs-font 8 8 SF
+312.836 738 M
+( __name__ == ) s
+/Times-Bold 8 8 SUF
+361.188 738 M
+("__main__") s
+/F-gs-font 8 8 SF
+403.404 738 M
+(:) s
+287.5 729 M (964:) s
+307.948 729 M
+(    main\(\)) s
+_R
+S
+%%Trailer
+%%Pages: 6
+%%DocumentNeededResources: font Times-Roman Courier-Bold Times-Italic 
+%%+ font Times-Bold 
+%%EOF

@@ -1,0 +1,5466 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 24 24 571 818
+%%Title: Enscript Output
+%%For: Claudia Lozano
+%%Creator: GNU Enscript 1.6.6
+%%CreationDate: Fri Jul 29 18:17:06 2022
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: A4 595 842 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6 6
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6 6
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Courier-Bold
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Times-Roman /F-gs-font MF
+/F-gs-font 8 8 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [595 842] 
+  >> setpagedevice
+} if
+/d_page_w 547 def
+/d_page_h 794 def
+/d_header_x 0 def
+/d_header_y 794 def
+/d_header_w 547 def
+/d_header_h 0 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 547 def
+/d_footer_h 0 def
+/d_output_w 547 def
+/d_output_h 794 def
+/cols 2 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 1 def
+/fname (pca.py) def
+/fdir (.) def
+/ftail (pca.py) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+22 783 M (1:) s
+/Times-Bold 8 8 SUF
+34.448 783 M
+("""Performs principle component analysis on input datasets.) s
+/F-gs-font 8 8 SF
+22 774 M (2:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+22 765 M (3:) s
+/Times-Bold 8 8 SUF
+34.448 765 M
+(This module performs principle component analysis on input datase) s
+/F-gs-font 8 8 SF
+22 756 M (4:) s
+/Times-Bold 8 8 SUF
+34.448 756 M
+(functions from scikit-learn. It is optimized to data formats used in) s
+/F-gs-font 8 8 SF
+22 747 M (5:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(diff_classifier, but can potentially be extended to other applications.) s
+/F-gs-font 8 8 SF
+22 738 M (6:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+22 729 M (7:) s
+/Times-Bold 8 8 SUF
+34.448 729 M
+(""") s
+/F-gs-font 8 8 SF
+22 720 M (8:) s
+22 711 M (9:) s
+/Times-Bold 8 8 SUF
+34.448 711 M
+(import) s
+/F-gs-font 8 8 SF
+58 711 M
+( random) s
+18 702 M (10:) s
+/Times-Bold 8 8 SUF
+34.448 702 M
+(import) s
+/F-gs-font 8 8 SF
+58 702 M
+( pandas as pd) s
+18 693 M (11:) s
+/Times-Bold 8 8 SUF
+34.448 693 M
+(import) s
+/F-gs-font 8 8 SF
+58 693 M
+( numpy as np) s
+18 684 M (12:) s
+/Times-Bold 8 8 SUF
+34.448 684 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 684 M
+( scipy ) s
+/Times-Bold 8 8 SUF
+72.216 684 M
+(import) s
+/F-gs-font 8 8 SF
+95.768 684 M
+( stats, linalg) s
+18 675 M (13:) s
+/Times-Bold 8 8 SUF
+34.448 675 M
+(import) s
+/F-gs-font 8 8 SF
+58 675 M
+( seaborn as sns) s
+18 666 M (14:) s
+/Times-Bold 8 8 SUF
+34.448 666 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 666 M
+( sklearn ) s
+/Times-Bold 8 8 SUF
+78.432 666 M
+(import) s
+/F-gs-font 8 8 SF
+101.984 666 M
+( neighbors) s
+18 657 M (15:) s
+/Times-Bold 8 8 SUF
+34.448 657 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 657 M
+( sklearn.decomposition ) s
+/Times-Bold 8 8 SUF
+127.544 657 M
+(import) s
+/F-gs-font 8 8 SF
+151.096 657 M
+( PCA as pca) s
+18 648 M (16:) s
+/Times-Bold 8 8 SUF
+34.448 648 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 648 M
+( sklearn.preprocessing ) s
+/Times-Bold 8 8 SUF
+124.864 648 M
+(import) s
+/F-gs-font 8 8 SF
+148.416 648 M
+( StandardScaler as stscale) s
+18 639 M (17:) s
+/Times-Bold 8 8 SUF
+34.448 639 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 639 M
+( sklearn.impute ) s
+/Times-Bold 8 8 SUF
+102.656 639 M
+(import) s
+/F-gs-font 8 8 SF
+126.208 639 M
+( SimpleImputer) s
+18 630 M (18:) s
+/Times-Bold 8 8 SUF
+34.448 630 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 630 M
+( sklearn.neural_network ) s
+/Times-Bold 8 8 SUF
+130.64 630 M
+(import) s
+/F-gs-font 8 8 SF
+154.192 630 M
+( MLPClassifier) s
+18 621 M (19:) s
+/Times-Bold 8 8 SUF
+34.448 621 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 621 M
+( sklearn.ensemble ) s
+/Times-Bold 8 8 SUF
+110.648 621 M
+(import) s
+/F-gs-font 8 8 SF
+134.2 621 M
+( RandomForestClassifier) s
+18 612 M (20:) s
+/Times-Bold 8 8 SUF
+34.448 612 M
+(import) s
+/F-gs-font 8 8 SF
+58 612 M
+( matplotlib.pyplot as plt) s
+18 603 M (21:) s
+/Times-Bold 8 8 SUF
+34.448 603 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 603 M
+( matplotlib.pyplot ) s
+/Times-Bold 8 8 SUF
+110.672 603 M
+(import) s
+/F-gs-font 8 8 SF
+134.224 603 M
+( cm) s
+18 594 M (22:) s
+/Times-Bold 8 8 SUF
+34.448 594 M
+(from) s
+/F-gs-font 8 8 SF
+51.328 594 M
+( mpl_toolkits.mplot3d ) s
+/Times-Bold 8 8 SUF
+124.456 594 M
+(import) s
+/F-gs-font 8 8 SF
+148.008 594 M
+( Axes3D) s
+18 585 M (23:) s
+18 576 M (24:) s
+18 567 M (25:) s
+/Times-Bold 8 8 SUF
+34.448 567 M
+(class) s
+/F-gs-font 8 8 SF
+50.448 567 M
+( Bunch:) s
+18 558 M (26:) s
+34.448 558 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 558 M
+(def) s
+/F-gs-font 8 8 SF
+53.112 558 M
+( ) s
+/Times-Bold 8 8 SUF
+55.112 558 M
+(__init__) s
+/F-gs-font 8 8 SF
+82.672 558 M
+(\(self, **kwds\):) s
+18 549 M (27:) s
+34.448 549 M
+(        self.__dict__.update\(kwds\)) s
+18 540 M (28:) s
+18 531 M (29:) s
+18 522 M (30:) s
+/Times-Bold 8 8 SUF
+34.448 522 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 522 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 522 M
+(partial_corr) s
+/F-gs-font 8 8 SF
+88.88 522 M
+(\(mtrx\):) s
+18 513 M (31:) s
+34.448 513 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 513 M
+("""Calculates linear partial correlation coefficients) s
+/F-gs-font 8 8 SF
+18 504 M (32:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 495 M (33:) s
+/Times-Bold 8 8 SUF
+34.448 495 M
+(    Returns the sample linear partial correlation coefficients between ) s
+/F-gs-font 8 8 SF
+18 486 M (34:) s
+/Times-Bold 8 8 SUF
+34.448 486 M
+(    variables in mtrx, controlling for the remaining variables in mtrx.) s
+/F-gs-font 8 8 SF
+18 477 M (35:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 468 M (36:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 459 M (37:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 450 M (38:) s
+/Times-Bold 8 8 SUF
+34.448 450 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+18 441 M (39:) s
+/Times-Bold 8 8 SUF
+34.448 441 M
+(    ----------) s
+/F-gs-font 8 8 SF
+18 432 M (40:) s
+/Times-Bold 8 8 SUF
+34.448 432 M
+(    mtrx : array-like, shape \(n, p\)) s
+/F-gs-font 8 8 SF
+18 423 M (41:) s
+/Times-Bold 8 8 SUF
+34.448 423 M
+(        Array with the different variables. Each column of mtrx is take) s
+/F-gs-font 8 8 SF
+18 414 M (42:) s
+/Times-Bold 8 8 SUF
+34.448 414 M
+(        variable) s
+/F-gs-font 8 8 SF
+18 405 M (43:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 396 M (44:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 387 M (45:) s
+/Times-Bold 8 8 SUF
+34.448 387 M
+(    Returns) s
+/F-gs-font 8 8 SF
+18 378 M (46:) s
+/Times-Bold 8 8 SUF
+34.448 378 M
+(    -------) s
+/F-gs-font 8 8 SF
+18 369 M (47:) s
+/Times-Bold 8 8 SUF
+34.448 369 M
+(    P : array-like, shape \(p, p\)) s
+/F-gs-font 8 8 SF
+18 360 M (48:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(        P[i, j] contains the partial correlation of mtrx[:, i] and mtrx[:, j]) s
+/F-gs-font 8 8 SF
+18 351 M (49:) s
+/Times-Bold 8 8 SUF
+34.448 351 M
+(        controlling for the remaining variables in mtrx.) s
+/F-gs-font 8 8 SF
+18 342 M (50:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 333 M (51:) s
+/Times-Bold 8 8 SUF
+34.448 333 M
+(    Notes) s
+/F-gs-font 8 8 SF
+18 324 M (52:) s
+/Times-Bold 8 8 SUF
+34.448 324 M
+(    -----) s
+/F-gs-font 8 8 SF
+18 315 M (53:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 306 M (54:) s
+/Times-Bold 8 8 SUF
+34.448 306 M
+(    Partial Correlation in Python \(clone of Matlab's partialcorr\)) s
+/F-gs-font 8 8 SF
+18 297 M (55:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 288 M (56:) s
+/Times-Bold 8 8 SUF
+34.448 288 M
+(    This uses the linear regression approach to compute the partial) s
+/F-gs-font 8 8 SF
+18 279 M (57:) s
+/Times-Bold 8 8 SUF
+34.448 279 M
+(    correlation \(might be slow for a huge number of variables\). The) s
+/F-gs-font 8 8 SF
+18 270 M (58:) s
+/Times-Bold 8 8 SUF
+34.448 270 M
+(    algorithm is detailed here:) s
+/F-gs-font 8 8 SF
+18 261 M (59:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 252 M (60:) s
+/Times-Bold 8 8 SUF
+34.448 252 M
+(    http://en.wikipedia.org/wiki/Partial_correlation#Using_linear_reg) s
+/F-gs-font 8 8 SF
+18 243 M (61:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 234 M (62:) s
+/Times-Bold 8 8 SUF
+34.448 234 M
+(    Taking X and Y two variables of interest and Z the matrix with al) s
+/F-gs-font 8 8 SF
+18 225 M (63:) s
+/Times-Bold 8 8 SUF
+34.448 225 M
+(    variable minus {X, Y}, the algorithm can be summarized as) s
+/F-gs-font 8 8 SF
+18 216 M (64:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 207 M (65:) s
+/Times-Bold 8 8 SUF
+34.448 207 M
+(    1\) perform a normal linear least-squares regression with X as the ) s
+/F-gs-font 8 8 SF
+18 198 M (66:) s
+/Times-Bold 8 8 SUF
+34.448 198 M
+(       and Z as the predictor) s
+/F-gs-font 8 8 SF
+18 189 M (67:) s
+/Times-Bold 8 8 SUF
+34.448 189 M
+(    2\) calculate the residuals in Step #1) s
+/F-gs-font 8 8 SF
+18 180 M (68:) s
+/Times-Bold 8 8 SUF
+34.448 180 M
+(    3\) perform a normal linear least-squares regression with Y as the ) s
+/F-gs-font 8 8 SF
+18 171 M (69:) s
+/Times-Bold 8 8 SUF
+34.448 171 M
+(       Z as the predictor) s
+/F-gs-font 8 8 SF
+18 162 M (70:) s
+/Times-Bold 8 8 SUF
+34.448 162 M
+(    4\) calculate the residuals in Step #3) s
+/F-gs-font 8 8 SF
+18 153 M (71:) s
+/Times-Bold 8 8 SUF
+34.448 153 M
+(    5\) calculate the correlation coefficient between the residuals from ) s
+/F-gs-font 8 8 SF
+18 144 M (72:) s
+/Times-Bold 8 8 SUF
+34.448 144 M
+(       and #4) s
+/F-gs-font 8 8 SF
+18 135 M (73:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 126 M (74:) s
+/Times-Bold 8 8 SUF
+34.448 126 M
+(    The result is the partial correlation between X and Y while contro) s
+/F-gs-font 8 8 SF
+18 117 M (75:) s
+/Times-Bold 8 8 SUF
+34.448 117 M
+(    the effect of Z) s
+/F-gs-font 8 8 SF
+18 108 M (76:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 99 M (77:) s
+/Times-Bold 8 8 SUF
+34.448 99 M
+(    Adapted from code by Fabian Pedregosa-Izquierdo:) s
+/F-gs-font 8 8 SF
+18 90 M (78:) s
+/Times-Bold 8 8 SUF
+34.448 90 M
+(    Date: Nov 2014) s
+/F-gs-font 8 8 SF
+18 81 M (79:) s
+/Times-Bold 8 8 SUF
+34.448 81 M
+(    Author: Fabian Pedregosa-Izquierdo, f@bianp.net) s
+/F-gs-font 8 8 SF
+18 72 M (80:) s
+/Times-Bold 8 8 SUF
+34.448 72 M
+(    Testing: Valentina Borghesani, valentinaborghesani@gmail.com) s
+/F-gs-font 8 8 SF
+18 63 M (81:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+18 54 M (82:) s
+/Times-Bold 8 8 SUF
+34.448 54 M
+(    """) s
+/F-gs-font 8 8 SF
+18 45 M (83:) s
+18 36 M (84:) s
+34.448 36 M
+(    mtrx = np.asarray\(mtrx\)) s
+18 27 M (85:) s
+34.448 27 M
+(    pfeat = mtrx.shape[1]) s
+18 18 M (86:) s
+34.448 18 M
+(    pcorr = np.zeros\(\(pfeat, pfeat\), dtype=np.float\)) s
+18 9 M (87:) s
+34.448 9 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 9 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 9 M
+( i ) s
+/Times-Bold 8 8 SUF
+58.888 9 M
+(in) s
+/F-gs-font 8 8 SF
+65.56 9 M
+( range\(pfeat\):) s
+291.5 783 M (88:) s
+307.948 783 M
+(        pcorr[i, i] = 1) s
+291.5 774 M (89:) s
+307.948 774 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 774 M
+(for) s
+/F-gs-font 8 8 SF
+334.164 774 M
+( j ) s
+/Times-Bold 8 8 SUF
+340.388 774 M
+(in) s
+/F-gs-font 8 8 SF
+347.06 774 M
+( range\(i+1, pfeat\):) s
+291.5 765 M (90:) s
+307.948 765 M
+(            idx = np.ones\(pfeat, dtype=np.bool\)) s
+291.5 756 M (91:) s
+307.948 756 M
+(            idx[i] = False) s
+291.5 747 M (92:) s
+307.948 747 M
+(            idx[j] = False) s
+291.5 738 M (93:) s
+307.948 738 M
+(            beta_i = linalg.lstsq\(mtrx[:, idx], mtrx[:, j]\)[0]) s
+291.5 729 M (94:) s
+307.948 729 M
+(            beta_j = linalg.lstsq\(mtrx[:, idx], mtrx[:, i]\)[0]) s
+291.5 720 M (95:) s
+291.5 711 M (96:) s
+307.948 711 M
+(            res_j = mtrx[:, j] - mtrx[:, idx].dot\(beta_i\)) s
+291.5 702 M (97:) s
+307.948 702 M
+(            res_i = mtrx[:, i] - mtrx[:, idx].dot\(beta_j\)) s
+291.5 693 M (98:) s
+291.5 684 M (99:) s
+307.948 684 M
+(            corr = stats.pearsonr\(res_i, res_j\)[0]) s
+287.5 675 M (100:) s
+307.948 675 M
+(            pcorr[i, j] = corr) s
+287.5 666 M (101:) s
+307.948 666 M
+(            pcorr[j, i] = corr) s
+287.5 657 M (102:) s
+287.5 648 M (103:) s
+307.948 648 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 648 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 648 M
+( pcorr) s
+287.5 639 M (104:) s
+287.5 630 M (105:) s
+287.5 621 M (106:) s
+/Times-Bold 8 8 SUF
+307.948 621 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 621 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 621 M
+(kmo) s
+/F-gs-font 8 8 SF
+335.724 621 M
+(\(dataset\):) s
+287.5 612 M (107:) s
+307.948 612 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 612 M
+("""Calculates the Kaiser-Meyer-Olkin measure on an input datas) s
+/F-gs-font 8 8 SF
+287.5 603 M (108:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 594 M (109:) s
+/Times-Bold 8 8 SUF
+307.948 594 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 585 M (110:) s
+/Times-Bold 8 8 SUF
+307.948 585 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 576 M (111:) s
+/Times-Bold 8 8 SUF
+307.948 576 M
+(    dataset : array-like, shape \(n, p\)) s
+/F-gs-font 8 8 SF
+287.5 567 M (112:) s
+/Times-Bold 8 8 SUF
+307.948 567 M
+(        Array containing n samples and p features. Must have no NaNs) s
+/F-gs-font 8 8 SF
+287.5 558 M (113:) s
+/Times-Bold 8 8 SUF
+307.948 558 M
+(        Ideally scaled before performing test.) s
+/F-gs-font 8 8 SF
+287.5 549 M (114:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 540 M (115:) s
+/Times-Bold 8 8 SUF
+307.948 540 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 531 M (116:) s
+/Times-Bold 8 8 SUF
+307.948 531 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 522 M (117:) s
+/Times-Bold 8 8 SUF
+307.948 522 M
+(    kmostat : float) s
+/F-gs-font 8 8 SF
+287.5 513 M (118:) s
+/Times-Bold 8 8 SUF
+307.948 513 M
+(        KMO test value) s
+/F-gs-font 8 8 SF
+287.5 504 M (119:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 495 M (120:) s
+/Times-Bold 8 8 SUF
+307.948 495 M
+(    Notes) s
+/F-gs-font 8 8 SF
+287.5 486 M (121:) s
+/Times-Bold 8 8 SUF
+307.948 486 M
+(    -----) s
+/F-gs-font 8 8 SF
+287.5 477 M (122:) s
+/Times-Bold 8 8 SUF
+307.948 477 M
+(    Based on calculations shown here:) s
+/F-gs-font 8 8 SF
+287.5 468 M (123:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 459 M (124:) s
+/Times-Bold 8 8 SUF
+307.948 459 M
+(    http://www.statisticshowto.com/kaiser-meyer-olkin/) s
+/F-gs-font 8 8 SF
+287.5 450 M (125:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 441 M (126:) s
+/Times-Bold 8 8 SUF
+307.948 441 M
+(        -- 0.00-0.49  unacceptable) s
+/F-gs-font 8 8 SF
+287.5 432 M (127:) s
+/Times-Bold 8 8 SUF
+307.948 432 M
+(        -- 0.50-0.59  miserable) s
+/F-gs-font 8 8 SF
+287.5 423 M (128:) s
+/Times-Bold 8 8 SUF
+307.948 423 M
+(        -- 0.60-0.69  mediocre) s
+/F-gs-font 8 8 SF
+287.5 414 M (129:) s
+/Times-Bold 8 8 SUF
+307.948 414 M
+(        -- 0.70-0.79  middling) s
+/F-gs-font 8 8 SF
+287.5 405 M (130:) s
+/Times-Bold 8 8 SUF
+307.948 405 M
+(        -- 0.80-0.89  meritorious) s
+/F-gs-font 8 8 SF
+287.5 396 M (131:) s
+/Times-Bold 8 8 SUF
+307.948 396 M
+(        -- 0.90-1.00  marvelous) s
+/F-gs-font 8 8 SF
+287.5 387 M (132:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 378 M (133:) s
+/Times-Bold 8 8 SUF
+307.948 378 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 369 M (134:) s
+287.5 360 M (135:) s
+307.948 360 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 360 M
+(# Correlation matrix and the partial covariance matrix.) s
+/F-gs-font 8 8 SF
+287.5 351 M (136:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 351 M
+(    corrmatrix = np.corrcoef\(dataset.transpose\(\)\)) s
+287.5 342 M (137:) s
+307.948 342 M
+(    pcorr = partial_corr\(dataset\)) s
+287.5 333 M (138:) s
+287.5 324 M (139:) s
+307.948 324 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 324 M
+(# Calculation of the KMO statistic) s
+/F-gs-font 8 8 SF
+287.5 315 M (140:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 315 M
+(    matrix = np.multiply\(corrmatrix, corrmatrix\)) s
+287.5 306 M (141:) s
+307.948 306 M
+(    rows = matrix.shape[0]) s
+287.5 297 M (142:) s
+307.948 297 M
+(    cols = matrix.shape[1]) s
+287.5 288 M (143:) s
+307.948 288 M
+(    rij = np.sum\(matrix\) - np.trace\(matrix\)) s
+287.5 279 M (144:) s
+307.948 279 M
+(    uij = np.sum\(pcorr\) - np.trace\(pcorr\)) s
+287.5 270 M (145:) s
+307.948 270 M
+(    kmostat = rij/\(rij+uij\)) s
+287.5 261 M (146:) s
+307.948 261 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 261 M
+(print) s
+/F-gs-font 8 8 SF
+333.284 261 M
+(\(kmostat\)) s
+287.5 252 M (147:) s
+307.948 252 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 252 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 252 M
+( kmostat) s
+287.5 243 M (148:) s
+287.5 234 M (149:) s
+287.5 225 M (150:) s
+/Times-Bold 8 8 SUF
+307.948 225 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 225 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 225 M
+(pca_analysis) s
+/F-gs-font 8 8 SF
+363.732 225 M
+(\(dataset, dropcols=[], imputenans=True, scale=True,) s
+287.5 216 M (151:) s
+307.948 216 M
+(                 rem_outliers=True, out_thresh=10, n_components=5,) s
+287.5 207 M (152:) s
+307.948 207 M
+(                 existing_model=False, model_file=) s
+/Times-Bold 8 8 SUF
+455.86 207 M
+('Optional') s
+/F-gs-font 8 8 SF
+491.42 207 M
+(\):) s
+287.5 198 M (153:) s
+307.948 198 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 198 M
+("""Performs a primary component analysis on an input dataset) s
+/F-gs-font 8 8 SF
+287.5 189 M (154:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 180 M (155:) s
+/Times-Bold 8 8 SUF
+307.948 180 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 171 M (156:) s
+/Times-Bold 8 8 SUF
+307.948 171 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 162 M (157:) s
+/Times-Bold 8 8 SUF
+307.948 162 M
+(    dataset : pandas.core.frame.DataFrame, shape \(n, p\)) s
+/F-gs-font 8 8 SF
+287.5 153 M (158:) s
+/Times-Bold 8 8 SUF
+307.948 153 M
+(        Input dataset with n samples and p features) s
+/F-gs-font 8 8 SF
+287.5 144 M (159:) s
+/Times-Bold 8 8 SUF
+307.948 144 M
+(    dropcols : list) s
+/F-gs-font 8 8 SF
+287.5 135 M (160:) s
+/Times-Bold 8 8 SUF
+307.948 135 M
+(        Columns to exclude from pca analysis. At a minimum, user mu) s
+/F-gs-font 8 8 SF
+287.5 126 M (161:) s
+/Times-Bold 8 8 SUF
+307.948 126 M
+(        non-numeric columns.) s
+/F-gs-font 8 8 SF
+287.5 117 M (162:) s
+/Times-Bold 8 8 SUF
+307.948 117 M
+(    imputenans : bool) s
+/F-gs-font 8 8 SF
+287.5 108 M (163:) s
+/Times-Bold 8 8 SUF
+307.948 108 M
+(        If True, impute NaN values as column means.) s
+/F-gs-font 8 8 SF
+287.5 99 M (164:) s
+/Times-Bold 8 8 SUF
+307.948 99 M
+(    scale : bool) s
+/F-gs-font 8 8 SF
+287.5 90 M (165:) s
+/Times-Bold 8 8 SUF
+307.948 90 M
+(        If True, columns will be scaled to a mean of zero and a standar) s
+/F-gs-font 8 8 SF
+287.5 81 M (166:) s
+/Times-Bold 8 8 SUF
+307.948 81 M
+(        deviation of 1.) s
+/F-gs-font 8 8 SF
+287.5 72 M (167:) s
+/Times-Bold 8 8 SUF
+307.948 72 M
+(    n_components : int) s
+/F-gs-font 8 8 SF
+287.5 63 M (168:) s
+/Times-Bold 8 8 SUF
+307.948 63 M
+(        Desired number of components in principle component analysis) s
+/F-gs-font 8 8 SF
+287.5 54 M (169:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 45 M (170:) s
+/Times-Bold 8 8 SUF
+307.948 45 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 36 M (171:) s
+/Times-Bold 8 8 SUF
+307.948 36 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 27 M (172:) s
+/Times-Bold 8 8 SUF
+307.948 27 M
+(    pcadataset : diff_classifier.pca.Bunch) s
+/F-gs-font 8 8 SF
+287.5 18 M (173:) s
+/Times-Bold 8 8 SUF
+307.948 18 M
+(        Contains outputs of PCA analysis, including:) s
+/F-gs-font 8 8 SF
+287.5 9 M (174:) s
+/Times-Bold 8 8 SUF
+307.948 9 M
+(        scaled : numpy.ndarray, shape \(n, p\)) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 2 def
+/fname (pca.py) def
+/fdir (.) def
+/ftail (pca.py) def
+/Times-Bold 8 8 SUF
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+/F-gs-font 8 8 SF
+14 783 M (175:) s
+/Times-Bold 8 8 SUF
+34.448 783 M
+(            Scaled dataset with n samples and p features) s
+/F-gs-font 8 8 SF
+14 774 M (176:) s
+/Times-Bold 8 8 SUF
+34.448 774 M
+(        pcavals : pandas.core.frame.DataFrame, shape \(n, n_componen) s
+/F-gs-font 8 8 SF
+14 765 M (177:) s
+/Times-Bold 8 8 SUF
+34.448 765 M
+(            Output array of n_component features of each original samp) s
+/F-gs-font 8 8 SF
+14 756 M (178:) s
+/Times-Bold 8 8 SUF
+34.448 756 M
+(        final : pandas.core.frame.DataFrame, shape \(n, p+n_componen) s
+/F-gs-font 8 8 SF
+14 747 M (179:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(            Output array with principle components append to original a) s
+/F-gs-font 8 8 SF
+14 738 M (180:) s
+/Times-Bold 8 8 SUF
+34.448 738 M
+(        prcomps : pandas.core.frame.DataFrame, shape \(5, n_compone) s
+/F-gs-font 8 8 SF
+14 729 M (181:) s
+/Times-Bold 8 8 SUF
+34.448 729 M
+(            Output array displaying the top 5 features contributing to ea) s
+/F-gs-font 8 8 SF
+14 720 M (182:) s
+/Times-Bold 8 8 SUF
+34.448 720 M
+(            principle component.) s
+/F-gs-font 8 8 SF
+14 711 M (183:) s
+/Times-Bold 8 8 SUF
+34.448 711 M
+(        prvals : dict of list of str) s
+/F-gs-font 8 8 SF
+14 702 M (184:) s
+/Times-Bold 8 8 SUF
+34.448 702 M
+(            Output dictionary of of the pca scores for the top 5 features) s
+/F-gs-font 8 8 SF
+14 693 M (185:) s
+/Times-Bold 8 8 SUF
+34.448 693 M
+(            contributing to each principle component.) s
+/F-gs-font 8 8 SF
+14 684 M (186:) s
+/Times-Bold 8 8 SUF
+34.448 684 M
+(        components : pandas.core.frame.DataFrame, shape \(p, n_comp) s
+/F-gs-font 8 8 SF
+14 675 M (187:) s
+/Times-Bold 8 8 SUF
+34.448 675 M
+(            Raw pca scores.) s
+/F-gs-font 8 8 SF
+14 666 M (188:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 657 M (189:) s
+/Times-Bold 8 8 SUF
+34.448 657 M
+(    """) s
+/F-gs-font 8 8 SF
+14 648 M (190:) s
+34.448 648 M
+(    pd.options.mode.chained_assignment = None  ) s
+/Times-Italic 8 8 SUF
+192.504 648 M
+(# default='warn') s
+/F-gs-font 8 8 SF
+14 639 M (191:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 639 M
+(    dataset_num = dataset.drop\(dropcols, axis=1\)) s
+14 630 M (192:) s
+34.448 630 M
+(    dataset_num = dataset_num.replace\([np.inf, -np.inf], np.nan\)) s
+14 621 M (193:) s
+14 612 M (194:) s
+34.448 612 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 612 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 612 M
+( rem_outliers:) s
+14 603 M (195:) s
+34.448 603 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 603 M
+(for) s
+/F-gs-font 8 8 SF
+60.664 603 M
+( i ) s
+/Times-Bold 8 8 SUF
+66.888 603 M
+(in) s
+/F-gs-font 8 8 SF
+73.56 603 M
+( range\(10\):) s
+14 594 M (196:) s
+34.448 594 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 594 M
+(for) s
+/F-gs-font 8 8 SF
+68.664 594 M
+( col ) s
+/Times-Bold 8 8 SUF
+82.44 594 M
+(in) s
+/F-gs-font 8 8 SF
+89.112 594 M
+( dataset_num.columns:) s
+14 585 M (197:) s
+34.448 585 M
+(                xmean = np.mean\(dataset_num[col]\)) s
+14 576 M (198:) s
+34.448 576 M
+(                xstd = np.std\(dataset_num[col]\)) s
+14 567 M (199:) s
+14 558 M (200:) s
+34.448 558 M
+(                counter = 0) s
+14 549 M (201:) s
+34.448 549 M
+(                ) s
+/Times-Bold 8 8 SUF
+66.448 549 M
+(for) s
+/F-gs-font 8 8 SF
+76.664 549 M
+( x ) s
+/Times-Bold 8 8 SUF
+84.664 549 M
+(in) s
+/F-gs-font 8 8 SF
+91.336 549 M
+( dataset_num[col]:) s
+14 540 M (202:) s
+34.448 540 M
+(                    ) s
+/Times-Bold 8 8 SUF
+74.448 540 M
+(if) s
+/F-gs-font 8 8 SF
+79.336 540 M
+( x > xmean + out_thresh*xstd:) s
+14 531 M (203:) s
+34.448 531 M
+(                        dataset[col][counter] = np.nan) s
+14 522 M (204:) s
+34.448 522 M
+(                        dataset_num[col][counter] = np.nan) s
+14 513 M (205:) s
+34.448 513 M
+(                    ) s
+/Times-Bold 8 8 SUF
+74.448 513 M
+(if) s
+/F-gs-font 8 8 SF
+79.336 513 M
+( x < xmean - out_thresh*xstd:) s
+14 504 M (206:) s
+34.448 504 M
+(                        dataset[col][counter] = np.nan) s
+14 495 M (207:) s
+34.448 495 M
+(                        dataset_num[col][counter] = np.nan) s
+14 486 M (208:) s
+34.448 486 M
+(                    counter = counter + 1) s
+14 477 M (209:) s
+14 468 M (210:) s
+34.448 468 M
+(    dataset_raw = dataset_num.values) s
+14 459 M (211:) s
+14 450 M (212:) s
+34.448 450 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 450 M
+(# Fill in NaN values) s
+/F-gs-font 8 8 SF
+14 441 M (213:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 441 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 441 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 441 M
+( imputenans:) s
+14 432 M (214:) s
+34.448 432 M
+(        imp = SimpleImputer\(missing_values=np.nan, strategy=) s
+/Times-Bold 8 8 SUF
+231.312 432 M
+('mean') s
+/F-gs-font 8 8 SF
+255.304 432 M
+(\)) s
+14 423 M (215:) s
+34.448 423 M
+(        imp.fit\(dataset_raw\)) s
+14 414 M (216:) s
+34.448 414 M
+(        dataset_clean = imp.transform\(dataset_raw\)) s
+14 405 M (217:) s
+34.448 405 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 405 M
+(else) s
+/F-gs-font 8 8 SF
+54.888 405 M
+(:) s
+14 396 M (218:) s
+34.448 396 M
+(        dataset_clean = dataset_raw) s
+14 387 M (219:) s
+14 378 M (220:) s
+34.448 378 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 378 M
+(# Scale inputs) s
+/F-gs-font 8 8 SF
+14 369 M (221:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 369 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 369 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 369 M
+( scale:) s
+14 360 M (222:) s
+34.448 360 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 360 M
+(if) s
+/F-gs-font 8 8 SF
+55.336 360 M
+( existing_model:) s
+14 351 M (223:) s
+34.448 351 M
+(            scaler = model_file.scaler) s
+14 342 M (224:) s
+34.448 342 M
+(            dataset_scaled = model_file.scaler.transform\(dataset_clean\)) s
+14 333 M (225:) s
+34.448 333 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 333 M
+(else) s
+/F-gs-font 8 8 SF
+62.888 333 M
+(:) s
+14 324 M (226:) s
+34.448 324 M
+(            scaler = stscale\(\)) s
+14 315 M (227:) s
+34.448 315 M
+(            scaler.fit\(dataset_clean\)) s
+14 306 M (228:) s
+34.448 306 M
+(            dataset_scaled = scaler.transform\(dataset_clean\)) s
+14 297 M (229:) s
+34.448 297 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 297 M
+(else) s
+/F-gs-font 8 8 SF
+54.888 297 M
+(:) s
+14 288 M (230:) s
+34.448 288 M
+(        dataset_scaled = dataset_clean) s
+14 279 M (231:) s
+14 270 M (232:) s
+34.448 270 M
+(    pcadataset = Bunch\(scaled=dataset_scaled\)) s
+14 261 M (233:) s
+14 252 M (234:) s
+34.448 252 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 252 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 252 M
+( existing_model:) s
+14 243 M (235:) s
+34.448 243 M
+(        pca1 = model_file.pcamodel) s
+14 234 M (236:) s
+34.448 234 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 234 M
+(else) s
+/F-gs-font 8 8 SF
+54.888 234 M
+(:) s
+14 225 M (237:) s
+34.448 225 M
+(        pca1 = pca\(n_components=n_components\)) s
+14 216 M (238:) s
+34.448 216 M
+(        pca1.fit\(dataset_scaled\)) s
+14 207 M (239:) s
+14 198 M (240:) s
+34.448 198 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 198 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 198 M
+( ) s
+/Times-Bold 8 8 SUF
+49.336 198 M
+(not) s
+/F-gs-font 8 8 SF
+60.448 198 M
+( existing_model:) s
+14 189 M (241:) s
+34.448 189 M
+(        ) s
+/Times-Italic 8 8 SUF
+50.448 189 M
+(# Cumulative explained variance ratio) s
+/F-gs-font 8 8 SF
+14 180 M (242:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 180 M
+(        cum_var = 0) s
+14 171 M (243:) s
+34.448 171 M
+(        explained_v = pca1.explained_variance_ratio_) s
+14 162 M (244:) s
+34.448 162 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 162 M
+(print) s
+/F-gs-font 8 8 SF
+67.784 162 M
+(\() s
+/Times-Bold 8 8 SUF
+70.448 162 M
+('Cumulative explained variance:') s
+/F-gs-font 8 8 SF
+184.664 162 M
+(\)) s
+14 153 M (245:) s
+34.448 153 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 153 M
+(for) s
+/F-gs-font 8 8 SF
+60.664 153 M
+( i ) s
+/Times-Bold 8 8 SUF
+66.888 153 M
+(in) s
+/F-gs-font 8 8 SF
+73.56 153 M
+( range\(0, n_components\):) s
+14 144 M (246:) s
+34.448 144 M
+(            cum_var = cum_var + explained_v[i]) s
+14 135 M (247:) s
+34.448 135 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 135 M
+(print) s
+/F-gs-font 8 8 SF
+75.784 135 M
+(\() s
+/Times-Bold 8 8 SUF
+78.448 135 M
+('{} component: {}') s
+/F-gs-font 8 8 SF
+140.824 135 M
+(.format\(i, cum_var\)\)) s
+14 126 M (248:) s
+14 117 M (249:) s
+34.448 117 M
+(    prim_comps = {}) s
+14 108 M (250:) s
+34.448 108 M
+(    pcadataset.prvals = {}) s
+14 99 M (251:) s
+34.448 99 M
+(    comps = pca1.components_) s
+14 90 M (252:) s
+34.448 90 M
+(    pcadataset.components = pd.DataFrame\(comps.transpose\(\)\)) s
+14 81 M (253:) s
+34.448 81 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 81 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 81 M
+( num ) s
+/Times-Bold 8 8 SUF
+70.888 81 M
+(in) s
+/F-gs-font 8 8 SF
+77.56 81 M
+( range\(0, n_components\):) s
+14 72 M (254:) s
+34.448 72 M
+(        highest = np.abs\(pcadataset.components[) s
+14 63 M (255:) s
+34.448 63 M
+(                         num]\).values.argsort\(\)[-5:][::-1]) s
+14 54 M (256:) s
+34.448 54 M
+(        pels = []) s
+14 45 M (257:) s
+34.448 45 M
+(        pcadataset.prvals[num] = pcadataset.components[num].values[high) s
+14 36 M (258:) s
+34.448 36 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 36 M
+(for) s
+/F-gs-font 8 8 SF
+60.664 36 M
+( col ) s
+/Times-Bold 8 8 SUF
+74.44 36 M
+(in) s
+/F-gs-font 8 8 SF
+81.112 36 M
+( highest:) s
+14 27 M (259:) s
+34.448 27 M
+(            pels.append\(dataset_num.columns[col]\)) s
+14 18 M (260:) s
+34.448 18 M
+(        prim_comps[num] = pels) s
+14 9 M (261:) s
+287.5 783 M (262:) s
+307.948 783 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 783 M
+(# Main contributors to each primary component) s
+/F-gs-font 8 8 SF
+287.5 774 M (263:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 774 M
+(    pcadataset.prcomps = pd.DataFrame.from_dict\(prim_comps\)) s
+287.5 765 M (264:) s
+307.948 765 M
+(    pcadataset.pcavals = pd.DataFrame\(pca1.transform\(dataset_scaled\)\)) s
+287.5 756 M (265:) s
+307.948 756 M
+(    pcadataset.final = pd.concat\([dataset, pcadataset.pcavals], axis=1\)) s
+287.5 747 M (266:) s
+307.948 747 M
+(    pcadataset.pcamodel = pca1) s
+287.5 738 M (267:) s
+307.948 738 M
+(    pcadataset.scaler = scaler) s
+287.5 729 M (268:) s
+287.5 720 M (269:) s
+307.948 720 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 720 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 720 M
+( pcadataset) s
+287.5 711 M (270:) s
+287.5 702 M (271:) s
+287.5 693 M (272:) s
+/Times-Bold 8 8 SUF
+307.948 693 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 693 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 693 M
+(recycle_pcamodel) s
+/F-gs-font 8 8 SF
+381.484 693 M
+(\(pcamodel, df, imputenans=True, scale=True\):) s
+287.5 684 M (273:) s
+307.948 684 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 684 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 684 M
+( imputenans:) s
+287.5 675 M (274:) s
+307.948 675 M
+(        imp = SimpleImputer\(missing_values=) s
+/Times-Bold 8 8 SUF
+449.42 675 M
+('NaN') s
+/F-gs-font 8 8 SF
+470.3 675 M
+(, strategy=) s
+/Times-Bold 8 8 SUF
+504.14 675 M
+('mean') s
+/F-gs-font 8 8 SF
+528.132 675 M
+(, ax) s
+287.5 666 M (275:) s
+307.948 666 M
+(        imp.fit\(df\)) s
+287.5 657 M (276:) s
+307.948 657 M
+(        df_clean = imp.transform\(df\)) s
+287.5 648 M (277:) s
+307.948 648 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 648 M
+(else) s
+/F-gs-font 8 8 SF
+328.388 648 M
+(:) s
+287.5 639 M (278:) s
+307.948 639 M
+(        df_clean = df) s
+287.5 630 M (279:) s
+287.5 621 M (280:) s
+307.948 621 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 621 M
+(# Scale inputs) s
+/F-gs-font 8 8 SF
+287.5 612 M (281:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 612 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 612 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 612 M
+( scale:) s
+287.5 603 M (282:) s
+307.948 603 M
+(        scaler = stscale\(\)) s
+287.5 594 M (283:) s
+307.948 594 M
+(        scaler.fit\(df_clean\)) s
+287.5 585 M (284:) s
+307.948 585 M
+(        df_scaled = scaler.transform\(df_clean\)) s
+287.5 576 M (285:) s
+307.948 576 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 576 M
+(else) s
+/F-gs-font 8 8 SF
+328.388 576 M
+(:) s
+287.5 567 M (286:) s
+307.948 567 M
+(        df_scaled = df_clean) s
+287.5 558 M (287:) s
+287.5 549 M (288:) s
+307.948 549 M
+(    pcamodel.fit\(df_scaled\)) s
+287.5 540 M (289:) s
+307.948 540 M
+(    pcavals = pd.DataFrame\(pcamodel.transform\(df_scaled\)\)) s
+287.5 531 M (290:) s
+307.948 531 M
+(    pcafinal = pd.concat\([df, pcavals], axis=1\)) s
+287.5 522 M (291:) s
+287.5 513 M (292:) s
+307.948 513 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 513 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 513 M
+( pcafinal) s
+287.5 504 M (293:) s
+287.5 495 M (294:) s
+287.5 486 M (295:) s
+/Times-Bold 8 8 SUF
+307.948 486 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 486 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 486 M
+(plot_pca) s
+/F-gs-font 8 8 SF
+349.948 486 M
+(\(datasets, figsize=\(8, 8\), lwidth=8.0,) s
+287.5 477 M (296:) s
+307.948 477 M
+(             labels=[) s
+/Times-Bold 8 8 SUF
+359.788 477 M
+('Sample1') s
+/F-gs-font 8 8 SF
+394.452 477 M
+(, ) s
+/Times-Bold 8 8 SUF
+398.452 477 M
+('Sample2') s
+/F-gs-font 8 8 SF
+433.116 477 M
+(], savefig=True, filename=) s
+/Times-Bold 8 8 SUF
+519.004 477 M
+('test.p) s
+/F-gs-font 8 8 SF
+287.5 468 M (297:) s
+/Times-Bold 8 8 SUF
+307.948 468 M
+(             rticks=np.linspace\(-2, 2, 5\), dpi=300, labelsize=20\):) s
+/F-gs-font 8 8 SF
+287.5 459 M (298:) s
+/Times-Bold 8 8 SUF
+307.948 459 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 459 M
+("""Plots the average output features from a PCA analysis in pola) s
+/F-gs-font 8 8 SF
+287.5 450 M (299:) s
+/Times-Bold 8 8 SUF
+307.948 450 M
+(    coordinates) s
+/F-gs-font 8 8 SF
+287.5 441 M (300:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 432 M (301:) s
+/Times-Bold 8 8 SUF
+307.948 432 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 423 M (302:) s
+/Times-Bold 8 8 SUF
+307.948 423 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 414 M (303:) s
+/Times-Bold 8 8 SUF
+307.948 414 M
+(    datasets : dict of numpy.ndarray) s
+/F-gs-font 8 8 SF
+287.5 405 M (304:) s
+/Times-Bold 8 8 SUF
+307.948 405 M
+(        Dictionary with n samples and p features to plot.) s
+/F-gs-font 8 8 SF
+287.5 396 M (305:) s
+/Times-Bold 8 8 SUF
+307.948 396 M
+(    figize : list) s
+/F-gs-font 8 8 SF
+287.5 387 M (306:) s
+/Times-Bold 8 8 SUF
+307.948 387 M
+(        Dimensions of output figure e.g. \(8, 8\)) s
+/F-gs-font 8 8 SF
+287.5 378 M (307:) s
+/Times-Bold 8 8 SUF
+307.948 378 M
+(    lwidth : float) s
+/F-gs-font 8 8 SF
+287.5 369 M (308:) s
+/Times-Bold 8 8 SUF
+307.948 369 M
+(        Width of plotted lines in figure) s
+/F-gs-font 8 8 SF
+287.5 360 M (309:) s
+/Times-Bold 8 8 SUF
+307.948 360 M
+(    labels : list of str) s
+/F-gs-font 8 8 SF
+287.5 351 M (310:) s
+/Times-Bold 8 8 SUF
+307.948 351 M
+(        Labels to display in legend.) s
+/F-gs-font 8 8 SF
+287.5 342 M (311:) s
+/Times-Bold 8 8 SUF
+307.948 342 M
+(    savefig : bool) s
+/F-gs-font 8 8 SF
+287.5 333 M (312:) s
+/Times-Bold 8 8 SUF
+307.948 333 M
+(        If True, saves figure) s
+/F-gs-font 8 8 SF
+287.5 324 M (313:) s
+/Times-Bold 8 8 SUF
+307.948 324 M
+(    filename : str) s
+/F-gs-font 8 8 SF
+287.5 315 M (314:) s
+/Times-Bold 8 8 SUF
+307.948 315 M
+(        Desired output filename) s
+/F-gs-font 8 8 SF
+287.5 306 M (315:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 297 M (316:) s
+/Times-Bold 8 8 SUF
+307.948 297 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 288 M (317:) s
+287.5 279 M (318:) s
+307.948 279 M
+(    fig = plt.figure\(figsize=figsize\)) s
+287.5 270 M (319:) s
+307.948 270 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 270 M
+(for) s
+/F-gs-font 8 8 SF
+326.164 270 M
+( key ) s
+/Times-Bold 8 8 SUF
+341.716 270 M
+(in) s
+/F-gs-font 8 8 SF
+348.388 270 M
+( datasets:) s
+287.5 261 M (320:) s
+307.948 261 M
+(        N = datasets[key].shape[0]) s
+287.5 252 M (321:) s
+307.948 252 M
+(    width = \(2*np.pi\) / N) s
+287.5 243 M (322:) s
+307.948 243 M
+(    color = iter\(cm.viridis\(np.linspace\(0, 0.9, len\(datasets\)\)\)\)) s
+287.5 234 M (323:) s
+287.5 225 M (324:) s
+307.948 225 M
+(    theta = np.linspace\(0.0, 2 * np.pi, N+1, endpoint=True\)) s
+287.5 216 M (325:) s
+307.948 216 M
+(    radii = {}) s
+287.5 207 M (326:) s
+307.948 207 M
+(    bars = {}) s
+287.5 198 M (327:) s
+287.5 189 M (328:) s
+307.948 189 M
+(    ax = plt.subplot\(111, polar=True\)) s
+287.5 180 M (329:) s
+307.948 180 M
+(    counter = 0) s
+287.5 171 M (330:) s
+307.948 171 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 171 M
+(for) s
+/F-gs-font 8 8 SF
+326.164 171 M
+( key ) s
+/Times-Bold 8 8 SUF
+341.716 171 M
+(in) s
+/F-gs-font 8 8 SF
+348.388 171 M
+( datasets:) s
+287.5 162 M (331:) s
+307.948 162 M
+(        c = next\(color\)) s
+287.5 153 M (332:) s
+307.948 153 M
+(        radii[key] = np.append\(datasets[key], datasets[key][0]\)) s
+287.5 144 M (333:) s
+307.948 144 M
+(        bars[key] = ax.plot\(theta, radii[key], linewidth=lwidth, color=c,) s
+287.5 135 M (334:) s
+307.948 135 M
+(                            label=labels[counter]\)) s
+287.5 126 M (335:) s
+307.948 126 M
+(        counter = counter + 1) s
+287.5 117 M (336:) s
+307.948 117 M
+(    plt.legend\(bbox_to_anchor=\(1, 1\), loc=2, borderaxespad=0.,) s
+287.5 108 M (337:) s
+307.948 108 M
+(               frameon=False, fontsize=labelsize+4\)) s
+287.5 99 M (338:) s
+287.5 90 M (339:) s
+307.948 90 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 90 M
+(# # Use custom colors and opacity) s
+/F-gs-font 8 8 SF
+287.5 81 M (340:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 81 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 81 M
+(# for r, bar in zip\(radii, bars\):) s
+/F-gs-font 8 8 SF
+287.5 72 M (341:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 72 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 72 M
+(#     bar.set_facecolor\(plt.cm.jet\(np.abs\(r / 2.5\)\)\)) s
+/F-gs-font 8 8 SF
+287.5 63 M (342:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 63 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 63 M
+(#     bar.set_alpha\(0.8\)) s
+/F-gs-font 8 8 SF
+287.5 54 M (343:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 54 M
+(    ax.set_xticks\(np.pi/180. * np.linspace\(0, 360, N, endpoint=False\)\)) s
+287.5 45 M (344:) s
+307.948 45 M
+(    ax.set_xticklabels\(list\(range\(0, N\)\), fontsize=labelsize\)) s
+287.5 36 M (345:) s
+307.948 36 M
+(    ax.set_ylim\([min\(rticks\), max\(rticks\)+1]\)) s
+287.5 27 M (346:) s
+307.948 27 M
+(    ax.set_yticks\(rticks\)) s
+287.5 18 M (347:) s
+307.948 18 M
+(    ax.yaxis.set_tick_params\(labelsize=labelsize\)) s
+287.5 9 M (348:) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 3 def
+/fname (pca.py) def
+/fdir (.) def
+/ftail (pca.py) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+14 783 M (349:) s
+34.448 783 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 783 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 783 M
+( savefig:) s
+14 774 M (350:) s
+34.448 774 M
+(        plt.savefig\(filename, bbox_inches=) s
+/Times-Bold 8 8 SUF
+163.608 774 M
+('tight') s
+/F-gs-font 8 8 SF
+184.936 774 M
+(, dpi=dpi\)) s
+14 765 M (351:) s
+14 756 M (352:) s
+34.448 756 M
+(    plt.show\(\)) s
+14 747 M (353:) s
+14 738 M (354:) s
+14 729 M (355:) s
+/Times-Bold 8 8 SUF
+34.448 729 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 729 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 729 M
+(build_model) s
+/F-gs-font 8 8 SF
+89.792 729 M
+(\(rawdata, feature, featvals, equal_sampling=True,) s
+14 720 M (356:) s
+34.448 720 M
+(                    tsize=20, from_end=True, input_cols=6, model=) s
+/Times-Bold 8 8 SUF
+230.704 720 M
+('KNN') s
+/F-gs-font 8 8 SF
+253.808 720 M
+(,) s
+14 711 M (357:) s
+34.448 711 M
+(                    **kwargs\):) s
+14 702 M (358:) s
+34.448 702 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 702 M
+("""Builds a K-nearest neighbor model using an input dataset.) s
+/F-gs-font 8 8 SF
+14 693 M (359:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 684 M (360:) s
+/Times-Bold 8 8 SUF
+34.448 684 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+14 675 M (361:) s
+/Times-Bold 8 8 SUF
+34.448 675 M
+(    ----------) s
+/F-gs-font 8 8 SF
+14 666 M (362:) s
+/Times-Bold 8 8 SUF
+34.448 666 M
+(    rawdata : pandas.core.frames.DataFrame) s
+/F-gs-font 8 8 SF
+14 657 M (363:) s
+/Times-Bold 8 8 SUF
+34.448 657 M
+(        Raw dataset of n samples and p features.) s
+/F-gs-font 8 8 SF
+14 648 M (364:) s
+/Times-Bold 8 8 SUF
+34.448 648 M
+(    feature : string or int) s
+/F-gs-font 8 8 SF
+14 639 M (365:) s
+/Times-Bold 8 8 SUF
+34.448 639 M
+(        Feature in rawdata containing output values on which KNN) s
+/F-gs-font 8 8 SF
+14 630 M (366:) s
+/Times-Bold 8 8 SUF
+34.448 630 M
+(        model is to be based.) s
+/F-gs-font 8 8 SF
+14 621 M (367:) s
+/Times-Bold 8 8 SUF
+34.448 621 M
+(    featvals : string or int) s
+/F-gs-font 8 8 SF
+14 612 M (368:) s
+/Times-Bold 8 8 SUF
+34.448 612 M
+(        All values that feature can take.) s
+/F-gs-font 8 8 SF
+14 603 M (369:) s
+/Times-Bold 8 8 SUF
+34.448 603 M
+(    equal_sampling : bool) s
+/F-gs-font 8 8 SF
+14 594 M (370:) s
+/Times-Bold 8 8 SUF
+34.448 594 M
+(        If True, training dataset will contain an equal number) s
+/F-gs-font 8 8 SF
+14 585 M (371:) s
+/Times-Bold 8 8 SUF
+34.448 585 M
+(        of samples that take each value of featvals. If false,) s
+/F-gs-font 8 8 SF
+14 576 M (372:) s
+/Times-Bold 8 8 SUF
+34.448 576 M
+(        each sample in training dataset will be taken randomly) s
+/F-gs-font 8 8 SF
+14 567 M (373:) s
+/Times-Bold 8 8 SUF
+34.448 567 M
+(        from rawdata.) s
+/F-gs-font 8 8 SF
+14 558 M (374:) s
+/Times-Bold 8 8 SUF
+34.448 558 M
+(    tsize : int) s
+/F-gs-font 8 8 SF
+14 549 M (375:) s
+/Times-Bold 8 8 SUF
+34.448 549 M
+(        Size of training dataset. If equal_sampling is False,) s
+/F-gs-font 8 8 SF
+14 540 M (376:) s
+/Times-Bold 8 8 SUF
+34.448 540 M
+(        training dataset will be exactly this size. If True,) s
+/F-gs-font 8 8 SF
+14 531 M (377:) s
+/Times-Bold 8 8 SUF
+34.448 531 M
+(        training dataset will contain N x tsize where N is the) s
+/F-gs-font 8 8 SF
+14 522 M (378:) s
+/Times-Bold 8 8 SUF
+34.448 522 M
+(        number of unique values in featvals.) s
+/F-gs-font 8 8 SF
+14 513 M (379:) s
+/Times-Bold 8 8 SUF
+34.448 513 M
+(    n_neighbors : int) s
+/F-gs-font 8 8 SF
+14 504 M (380:) s
+/Times-Bold 8 8 SUF
+34.448 504 M
+(        Number of nearest neighbors to be used in KNN) s
+/F-gs-font 8 8 SF
+14 495 M (381:) s
+/Times-Bold 8 8 SUF
+34.448 495 M
+(        algorithm.) s
+/F-gs-font 8 8 SF
+14 486 M (382:) s
+/Times-Bold 8 8 SUF
+34.448 486 M
+(    from_end : int) s
+/F-gs-font 8 8 SF
+14 477 M (383:) s
+/Times-Bold 8 8 SUF
+34.448 477 M
+(        If True, in_cols will select features to be used as) s
+/F-gs-font 8 8 SF
+14 468 M (384:) s
+/Times-Bold 8 8 SUF
+34.448 468 M
+(        training data defined end of rawdata e.g.) s
+/F-gs-font 8 8 SF
+14 459 M (385:) s
+/Times-Bold 8 8 SUF
+34.448 459 M
+(        rawdata[:, -6:]. If False, input_cols will be read) s
+/F-gs-font 8 8 SF
+14 450 M (386:) s
+/Times-Bold 8 8 SUF
+34.448 450 M
+(        as a tuple e.g. rawdata[:, 10:15].) s
+/F-gs-font 8 8 SF
+14 441 M (387:) s
+/Times-Bold 8 8 SUF
+34.448 441 M
+(    input_col : int or tuple) s
+/F-gs-font 8 8 SF
+14 432 M (388:) s
+/Times-Bold 8 8 SUF
+34.448 432 M
+(        Defined in from_end above.) s
+/F-gs-font 8 8 SF
+14 423 M (389:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 414 M (390:) s
+/Times-Bold 8 8 SUF
+34.448 414 M
+(    Returns) s
+/F-gs-font 8 8 SF
+14 405 M (391:) s
+/Times-Bold 8 8 SUF
+34.448 405 M
+(    -------) s
+/F-gs-font 8 8 SF
+14 396 M (392:) s
+/Times-Bold 8 8 SUF
+34.448 396 M
+(    clf : sklearn.neighbors.classification.KNeighborsClassifier) s
+/F-gs-font 8 8 SF
+14 387 M (393:) s
+/Times-Bold 8 8 SUF
+34.448 387 M
+(        KNN model) s
+/F-gs-font 8 8 SF
+14 378 M (394:) s
+/Times-Bold 8 8 SUF
+34.448 378 M
+(    X : numpy.ndarray) s
+/F-gs-font 8 8 SF
+14 369 M (395:) s
+/Times-Bold 8 8 SUF
+34.448 369 M
+(        training input dataset used to create clf) s
+/F-gs-font 8 8 SF
+14 360 M (396:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(    y : numpy.ndarray) s
+/F-gs-font 8 8 SF
+14 351 M (397:) s
+/Times-Bold 8 8 SUF
+34.448 351 M
+(        training output dataset used to create clf) s
+/F-gs-font 8 8 SF
+14 342 M (398:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 333 M (399:) s
+/Times-Bold 8 8 SUF
+34.448 333 M
+(    """) s
+/F-gs-font 8 8 SF
+14 324 M (400:) s
+14 315 M (401:) s
+34.448 315 M
+(    defaults = {) s
+/Times-Bold 8 8 SUF
+80.128 315 M
+('n_neighbors') s
+/F-gs-font 8 8 SF
+127.688 315 M
+(: 5, ) s
+/Times-Bold 8 8 SUF
+139.912 315 M
+('NNsolver') s
+/F-gs-font 8 8 SF
+177.232 315 M
+(: ) s
+/Times-Bold 8 8 SUF
+181.456 315 M
+('lbfgs') s
+/F-gs-font 8 8 SF
+203.232 315 M
+(, ) s
+/Times-Bold 8 8 SUF
+207.232 315 M
+('NNalpha') s
+/F-gs-font 8 8 SF
+243.232 315 M
+(: 1e-5,) s
+14 306 M (402:) s
+34.448 306 M
+(                ) s
+/Times-Bold 8 8 SUF
+66.448 306 M
+('NNhidden_layer') s
+/F-gs-font 8 8 SF
+128.224 306 M
+(: \(5, 2\), ) s
+/Times-Bold 8 8 SUF
+153.776 306 M
+('NNrandom_state') s
+/F-gs-font 8 8 SF
+217.76 306 M
+(: 1,) s
+14 297 M (403:) s
+34.448 297 M
+(                ) s
+/Times-Bold 8 8 SUF
+66.448 297 M
+('n_estimators') s
+/F-gs-font 8 8 SF
+115.768 297 M
+(: 10}) s
+14 288 M (404:) s
+14 279 M (405:) s
+34.448 279 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 279 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 279 M
+( defkey ) s
+/Times-Bold 8 8 SUF
+78.432 279 M
+(in) s
+/F-gs-font 8 8 SF
+85.104 279 M
+( defaults.keys\(\):) s
+14 270 M (406:) s
+34.448 270 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 270 M
+(if) s
+/F-gs-font 8 8 SF
+55.336 270 M
+( defkey ) s
+/Times-Bold 8 8 SUF
+81.104 270 M
+(not) s
+/F-gs-font 8 8 SF
+92.216 270 M
+( ) s
+/Times-Bold 8 8 SUF
+94.216 270 M
+(in) s
+/F-gs-font 8 8 SF
+100.888 270 M
+( kwargs.keys\(\):) s
+14 261 M (407:) s
+34.448 261 M
+(            kwargs[defkey] = defaults[defkey]) s
+14 252 M (408:) s
+14 243 M (409:) s
+34.448 243 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 243 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 243 M
+( equal_sampling:) s
+14 234 M (410:) s
+34.448 234 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 234 M
+(for) s
+/F-gs-font 8 8 SF
+60.664 234 M
+( featval ) s
+/Times-Bold 8 8 SUF
+86.432 234 M
+(in) s
+/F-gs-font 8 8 SF
+93.104 234 M
+( featvals:) s
+14 225 M (411:) s
+34.448 225 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 225 M
+(if) s
+/F-gs-font 8 8 SF
+63.336 225 M
+( from_end:) s
+14 216 M (412:) s
+34.448 216 M
+(                test = rawdata[rawdata[feature] == featval) s
+14 207 M (413:) s
+34.448 207 M
+(                               ].values[:, -input_cols:]) s
+14 198 M (414:) s
+34.448 198 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 198 M
+(else) s
+/F-gs-font 8 8 SF
+70.888 198 M
+(:) s
+14 189 M (415:) s
+34.448 189 M
+(                test = rawdata[rawdata[feature] == featval) s
+14 180 M (416:) s
+34.448 180 M
+(                               ].values[:, input_cols[0]:input_cols[1]]) s
+14 171 M (417:) s
+34.448 171 M
+(            to_plot = np.array\(random.sample\(range\(0, test.shape[0]) s
+14 162 M (418:) s
+34.448 162 M
+(                                                   \), tsize\)\)) s
+14 153 M (419:) s
+34.448 153 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 153 M
+(if) s
+/F-gs-font 8 8 SF
+63.336 153 M
+( featval == featvals[0]:) s
+14 144 M (420:) s
+34.448 144 M
+(                X = test[to_plot, :]) s
+14 135 M (421:) s
+34.448 135 M
+(                y = rawdata[rawdata[feature] == featval) s
+14 126 M (422:) s
+34.448 126 M
+(                            ][feature].values[to_plot]) s
+14 117 M (423:) s
+34.448 117 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 117 M
+(else) s
+/F-gs-font 8 8 SF
+70.888 117 M
+(:) s
+14 108 M (424:) s
+34.448 108 M
+(                X = np.append\(X, test[to_plot, :], axis=0\)) s
+14 99 M (425:) s
+34.448 99 M
+(                y = np.append\(y, rawdata[rawdata[feature] == featval) s
+14 90 M (426:) s
+34.448 90 M
+(                                         ][feature].values[to_plot], axis=0\)) s
+14 81 M (427:) s
+14 72 M (428:) s
+34.448 72 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 72 M
+(else) s
+/F-gs-font 8 8 SF
+54.888 72 M
+(:) s
+14 63 M (429:) s
+34.448 63 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 63 M
+(if) s
+/F-gs-font 8 8 SF
+55.336 63 M
+( from_end:) s
+14 54 M (430:) s
+34.448 54 M
+(            test = rawdata.values[:, -input_cols:]) s
+14 45 M (431:) s
+34.448 45 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 45 M
+(else) s
+/F-gs-font 8 8 SF
+62.888 45 M
+(:) s
+14 36 M (432:) s
+34.448 36 M
+(            test = rawdata.values[:, input_cols[0]:input_cols[1]]) s
+14 27 M (433:) s
+34.448 27 M
+(        to_plot = np.array\(random.sample\(range\(0, test.shape[0]\), tsize\)\)) s
+14 18 M (434:) s
+34.448 18 M
+(        X = test[to_plot, :]) s
+14 9 M (435:) s
+34.448 9 M
+(        y = rawdata[feature].values[to_plot]) s
+287.5 783 M (436:) s
+287.5 774 M (437:) s
+307.948 774 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 774 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 774 M
+( model == ) s
+/Times-Bold 8 8 SUF
+355.86 774 M
+('KNN') s
+/F-gs-font 8 8 SF
+378.964 774 M
+(:) s
+287.5 765 M (438:) s
+307.948 765 M
+(        clf = neighbors.KNeighborsClassifier\(kwargs[) s
+/Times-Bold 8 8 SUF
+472.652 765 M
+('n_neighbors') s
+/F-gs-font 8 8 SF
+520.212 765 M
+(]\)) s
+287.5 756 M (439:) s
+307.948 756 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 756 M
+(elif) s
+/F-gs-font 8 8 SF
+326.612 756 M
+( model == ) s
+/Times-Bold 8 8 SUF
+361.636 756 M
+('MLP') s
+/F-gs-font 8 8 SF
+384.74 756 M
+(:) s
+287.5 747 M (440:) s
+307.948 747 M
+(        clf = MLPClassifier\(solver=kwargs[) s
+/Times-Bold 8 8 SUF
+440.508 747 M
+('NNsolver') s
+/F-gs-font 8 8 SF
+477.828 747 M
+(], alpha=kwargs[) s
+/Times-Bold 8 8 SUF
+532.1 747 M
+('N) s
+/F-gs-font 8 8 SF
+287.5 738 M (441:) s
+/Times-Bold 8 8 SUF
+307.948 738 M
+(                            hidden_layer_sizes=kwargs[) s
+/Times-Bold 8 8 SUF
+460.508 738 M
+('NNhidden_layer') s
+/F-gs-font 8 8 SF
+522.284 738 M
+(],) s
+287.5 729 M (442:) s
+307.948 729 M
+(                            random_state=kwargs[) s
+/Times-Bold 8 8 SUF
+437.332 729 M
+('NNrandom_state') s
+/F-gs-font 8 8 SF
+501.316 729 M
+(]\)) s
+287.5 720 M (443:) s
+307.948 720 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 720 M
+(else) s
+/F-gs-font 8 8 SF
+328.388 720 M
+(:) s
+287.5 711 M (444:) s
+307.948 711 M
+(        clf = RandomForestClassifier\(n_estimators=kwargs[) s
+/Times-Bold 8 8 SUF
+492.508 711 M
+('n_estimators) s
+/F-gs-font 8 8 SF
+287.5 702 M (445:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 693 M (446:) s
+/Times-Bold 8 8 SUF
+307.948 693 M
+(    clf.fit\(X, y\)) s
+/F-gs-font 8 8 SF
+287.5 684 M (447:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 675 M (448:) s
+/Times-Bold 8 8 SUF
+307.948 675 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 675 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 675 M
+( clf, X, y) s
+287.5 666 M (449:) s
+287.5 657 M (450:) s
+287.5 648 M (451:) s
+/Times-Bold 8 8 SUF
+307.948 648 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 648 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 648 M
+(predict_model) s
+/F-gs-font 8 8 SF
+369.94 648 M
+(\(model, X, y\):) s
+287.5 639 M (452:) s
+307.948 639 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 639 M
+("""Calculates fraction correctly predicted using input KNN) s
+/F-gs-font 8 8 SF
+287.5 630 M (453:) s
+/Times-Bold 8 8 SUF
+307.948 630 M
+(    model) s
+/F-gs-font 8 8 SF
+287.5 621 M (454:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 612 M (455:) s
+/Times-Bold 8 8 SUF
+307.948 612 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 603 M (456:) s
+/Times-Bold 8 8 SUF
+307.948 603 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 594 M (457:) s
+/Times-Bold 8 8 SUF
+307.948 594 M
+(    model : sklearn.neighbors.classification.KNeighborsClassifier) s
+/F-gs-font 8 8 SF
+287.5 585 M (458:) s
+/Times-Bold 8 8 SUF
+307.948 585 M
+(        KNN model) s
+/F-gs-font 8 8 SF
+287.5 576 M (459:) s
+/Times-Bold 8 8 SUF
+307.948 576 M
+(    X : numpy.ndarray) s
+/F-gs-font 8 8 SF
+287.5 567 M (460:) s
+/Times-Bold 8 8 SUF
+307.948 567 M
+(        training input dataset used to create clf) s
+/F-gs-font 8 8 SF
+287.5 558 M (461:) s
+/Times-Bold 8 8 SUF
+307.948 558 M
+(    y : numpy.ndarray) s
+/F-gs-font 8 8 SF
+287.5 549 M (462:) s
+/Times-Bold 8 8 SUF
+307.948 549 M
+(        training output dataset used to create clf) s
+/F-gs-font 8 8 SF
+287.5 540 M (463:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 531 M (464:) s
+/Times-Bold 8 8 SUF
+307.948 531 M
+(    Returns) s
+/F-gs-font 8 8 SF
+287.5 522 M (465:) s
+/Times-Bold 8 8 SUF
+307.948 522 M
+(    -------) s
+/F-gs-font 8 8 SF
+287.5 513 M (466:) s
+/Times-Bold 8 8 SUF
+307.948 513 M
+(    pcorrect : float) s
+/F-gs-font 8 8 SF
+287.5 504 M (467:) s
+/Times-Bold 8 8 SUF
+307.948 504 M
+(        Fraction of correctly predicted outputs using the) s
+/F-gs-font 8 8 SF
+287.5 495 M (468:) s
+/Times-Bold 8 8 SUF
+307.948 495 M
+(        input KNN model and the input test dataset X and y) s
+/F-gs-font 8 8 SF
+287.5 486 M (469:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 477 M (470:) s
+/Times-Bold 8 8 SUF
+307.948 477 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 468 M (471:) s
+307.948 468 M
+(    yp = model.predict\(X\)) s
+287.5 459 M (472:) s
+307.948 459 M
+(    correct = np.zeros\(y.shape[0]\)) s
+287.5 450 M (473:) s
+307.948 450 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 450 M
+(for) s
+/F-gs-font 8 8 SF
+326.164 450 M
+( i ) s
+/Times-Bold 8 8 SUF
+332.388 450 M
+(in) s
+/F-gs-font 8 8 SF
+339.06 450 M
+( range\(0, y.shape[0]\):) s
+287.5 441 M (474:) s
+307.948 441 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 441 M
+(if) s
+/F-gs-font 8 8 SF
+328.836 441 M
+( y[i] == yp[i]:) s
+287.5 432 M (475:) s
+307.948 432 M
+(            correct[i] = 1) s
+287.5 423 M (476:) s
+287.5 414 M (477:) s
+307.948 414 M
+(    pcorrect = np.average\(correct\)) s
+287.5 405 M (478:) s
+307.948 405 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 405 M
+(# print\(pcorrect\)) s
+/F-gs-font 8 8 SF
+287.5 396 M (479:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 396 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 396 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 396 M
+( pcorrect) s
+287.5 387 M (480:) s
+287.5 378 M (481:) s
+287.5 369 M (482:) s
+/Times-Bold 8 8 SUF
+307.948 369 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 369 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 369 M
+(feature_violin) s
+/F-gs-font 8 8 SF
+368.164 369 M
+(\(df, label=) s
+/Times-Bold 8 8 SUF
+401.556 369 M
+('label') s
+/F-gs-font 8 8 SF
+423.332 369 M
+(, lvals=[) s
+/Times-Bold 8 8 SUF
+449.62 369 M
+('yes') s
+/F-gs-font 8 8 SF
+465.612 369 M
+(, ) s
+/Times-Bold 8 8 SUF
+469.612 369 M
+('no') s
+/F-gs-font 8 8 SF
+483.388 369 M
+(], fsubset=3, **k) s
+287.5 360 M (483:) s
+307.948 360 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 360 M
+("""Creates violinplot of input feature dataset) s
+/F-gs-font 8 8 SF
+287.5 351 M (484:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 342 M (485:) s
+/Times-Bold 8 8 SUF
+307.948 342 M
+(    Designed to plot PCA components from pca_analysis.) s
+/F-gs-font 8 8 SF
+287.5 333 M (486:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 324 M (487:) s
+/Times-Bold 8 8 SUF
+307.948 324 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 315 M (488:) s
+/Times-Bold 8 8 SUF
+307.948 315 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 306 M (489:) s
+/Times-Bold 8 8 SUF
+307.948 306 M
+(    df : pandas.core.frames.DataFrame) s
+/F-gs-font 8 8 SF
+287.5 297 M (490:) s
+/Times-Bold 8 8 SUF
+307.948 297 M
+(        Must contain a group name column, and numerical feature col) s
+/F-gs-font 8 8 SF
+287.5 288 M (491:) s
+/Times-Bold 8 8 SUF
+307.948 288 M
+(    label : string or int) s
+/F-gs-font 8 8 SF
+287.5 279 M (492:) s
+/Times-Bold 8 8 SUF
+307.948 279 M
+(        Name of group column.) s
+/F-gs-font 8 8 SF
+287.5 270 M (493:) s
+/Times-Bold 8 8 SUF
+307.948 270 M
+(    lvals : list of string or int) s
+/F-gs-font 8 8 SF
+287.5 261 M (494:) s
+/Times-Bold 8 8 SUF
+307.948 261 M
+(        All values that group column can take) s
+/F-gs-font 8 8 SF
+287.5 252 M (495:) s
+/Times-Bold 8 8 SUF
+307.948 252 M
+(    fsubset : int or list of int) s
+/F-gs-font 8 8 SF
+287.5 243 M (496:) s
+/Times-Bold 8 8 SUF
+307.948 243 M
+(        Features to be plotted. If integer, will plot range\(fsubset\).) s
+/F-gs-font 8 8 SF
+287.5 234 M (497:) s
+/Times-Bold 8 8 SUF
+307.948 234 M
+(        If list, will only plot features contained in fsubset.) s
+/F-gs-font 8 8 SF
+287.5 225 M (498:) s
+/Times-Bold 8 8 SUF
+307.948 225 M
+(    **kwargs : variable) s
+/F-gs-font 8 8 SF
+287.5 216 M (499:) s
+/Times-Bold 8 8 SUF
+307.948 216 M
+(        figsize : tuple of int or float) s
+/F-gs-font 8 8 SF
+287.5 207 M (500:) s
+/Times-Bold 8 8 SUF
+307.948 207 M
+(            Dimensions of output figure) s
+/F-gs-font 8 8 SF
+287.5 198 M (501:) s
+/Times-Bold 8 8 SUF
+307.948 198 M
+(        yrange : list of int or float) s
+/F-gs-font 8 8 SF
+287.5 189 M (502:) s
+/Times-Bold 8 8 SUF
+307.948 189 M
+(            Range of y axis) s
+/F-gs-font 8 8 SF
+287.5 180 M (503:) s
+/Times-Bold 8 8 SUF
+307.948 180 M
+(        xlabel : string) s
+/F-gs-font 8 8 SF
+287.5 171 M (504:) s
+/Times-Bold 8 8 SUF
+307.948 171 M
+(            Label of x axis) s
+/F-gs-font 8 8 SF
+287.5 162 M (505:) s
+/Times-Bold 8 8 SUF
+307.948 162 M
+(        labelsize : int or float) s
+/F-gs-font 8 8 SF
+287.5 153 M (506:) s
+/Times-Bold 8 8 SUF
+307.948 153 M
+(            Font size of x label) s
+/F-gs-font 8 8 SF
+287.5 144 M (507:) s
+/Times-Bold 8 8 SUF
+307.948 144 M
+(        ticksize : int or float) s
+/F-gs-font 8 8 SF
+287.5 135 M (508:) s
+/Times-Bold 8 8 SUF
+307.948 135 M
+(            Font size of y tick labels) s
+/F-gs-font 8 8 SF
+287.5 126 M (509:) s
+/Times-Bold 8 8 SUF
+307.948 126 M
+(        fname : None or string) s
+/F-gs-font 8 8 SF
+287.5 117 M (510:) s
+/Times-Bold 8 8 SUF
+307.948 117 M
+(            Name of output file) s
+/F-gs-font 8 8 SF
+287.5 108 M (511:) s
+/Times-Bold 8 8 SUF
+307.948 108 M
+(        legendfontsize : int or float) s
+/F-gs-font 8 8 SF
+287.5 99 M (512:) s
+/Times-Bold 8 8 SUF
+307.948 99 M
+(            Font size of legend) s
+/F-gs-font 8 8 SF
+287.5 90 M (513:) s
+/Times-Bold 8 8 SUF
+307.948 90 M
+(        legendloc : int) s
+/F-gs-font 8 8 SF
+287.5 81 M (514:) s
+/Times-Bold 8 8 SUF
+307.948 81 M
+(            Location of legend in plot e.g. 1, 2, 3, 4) s
+/F-gs-font 8 8 SF
+287.5 72 M (515:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 63 M (516:) s
+/Times-Bold 8 8 SUF
+307.948 63 M
+(    """) s
+/F-gs-font 8 8 SF
+287.5 54 M (517:) s
+287.5 45 M (518:) s
+307.948 45 M
+(    defaults = {) s
+/Times-Bold 8 8 SUF
+353.628 45 M
+('figsize') s
+/F-gs-font 8 8 SF
+380.284 45 M
+(: \(12, 5\), ) s
+/Times-Bold 8 8 SUF
+409.836 45 M
+('yrange') s
+/F-gs-font 8 8 SF
+438.716 45 M
+(: [-20, 20], ) s
+/Times-Bold 8 8 SUF
+474.932 45 M
+('xlabel') s
+/F-gs-font 8 8 SF
+500.708 45 M
+(: ) s
+/Times-Bold 8 8 SUF
+504.932 45 M
+('Feature') s
+/F-gs-font 8 8 SF
+536.916 45 M
+(,) s
+287.5 36 M (519:) s
+307.948 36 M
+(                ) s
+/Times-Bold 8 8 SUF
+339.948 36 M
+('labelsize') s
+/F-gs-font 8 8 SF
+374.164 36 M
+(: 20, ) s
+/Times-Bold 8 8 SUF
+390.388 36 M
+('ticksize') s
+/F-gs-font 8 8 SF
+421.044 36 M
+(: 16, ) s
+/Times-Bold 8 8 SUF
+437.268 36 M
+('fname') s
+/F-gs-font 8 8 SF
+463.924 36 M
+(: None,) s
+287.5 27 M (520:) s
+307.948 27 M
+(                ) s
+/Times-Bold 8 8 SUF
+339.948 27 M
+('legendfontsize') s
+/F-gs-font 8 8 SF
+393.716 27 M
+(: 12, ) s
+/Times-Bold 8 8 SUF
+409.94 27 M
+('legendloc') s
+/F-gs-font 8 8 SF
+447.268 27 M
+(: 1, ) s
+/Times-Bold 8 8 SUF
+459.492 27 M
+('dpi') s
+/F-gs-font 8 8 SF
+475.94 27 M
+(: 300}) s
+287.5 18 M (521:) s
+287.5 9 M (522:) s
+307.948 9 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 9 M
+(for) s
+/F-gs-font 8 8 SF
+326.164 9 M
+( defkey ) s
+/Times-Bold 8 8 SUF
+351.932 9 M
+(in) s
+/F-gs-font 8 8 SF
+358.604 9 M
+( defaults.keys\(\):) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 4 def
+/fname (pca.py) def
+/fdir (.) def
+/ftail (pca.py) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+14 783 M (523:) s
+34.448 783 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 783 M
+(if) s
+/F-gs-font 8 8 SF
+55.336 783 M
+( defkey ) s
+/Times-Bold 8 8 SUF
+81.104 783 M
+(not) s
+/F-gs-font 8 8 SF
+92.216 783 M
+( ) s
+/Times-Bold 8 8 SUF
+94.216 783 M
+(in) s
+/F-gs-font 8 8 SF
+100.888 783 M
+( kwargs.keys\(\):) s
+14 774 M (524:) s
+34.448 774 M
+(            kwargs[defkey] = defaults[defkey]) s
+14 765 M (525:) s
+14 756 M (526:) s
+34.448 756 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 756 M
+(# Restacking input data) s
+/F-gs-font 8 8 SF
+14 747 M (527:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 747 M
+(    groupsize = []) s
+14 738 M (528:) s
+34.448 738 M
+(    featcol = []) s
+14 729 M (529:) s
+34.448 729 M
+(    valcol = []) s
+14 720 M (530:) s
+34.448 720 M
+(    feattype = []) s
+14 711 M (531:) s
+14 702 M (532:) s
+34.448 702 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 702 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 702 M
+( isinstance\(fsubset, int\):) s
+14 693 M (533:) s
+34.448 693 M
+(        frange = range\(fsubset\)) s
+14 684 M (534:) s
+34.448 684 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 684 M
+(else) s
+/F-gs-font 8 8 SF
+54.888 684 M
+(:) s
+14 675 M (535:) s
+34.448 675 M
+(        frange = fsubset) s
+14 666 M (536:) s
+14 657 M (537:) s
+34.448 657 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 657 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 657 M
+( feat ) s
+/Times-Bold 8 8 SUF
+68.656 657 M
+(in) s
+/F-gs-font 8 8 SF
+75.328 657 M
+( frange:) s
+14 648 M (538:) s
+34.448 648 M
+(        groupsize.extend\(df[label].values\)) s
+14 639 M (539:) s
+34.448 639 M
+(        featcol.extend\([feat]*df[label].values.shape[0]\)) s
+14 630 M (540:) s
+34.448 630 M
+(        valcol.extend\(df[feat].values\)) s
+14 621 M (541:) s
+14 612 M (542:) s
+34.448 612 M
+(    to_violind = {) s
+/Times-Bold 8 8 SUF
+87.696 612 M
+('label') s
+/F-gs-font 8 8 SF
+109.472 612 M
+(: groupsize, ) s
+/Times-Bold 8 8 SUF
+148.8 612 M
+('Feature') s
+/F-gs-font 8 8 SF
+180.784 612 M
+(: featcol,) s
+14 603 M (543:) s
+34.448 603 M
+(                  ) s
+/Times-Bold 8 8 SUF
+70.448 603 M
+('Feature Value') s
+/F-gs-font 8 8 SF
+124.432 603 M
+(: valcol}) s
+14 594 M (544:) s
+34.448 594 M
+(    to_violin = pd.DataFrame\(data=to_violind\)) s
+14 585 M (545:) s
+14 576 M (546:) s
+34.448 576 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 576 M
+(# Plotting function) s
+/F-gs-font 8 8 SF
+14 567 M (547:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 567 M
+(    fig, ax = plt.subplots\(figsize=kwargs[) s
+/Times-Bold 8 8 SUF
+162.792 567 M
+('figsize') s
+/F-gs-font 8 8 SF
+189.448 567 M
+(]\)) s
+14 558 M (548:) s
+34.448 558 M
+(    sns.violinplot\(x=) s
+/Times-Bold 8 8 SUF
+96.968 558 M
+("Feature") s
+/F-gs-font 8 8 SF
+132.504 558 M
+(, y=) s
+/Times-Bold 8 8 SUF
+145.016 558 M
+("Feature Value") s
+/F-gs-font 8 8 SF
+202.552 558 M
+(, hue=) s
+/Times-Bold 8 8 SUF
+222.616 558 M
+("label") s
+/F-gs-font 8 8 SF
+247.944 558 M
+(, data) s
+14 549 M (549:) s
+34.448 549 M
+(                   palette=) s
+/Times-Bold 8 8 SUF
+98.288 549 M
+("Pastel1") s
+/F-gs-font 8 8 SF
+131.608 549 M
+(, hue_order=lvals,) s
+14 540 M (550:) s
+34.448 540 M
+(                   figsize=kwargs[) s
+/Times-Bold 8 8 SUF
+124.056 540 M
+('figsize') s
+/F-gs-font 8 8 SF
+150.712 540 M
+(]\)) s
+14 531 M (551:) s
+14 522 M (552:) s
+34.448 522 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 522 M
+(# kwargs) s
+/F-gs-font 8 8 SF
+14 513 M (553:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 513 M
+(    ax.tick_params\(axis=) s
+/Times-Bold 8 8 SUF
+111.168 513 M
+('both') s
+/F-gs-font 8 8 SF
+132.056 513 M
+(, which=) s
+/Times-Bold 8 8 SUF
+160.12 513 M
+('major') s
+/F-gs-font 8 8 SF
+186.328 513 M
+(, labelsize=kwargs[) s
+/Times-Bold 8 8 SUF
+248.6 513 M
+('ticks) s
+/F-gs-font 8 8 SF
+14 504 M (554:) s
+/Times-Bold 8 8 SUF
+34.448 504 M
+(    plt.xlabel\(kwargs[) s
+/Times-Bold 8 8 SUF
+104.448 504 M
+('xlabel') s
+/F-gs-font 8 8 SF
+130.224 504 M
+(], fontsize=kwargs[) s
+/Times-Bold 8 8 SUF
+192.496 504 M
+('labelsize') s
+/F-gs-font 8 8 SF
+226.712 504 M
+(]\)) s
+14 495 M (555:) s
+34.448 495 M
+(    plt.ylabel\() s
+/Times-Bold 8 8 SUF
+75.112 495 M
+('') s
+/F-gs-font 8 8 SF
+80.44 495 M
+(, fontsize=kwargs[) s
+/Times-Bold 8 8 SUF
+140.048 495 M
+('labelsize') s
+/F-gs-font 8 8 SF
+174.264 495 M
+(]\)) s
+14 486 M (556:) s
+34.448 486 M
+(    plt.ylim\(kwargs[) s
+/Times-Bold 8 8 SUF
+96 486 M
+('yrange') s
+/F-gs-font 8 8 SF
+124.88 486 M
+(]\)) s
+14 477 M (557:) s
+34.448 477 M
+(    plt.legend\(loc=kwargs[) s
+/Times-Bold 8 8 SUF
+116.944 477 M
+('legendloc') s
+/F-gs-font 8 8 SF
+154.272 477 M
+(], prop={) s
+/Times-Bold 8 8 SUF
+183.952 477 M
+('size') s
+/F-gs-font 8 8 SF
+201.72 477 M
+(: kwargs[) s
+/Times-Bold 8 8 SUF
+231.712 477 M
+('legendfon) s
+/F-gs-font 8 8 SF
+14 468 M (558:) s
+/Times-Bold 8 8 SUF
+34.448 468 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 468 M
+(if) s
+/F-gs-font 8 8 SF
+47.336 468 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+75.104 468 M
+('fname') s
+/F-gs-font 8 8 SF
+101.76 468 M
+(] ) s
+/Times-Bold 8 8 SUF
+106.424 468 M
+(is) s
+/F-gs-font 8 8 SF
+111.76 468 M
+( None:) s
+14 459 M (559:) s
+34.448 459 M
+(        plt.show\(\)) s
+14 450 M (560:) s
+34.448 450 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 450 M
+(else) s
+/F-gs-font 8 8 SF
+54.888 450 M
+(:) s
+14 441 M (561:) s
+34.448 441 M
+(        plt.savefig\(kwargs[) s
+/Times-Bold 8 8 SUF
+112.432 441 M
+('fname') s
+/F-gs-font 8 8 SF
+139.088 441 M
+(], dpi=kwargs[) s
+/Times-Bold 8 8 SUF
+186.256 441 M
+('dpi') s
+/F-gs-font 8 8 SF
+202.704 441 M
+(]\)) s
+14 432 M (562:) s
+14 423 M (563:) s
+34.448 423 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 423 M
+(return) s
+/F-gs-font 8 8 SF
+64.664 423 M
+( to_violin) s
+14 414 M (564:) s
+14 405 M (565:) s
+14 396 M (566:) s
+/Times-Bold 8 8 SUF
+34.448 396 M
+(def) s
+/F-gs-font 8 8 SF
+45.112 396 M
+( ) s
+/Times-Bold 8 8 SUF
+47.112 396 M
+(feature_plot_2D) s
+/F-gs-font 8 8 SF
+102.656 396 M
+(\(dataset, label, features=[0, 1], lvals=[) s
+/Times-Bold 8 8 SUF
+224.536 396 M
+('PEG') s
+/F-gs-font 8 8 SF
+246.312 396 M
+(, ) s
+/Times-Bold 8 8 SUF
+250.312 396 M
+('PS') s
+/F-gs-font 8 8 SF
+264.976 396 M
+(]) s
+14 387 M (567:) s
+34.448 387 M
+(                    randsel=True, randcount=200, **kwargs\):) s
+14 378 M (568:) s
+34.448 378 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 378 M
+("""Plots two features against each other from feature dataset.) s
+/F-gs-font 8 8 SF
+14 369 M (569:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 360 M (570:) s
+/Times-Bold 8 8 SUF
+34.448 360 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+14 351 M (571:) s
+/Times-Bold 8 8 SUF
+34.448 351 M
+(    ----------) s
+/F-gs-font 8 8 SF
+14 342 M (572:) s
+/Times-Bold 8 8 SUF
+34.448 342 M
+(    dataset : pandas.core.frames.DataFrame) s
+/F-gs-font 8 8 SF
+14 333 M (573:) s
+/Times-Bold 8 8 SUF
+34.448 333 M
+(        Must comtain a group column and numerical features columns) s
+/F-gs-font 8 8 SF
+14 324 M (574:) s
+/Times-Bold 8 8 SUF
+34.448 324 M
+(    labels : string or int) s
+/F-gs-font 8 8 SF
+14 315 M (575:) s
+/Times-Bold 8 8 SUF
+34.448 315 M
+(        Group column name) s
+/F-gs-font 8 8 SF
+14 306 M (576:) s
+/Times-Bold 8 8 SUF
+34.448 306 M
+(    features : list of int) s
+/F-gs-font 8 8 SF
+14 297 M (577:) s
+/Times-Bold 8 8 SUF
+34.448 297 M
+(        Names of columns to be plotted) s
+/F-gs-font 8 8 SF
+14 288 M (578:) s
+/Times-Bold 8 8 SUF
+34.448 288 M
+(    randsel : bool) s
+/F-gs-font 8 8 SF
+14 279 M (579:) s
+/Times-Bold 8 8 SUF
+34.448 279 M
+(        If True, downsamples from original dataset) s
+/F-gs-font 8 8 SF
+14 270 M (580:) s
+/Times-Bold 8 8 SUF
+34.448 270 M
+(    randcount : int) s
+/F-gs-font 8 8 SF
+14 261 M (581:) s
+/Times-Bold 8 8 SUF
+34.448 261 M
+(        Size of downsampled dataset) s
+/F-gs-font 8 8 SF
+14 252 M (582:) s
+/Times-Bold 8 8 SUF
+34.448 252 M
+(    **kwargs : variable) s
+/F-gs-font 8 8 SF
+14 243 M (583:) s
+/Times-Bold 8 8 SUF
+34.448 243 M
+(        figsize : tuple of int or float) s
+/F-gs-font 8 8 SF
+14 234 M (584:) s
+/Times-Bold 8 8 SUF
+34.448 234 M
+(            Size of output figure) s
+/F-gs-font 8 8 SF
+14 225 M (585:) s
+/Times-Bold 8 8 SUF
+34.448 225 M
+(        dotsize : float or int) s
+/F-gs-font 8 8 SF
+14 216 M (586:) s
+/Times-Bold 8 8 SUF
+34.448 216 M
+(            Size of plotting markers) s
+/F-gs-font 8 8 SF
+14 207 M (587:) s
+/Times-Bold 8 8 SUF
+34.448 207 M
+(        alpha : float or int) s
+/F-gs-font 8 8 SF
+14 198 M (588:) s
+/Times-Bold 8 8 SUF
+34.448 198 M
+(            Transparency factor) s
+/F-gs-font 8 8 SF
+14 189 M (589:) s
+/Times-Bold 8 8 SUF
+34.448 189 M
+(        xlim : list of float or int) s
+/F-gs-font 8 8 SF
+14 180 M (590:) s
+/Times-Bold 8 8 SUF
+34.448 180 M
+(            X range of output plot) s
+/F-gs-font 8 8 SF
+14 171 M (591:) s
+/Times-Bold 8 8 SUF
+34.448 171 M
+(        ylim : list of float or int) s
+/F-gs-font 8 8 SF
+14 162 M (592:) s
+/Times-Bold 8 8 SUF
+34.448 162 M
+(            Y range of output plot) s
+/F-gs-font 8 8 SF
+14 153 M (593:) s
+/Times-Bold 8 8 SUF
+34.448 153 M
+(        legendfontsize : float or int) s
+/F-gs-font 8 8 SF
+14 144 M (594:) s
+/Times-Bold 8 8 SUF
+34.448 144 M
+(            Font size of legend) s
+/F-gs-font 8 8 SF
+14 135 M (595:) s
+/Times-Bold 8 8 SUF
+34.448 135 M
+(        labelfontsize : float or int) s
+/F-gs-font 8 8 SF
+14 126 M (596:) s
+/Times-Bold 8 8 SUF
+34.448 126 M
+(            Font size of labels) s
+/F-gs-font 8 8 SF
+14 117 M (597:) s
+/Times-Bold 8 8 SUF
+34.448 117 M
+(        fname : string) s
+/F-gs-font 8 8 SF
+14 108 M (598:) s
+/Times-Bold 8 8 SUF
+34.448 108 M
+(            Filename of output figure) s
+/F-gs-font 8 8 SF
+14 99 M (599:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 90 M (600:) s
+/Times-Bold 8 8 SUF
+34.448 90 M
+(    Returns) s
+/F-gs-font 8 8 SF
+14 81 M (601:) s
+/Times-Bold 8 8 SUF
+34.448 81 M
+(    -------) s
+/F-gs-font 8 8 SF
+14 72 M (602:) s
+/Times-Bold 8 8 SUF
+34.448 72 M
+(    xy : list of lists) s
+/F-gs-font 8 8 SF
+14 63 M (603:) s
+/Times-Bold 8 8 SUF
+34.448 63 M
+(        Coordinates of data on plot) s
+/F-gs-font 8 8 SF
+14 54 M (604:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 45 M (605:) s
+/Times-Bold 8 8 SUF
+34.448 45 M
+(    """) s
+/F-gs-font 8 8 SF
+14 36 M (606:) s
+34.448 36 M
+(    defaults = {) s
+/Times-Bold 8 8 SUF
+80.128 36 M
+('figsize') s
+/F-gs-font 8 8 SF
+106.784 36 M
+(: \(8, 8\), ) s
+/Times-Bold 8 8 SUF
+132.336 36 M
+('dotsize') s
+/F-gs-font 8 8 SF
+161.216 36 M
+(: 70, ) s
+/Times-Bold 8 8 SUF
+177.44 36 M
+('alpha') s
+/F-gs-font 8 8 SF
+201.888 36 M
+(: 0.7, ) s
+/Times-Bold 8 8 SUF
+220.112 36 M
+('xlim') s
+/F-gs-font 8 8 SF
+240.552 36 M
+(: None,) s
+14 27 M (607:) s
+34.448 27 M
+(                ) s
+/Times-Bold 8 8 SUF
+66.448 27 M
+('ylim') s
+/F-gs-font 8 8 SF
+86.888 27 M
+(: None, ) s
+/Times-Bold 8 8 SUF
+112.44 27 M
+('legendfontsize') s
+/F-gs-font 8 8 SF
+166.208 27 M
+(: 12, ) s
+/Times-Bold 8 8 SUF
+182.432 27 M
+('labelfontsize') s
+/F-gs-font 8 8 SF
+230.424 27 M
+(: 20,) s
+14 18 M (608:) s
+34.448 18 M
+(                ) s
+/Times-Bold 8 8 SUF
+66.448 18 M
+('fname') s
+/F-gs-font 8 8 SF
+93.104 18 M
+(: None, ) s
+/Times-Bold 8 8 SUF
+118.656 18 M
+('legendloc') s
+/F-gs-font 8 8 SF
+155.984 18 M
+(: 2}) s
+14 9 M (609:) s
+287.5 783 M (610:) s
+307.948 783 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 783 M
+(for) s
+/F-gs-font 8 8 SF
+326.164 783 M
+( defkey ) s
+/Times-Bold 8 8 SUF
+351.932 783 M
+(in) s
+/F-gs-font 8 8 SF
+358.604 783 M
+( defaults.keys\(\):) s
+287.5 774 M (611:) s
+307.948 774 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 774 M
+(if) s
+/F-gs-font 8 8 SF
+328.836 774 M
+( defkey ) s
+/Times-Bold 8 8 SUF
+354.604 774 M
+(not) s
+/F-gs-font 8 8 SF
+365.716 774 M
+( ) s
+/Times-Bold 8 8 SUF
+367.716 774 M
+(in) s
+/F-gs-font 8 8 SF
+374.388 774 M
+( kwargs.keys\(\):) s
+287.5 765 M (612:) s
+307.948 765 M
+(            kwargs[defkey] = defaults[defkey]) s
+287.5 756 M (613:) s
+287.5 747 M (614:) s
+307.948 747 M
+(    tgroups = {}) s
+287.5 738 M (615:) s
+307.948 738 M
+(    xy = {}) s
+287.5 729 M (616:) s
+307.948 729 M
+(    counter = 0) s
+287.5 720 M (617:) s
+307.948 720 M
+(    labels = dataset[label].unique\(\)) s
+287.5 711 M (618:) s
+307.948 711 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 711 M
+(for) s
+/F-gs-font 8 8 SF
+326.164 711 M
+( lval ) s
+/Times-Bold 8 8 SUF
+342.164 711 M
+(in) s
+/F-gs-font 8 8 SF
+348.836 711 M
+( lvals:) s
+287.5 702 M (619:) s
+307.948 702 M
+(        tgroups[counter] = dataset[dataset[label] == lval]) s
+287.5 693 M (620:) s
+307.948 693 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 693 M
+(print) s
+/F-gs-font 8 8 SF
+341.284 693 M
+(\(dataset[label]\)) s
+287.5 684 M (621:) s
+307.948 684 M
+(        counter = counter + 1) s
+287.5 675 M (622:) s
+287.5 666 M (623:) s
+307.948 666 M
+(    N = len\(tgroups\)) s
+287.5 657 M (624:) s
+307.948 657 M
+(    color = iter\(cm.viridis\(np.linspace\(0, 0.9, N\)\)\)) s
+287.5 648 M (625:) s
+287.5 639 M (626:) s
+307.948 639 M
+(    fig = plt.figure\(figsize=kwargs[) s
+/Times-Bold 8 8 SUF
+417.172 639 M
+('figsize') s
+/F-gs-font 8 8 SF
+443.828 639 M
+(]\)) s
+287.5 630 M (627:) s
+307.948 630 M
+(    ax1 = fig.add_subplot\(111\)) s
+287.5 621 M (628:) s
+307.948 621 M
+(    counter = 0) s
+287.5 612 M (629:) s
+307.948 612 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 612 M
+(for) s
+/F-gs-font 8 8 SF
+326.164 612 M
+( key ) s
+/Times-Bold 8 8 SUF
+341.716 612 M
+(in) s
+/F-gs-font 8 8 SF
+348.388 612 M
+( tgroups:) s
+287.5 603 M (630:) s
+307.948 603 M
+(        c = next\(color\)) s
+287.5 594 M (631:) s
+307.948 594 M
+(        xy = []) s
+287.5 585 M (632:) s
+307.948 585 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 585 M
+(if) s
+/F-gs-font 8 8 SF
+328.836 585 M
+( randsel:) s
+287.5 576 M (633:) s
+307.948 576 M
+(            to_plot = random.sample\(range\(0, len\(tgroups[key][0].tolist\(\)\)\),) s
+287.5 567 M (634:) s
+307.948 567 M
+(                                    randcount\)) s
+287.5 558 M (635:) s
+307.948 558 M
+(            ) s
+/Times-Bold 8 8 SUF
+331.948 558 M
+(for) s
+/F-gs-font 8 8 SF
+342.164 558 M
+( key2 ) s
+/Times-Bold 8 8 SUF
+361.716 558 M
+(in) s
+/F-gs-font 8 8 SF
+368.388 558 M
+( features:) s
+287.5 549 M (636:) s
+307.948 549 M
+(                xy.append\(list\(tgroups[key][key2].tolist\(\)[i] ) s
+/Times-Bold 8 8 SUF
+482.812 549 M
+(for) s
+/F-gs-font 8 8 SF
+493.028 549 M
+( i ) s
+/Times-Bold 8 8 SUF
+499.252 549 M
+(in) s
+/F-gs-font 8 8 SF
+505.924 549 M
+( to_plot\)\)) s
+287.5 540 M (637:) s
+307.948 540 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 540 M
+(else) s
+/F-gs-font 8 8 SF
+336.388 540 M
+(:) s
+287.5 531 M (638:) s
+307.948 531 M
+(            ) s
+/Times-Bold 8 8 SUF
+331.948 531 M
+(for) s
+/F-gs-font 8 8 SF
+342.164 531 M
+( key2 ) s
+/Times-Bold 8 8 SUF
+361.716 531 M
+(in) s
+/F-gs-font 8 8 SF
+368.388 531 M
+( features:) s
+287.5 522 M (639:) s
+307.948 522 M
+(                xy.append\(tgroups[key][key2]\)) s
+287.5 513 M (640:) s
+307.948 513 M
+(        ax1 = plt.scatter\(xy[0], xy[1], c=c, s=kwargs[) s
+/Times-Bold 8 8 SUF
+469.668 513 M
+('dotsize') s
+/F-gs-font 8 8 SF
+498.548 513 M
+(],) s
+287.5 504 M (641:) s
+307.948 504 M
+(                          alpha=kwargs[) s
+/Times-Bold 8 8 SUF
+407.556 504 M
+('alpha') s
+/F-gs-font 8 8 SF
+432.004 504 M
+(], label=labels[counter]\)) s
+287.5 495 M (642:) s
+307.948 495 M
+(        counter = counter + 1) s
+287.5 486 M (643:) s
+287.5 477 M (644:) s
+307.948 477 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 477 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 477 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+348.604 477 M
+('xlim') s
+/F-gs-font 8 8 SF
+369.044 477 M
+(] ) s
+/Times-Bold 8 8 SUF
+373.708 477 M
+(is) s
+/F-gs-font 8 8 SF
+379.044 477 M
+( ) s
+/Times-Bold 8 8 SUF
+381.044 477 M
+(not) s
+/F-gs-font 8 8 SF
+392.156 477 M
+( None:) s
+287.5 468 M (645:) s
+307.948 468 M
+(        plt.xlim\(kwargs[) s
+/Times-Bold 8 8 SUF
+377.5 468 M
+('xlim') s
+/F-gs-font 8 8 SF
+397.94 468 M
+(]\)) s
+287.5 459 M (646:) s
+307.948 459 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 459 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 459 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+348.604 459 M
+('ylim') s
+/F-gs-font 8 8 SF
+369.044 459 M
+(] ) s
+/Times-Bold 8 8 SUF
+373.708 459 M
+(is) s
+/F-gs-font 8 8 SF
+379.044 459 M
+( ) s
+/Times-Bold 8 8 SUF
+381.044 459 M
+(not) s
+/F-gs-font 8 8 SF
+392.156 459 M
+( None:) s
+287.5 450 M (647:) s
+307.948 450 M
+(        plt.ylim\(kwargs[) s
+/Times-Bold 8 8 SUF
+377.5 450 M
+('ylim') s
+/F-gs-font 8 8 SF
+397.94 450 M
+(]\)) s
+287.5 441 M (648:) s
+287.5 432 M (649:) s
+307.948 432 M
+(    plt.legend\(fontsize=kwargs[) s
+/Times-Bold 8 8 SUF
+405.996 432 M
+('legendfontsize') s
+/F-gs-font 8 8 SF
+459.764 432 M
+(], frameon=False,) s
+287.5 423 M (650:) s
+307.948 423 M
+(               borderaxespad=0.,) s
+287.5 414 M (651:) s
+307.948 414 M
+(               bbox_to_anchor=\(1.05, 1\)\)) s
+287.5 405 M (652:) s
+307.948 405 M
+(    plt.xlabel\() s
+/Times-Bold 8 8 SUF
+348.612 405 M
+('Prin. Component {}') s
+/F-gs-font 8 8 SF
+421.356 405 M
+(.format\(features[0]\),) s
+287.5 396 M (653:) s
+307.948 396 M
+(               fontsize=kwargs[) s
+/Times-Bold 8 8 SUF
+393.556 396 M
+('labelfontsize') s
+/F-gs-font 8 8 SF
+441.548 396 M
+(]\)) s
+287.5 387 M (654:) s
+307.948 387 M
+(    plt.ylabel\() s
+/Times-Bold 8 8 SUF
+348.612 387 M
+('Prin. Component {}') s
+/F-gs-font 8 8 SF
+421.356 387 M
+(.format\(features[1]\),) s
+287.5 378 M (655:) s
+307.948 378 M
+(               fontsize=kwargs[) s
+/Times-Bold 8 8 SUF
+393.556 378 M
+('labelfontsize') s
+/F-gs-font 8 8 SF
+441.548 378 M
+(]\)) s
+287.5 369 M (656:) s
+287.5 360 M (657:) s
+307.948 360 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 360 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 360 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+348.604 360 M
+('fname') s
+/F-gs-font 8 8 SF
+375.26 360 M
+(] ) s
+/Times-Bold 8 8 SUF
+379.924 360 M
+(is) s
+/F-gs-font 8 8 SF
+385.26 360 M
+( None:) s
+287.5 351 M (658:) s
+307.948 351 M
+(        plt.show\(\)) s
+287.5 342 M (659:) s
+307.948 342 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 342 M
+(else) s
+/F-gs-font 8 8 SF
+328.388 342 M
+(:) s
+287.5 333 M (660:) s
+307.948 333 M
+(        plt.savefig\(kwargs[) s
+/Times-Bold 8 8 SUF
+385.932 333 M
+('fname') s
+/F-gs-font 8 8 SF
+412.588 333 M
+(]\)) s
+287.5 324 M (661:) s
+287.5 315 M (662:) s
+307.948 315 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 315 M
+(return) s
+/F-gs-font 8 8 SF
+338.164 315 M
+( xy) s
+287.5 306 M (663:) s
+287.5 297 M (664:) s
+287.5 288 M (665:) s
+/Times-Bold 8 8 SUF
+307.948 288 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 288 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 288 M
+(feature_plot_3D) s
+/F-gs-font 8 8 SF
+376.156 288 M
+(\(dataset, label, features=[0, 1, 2], lvals=[) s
+/Times-Bold 8 8 SUF
+506.036 288 M
+('PEG') s
+/F-gs-font 8 8 SF
+527.812 288 M
+(, ) s
+/Times-Bold 8 8 SUF
+531.812 288 M
+('P) s
+/F-gs-font 8 8 SF
+287.5 279 M (666:) s
+/Times-Bold 8 8 SUF
+307.948 279 M
+(                    randsel=True, randcount=200, **kwargs\):) s
+/F-gs-font 8 8 SF
+287.5 270 M (667:) s
+/Times-Bold 8 8 SUF
+307.948 270 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 270 M
+("""Plots three features against each other from feature dataset.) s
+/F-gs-font 8 8 SF
+287.5 261 M (668:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 252 M (669:) s
+/Times-Bold 8 8 SUF
+307.948 252 M
+(    Parameters) s
+/F-gs-font 8 8 SF
+287.5 243 M (670:) s
+/Times-Bold 8 8 SUF
+307.948 243 M
+(    ----------) s
+/F-gs-font 8 8 SF
+287.5 234 M (671:) s
+/Times-Bold 8 8 SUF
+307.948 234 M
+(    dataset : pandas.core.frames.DataFrame) s
+/F-gs-font 8 8 SF
+287.5 225 M (672:) s
+/Times-Bold 8 8 SUF
+307.948 225 M
+(        Must comtain a group column and numerical features columns) s
+/F-gs-font 8 8 SF
+287.5 216 M (673:) s
+/Times-Bold 8 8 SUF
+307.948 216 M
+(    labels : string or int) s
+/F-gs-font 8 8 SF
+287.5 207 M (674:) s
+/Times-Bold 8 8 SUF
+307.948 207 M
+(        Group column name) s
+/F-gs-font 8 8 SF
+287.5 198 M (675:) s
+/Times-Bold 8 8 SUF
+307.948 198 M
+(    features : list of int) s
+/F-gs-font 8 8 SF
+287.5 189 M (676:) s
+/Times-Bold 8 8 SUF
+307.948 189 M
+(        Names of columns to be plotted) s
+/F-gs-font 8 8 SF
+287.5 180 M (677:) s
+/Times-Bold 8 8 SUF
+307.948 180 M
+(    randsel : bool) s
+/F-gs-font 8 8 SF
+287.5 171 M (678:) s
+/Times-Bold 8 8 SUF
+307.948 171 M
+(        If True, downsamples from original dataset) s
+/F-gs-font 8 8 SF
+287.5 162 M (679:) s
+/Times-Bold 8 8 SUF
+307.948 162 M
+(    randcount : int) s
+/F-gs-font 8 8 SF
+287.5 153 M (680:) s
+/Times-Bold 8 8 SUF
+307.948 153 M
+(        Size of downsampled dataset) s
+/F-gs-font 8 8 SF
+287.5 144 M (681:) s
+/Times-Bold 8 8 SUF
+307.948 144 M
+(    **kwargs : variable) s
+/F-gs-font 8 8 SF
+287.5 135 M (682:) s
+/Times-Bold 8 8 SUF
+307.948 135 M
+(        figsize : tuple of int or float) s
+/F-gs-font 8 8 SF
+287.5 126 M (683:) s
+/Times-Bold 8 8 SUF
+307.948 126 M
+(            Size of output figure) s
+/F-gs-font 8 8 SF
+287.5 117 M (684:) s
+/Times-Bold 8 8 SUF
+307.948 117 M
+(        dotsize : float or int) s
+/F-gs-font 8 8 SF
+287.5 108 M (685:) s
+/Times-Bold 8 8 SUF
+307.948 108 M
+(            Size of plotting markers) s
+/F-gs-font 8 8 SF
+287.5 99 M (686:) s
+/Times-Bold 8 8 SUF
+307.948 99 M
+(        alpha : float or int) s
+/F-gs-font 8 8 SF
+287.5 90 M (687:) s
+/Times-Bold 8 8 SUF
+307.948 90 M
+(            Transparency factor) s
+/F-gs-font 8 8 SF
+287.5 81 M (688:) s
+/Times-Bold 8 8 SUF
+307.948 81 M
+(        xlim : list of float or int) s
+/F-gs-font 8 8 SF
+287.5 72 M (689:) s
+/Times-Bold 8 8 SUF
+307.948 72 M
+(            X range of output plot) s
+/F-gs-font 8 8 SF
+287.5 63 M (690:) s
+/Times-Bold 8 8 SUF
+307.948 63 M
+(        ylim : list of float or int) s
+/F-gs-font 8 8 SF
+287.5 54 M (691:) s
+/Times-Bold 8 8 SUF
+307.948 54 M
+(            Y range of output plot) s
+/F-gs-font 8 8 SF
+287.5 45 M (692:) s
+/Times-Bold 8 8 SUF
+307.948 45 M
+(        zlim : list of float or int) s
+/F-gs-font 8 8 SF
+287.5 36 M (693:) s
+/Times-Bold 8 8 SUF
+307.948 36 M
+(            Z range of output plot) s
+/F-gs-font 8 8 SF
+287.5 27 M (694:) s
+/Times-Bold 8 8 SUF
+307.948 27 M
+(        legendfontsize : float or int) s
+/F-gs-font 8 8 SF
+287.5 18 M (695:) s
+/Times-Bold 8 8 SUF
+307.948 18 M
+(            Font size of legend) s
+/F-gs-font 8 8 SF
+287.5 9 M (696:) s
+/Times-Bold 8 8 SUF
+307.948 9 M
+(        labelfontsize : float or int) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+24 24 translate
+/pagenum 5 def
+/fname (pca.py) def
+/fdir (.) def
+/ftail (pca.py) def
+/Times-Bold 8 8 SUF
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+/F-gs-font 8 8 SF
+14 783 M (697:) s
+/Times-Bold 8 8 SUF
+34.448 783 M
+(            Font size of labels) s
+/F-gs-font 8 8 SF
+14 774 M (698:) s
+/Times-Bold 8 8 SUF
+34.448 774 M
+(        fname : string) s
+/F-gs-font 8 8 SF
+14 765 M (699:) s
+/Times-Bold 8 8 SUF
+34.448 765 M
+(            Filename of output figure) s
+/F-gs-font 8 8 SF
+14 756 M (700:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 747 M (701:) s
+/Times-Bold 8 8 SUF
+34.448 747 M
+(    Returns) s
+/F-gs-font 8 8 SF
+14 738 M (702:) s
+/Times-Bold 8 8 SUF
+34.448 738 M
+(    -------) s
+/F-gs-font 8 8 SF
+14 729 M (703:) s
+/Times-Bold 8 8 SUF
+34.448 729 M
+(    xy : list of lists) s
+/F-gs-font 8 8 SF
+14 720 M (704:) s
+/Times-Bold 8 8 SUF
+34.448 720 M
+(        Coordinates of data on plot) s
+/F-gs-font 8 8 SF
+14 711 M (705:) s
+/Times-Bold 8 8 SUF
+/F-gs-font 8 8 SF
+14 702 M (706:) s
+/Times-Bold 8 8 SUF
+34.448 702 M
+(    """) s
+/F-gs-font 8 8 SF
+14 693 M (707:) s
+14 684 M (708:) s
+34.448 684 M
+(    defaults = {) s
+/Times-Bold 8 8 SUF
+80.128 684 M
+('figsize') s
+/F-gs-font 8 8 SF
+106.784 684 M
+(: \(8, 8\), ) s
+/Times-Bold 8 8 SUF
+132.336 684 M
+('dotsize') s
+/F-gs-font 8 8 SF
+161.216 684 M
+(: 70, ) s
+/Times-Bold 8 8 SUF
+177.44 684 M
+('alpha') s
+/F-gs-font 8 8 SF
+201.888 684 M
+(: 0.7, ) s
+/Times-Bold 8 8 SUF
+220.112 684 M
+('xlim') s
+/F-gs-font 8 8 SF
+240.552 684 M
+(: None,) s
+14 675 M (709:) s
+34.448 675 M
+(                ) s
+/Times-Bold 8 8 SUF
+66.448 675 M
+('ylim') s
+/F-gs-font 8 8 SF
+86.888 675 M
+(: None, ) s
+/Times-Bold 8 8 SUF
+112.44 675 M
+('zlim') s
+/F-gs-font 8 8 SF
+132.432 675 M
+(: None, ) s
+/Times-Bold 8 8 SUF
+157.984 675 M
+('legendfontsize') s
+/F-gs-font 8 8 SF
+211.752 675 M
+(: 12,) s
+14 666 M (710:) s
+34.448 666 M
+(                ) s
+/Times-Bold 8 8 SUF
+66.448 666 M
+('labelfontsize') s
+/F-gs-font 8 8 SF
+114.44 666 M
+(: 10, ) s
+/Times-Bold 8 8 SUF
+130.664 666 M
+('fname') s
+/F-gs-font 8 8 SF
+157.32 666 M
+(: None, ) s
+/Times-Bold 8 8 SUF
+182.872 666 M
+('dpi') s
+/F-gs-font 8 8 SF
+199.32 666 M
+(: 300,) s
+14 657 M (711:) s
+34.448 657 M
+(                ) s
+/Times-Bold 8 8 SUF
+66.448 657 M
+('noticks') s
+/F-gs-font 8 8 SF
+96.224 657 M
+(: True, ) s
+/Times-Bold 8 8 SUF
+119.552 657 M
+('ticksize') s
+/F-gs-font 8 8 SF
+150.208 657 M
+(: 10}) s
+14 648 M (712:) s
+14 639 M (713:) s
+34.448 639 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 639 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 639 M
+( defkey ) s
+/Times-Bold 8 8 SUF
+78.432 639 M
+(in) s
+/F-gs-font 8 8 SF
+85.104 639 M
+( defaults.keys\(\):) s
+14 630 M (714:) s
+34.448 630 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 630 M
+(if) s
+/F-gs-font 8 8 SF
+55.336 630 M
+( defkey ) s
+/Times-Bold 8 8 SUF
+81.104 630 M
+(not) s
+/F-gs-font 8 8 SF
+92.216 630 M
+( ) s
+/Times-Bold 8 8 SUF
+94.216 630 M
+(in) s
+/F-gs-font 8 8 SF
+100.888 630 M
+( kwargs.keys\(\):) s
+14 621 M (715:) s
+34.448 621 M
+(            kwargs[defkey] = defaults[defkey]) s
+14 612 M (716:) s
+14 603 M (717:) s
+34.448 603 M
+(    axes = {}) s
+14 594 M (718:) s
+34.448 594 M
+(    fig = plt.figure\(figsize=\(14, 14\)\)) s
+14 585 M (719:) s
+34.448 585 M
+(    axes[1] = fig.add_subplot\(221, projection=) s
+/Times-Bold 8 8 SUF
+180.12 585 M
+('3d') s
+/F-gs-font 8 8 SF
+193.896 585 M
+(\)) s
+14 576 M (720:) s
+34.448 576 M
+(    axes[2] = fig.add_subplot\(222, projection=) s
+/Times-Bold 8 8 SUF
+180.12 576 M
+('3d') s
+/F-gs-font 8 8 SF
+193.896 576 M
+(\)) s
+14 567 M (721:) s
+34.448 567 M
+(    axes[3] = fig.add_subplot\(223, projection=) s
+/Times-Bold 8 8 SUF
+180.12 567 M
+('3d') s
+/F-gs-font 8 8 SF
+193.896 567 M
+(\)) s
+14 558 M (722:) s
+34.448 558 M
+(    axes[4] = fig.add_subplot\(224, projection=) s
+/Times-Bold 8 8 SUF
+180.12 558 M
+('3d') s
+/F-gs-font 8 8 SF
+193.896 558 M
+(\)) s
+14 549 M (723:) s
+34.448 549 M
+(    color = iter\(cm.viridis\(np.linspace\(0, 0.9, 3\)\)\)) s
+14 540 M (724:) s
+34.448 540 M
+(    angle1 = [60, 0, 0, 0]) s
+14 531 M (725:) s
+34.448 531 M
+(    angle2 = [240, 240, 10, 190]) s
+14 522 M (726:) s
+14 513 M (727:) s
+34.448 513 M
+(    tgroups = {}) s
+14 504 M (728:) s
+34.448 504 M
+(    xy = {}) s
+14 495 M (729:) s
+34.448 495 M
+(    counter = 0) s
+14 486 M (730:) s
+34.448 486 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 486 M
+(#labels = dataset[label].unique\(\)) s
+/F-gs-font 8 8 SF
+14 477 M (731:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 477 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 477 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 477 M
+( lval ) s
+/Times-Bold 8 8 SUF
+68.664 477 M
+(in) s
+/F-gs-font 8 8 SF
+75.336 477 M
+( lvals:) s
+14 468 M (732:) s
+34.448 468 M
+(        tgroups[counter] = dataset[dataset[label] == lval]) s
+14 459 M (733:) s
+34.448 459 M
+(        ) s
+/Times-Italic 8 8 SUF
+50.448 459 M
+(#print\(lval\)) s
+/F-gs-font 8 8 SF
+14 450 M (734:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 450 M
+(        ) s
+/Times-Italic 8 8 SUF
+50.448 450 M
+(#print\(tgroups[counter].shape\)) s
+/F-gs-font 8 8 SF
+14 441 M (735:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 441 M
+(        counter = counter + 1) s
+14 432 M (736:) s
+14 423 M (737:) s
+34.448 423 M
+(    N = len\(tgroups\)) s
+14 414 M (738:) s
+34.448 414 M
+(    color = iter\(cm.viridis\(np.linspace\(0, 0.9, N\)\)\)) s
+14 405 M (739:) s
+14 396 M (740:) s
+34.448 396 M
+(    counter = 0) s
+14 387 M (741:) s
+34.448 387 M
+(    ) s
+/Times-Bold 8 8 SUF
+42.448 387 M
+(for) s
+/F-gs-font 8 8 SF
+52.664 387 M
+( key ) s
+/Times-Bold 8 8 SUF
+68.216 387 M
+(in) s
+/F-gs-font 8 8 SF
+74.888 387 M
+( tgroups:) s
+14 378 M (742:) s
+34.448 378 M
+(        c = next\(color\)) s
+14 369 M (743:) s
+34.448 369 M
+(        xy = []) s
+14 360 M (744:) s
+34.448 360 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 360 M
+(if) s
+/F-gs-font 8 8 SF
+55.336 360 M
+( randsel:) s
+14 351 M (745:) s
+34.448 351 M
+(            ) s
+/Times-Italic 8 8 SUF
+58.448 351 M
+(#print\(range\(0, len\(tgroups[key][0].tolist\(\)\)\)\)) s
+/F-gs-font 8 8 SF
+14 342 M (746:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 342 M
+(            to_plot = random.sample\(range\(0, len\(tgroups[key][0].tolist\(\)\)\),) s
+14 333 M (747:) s
+34.448 333 M
+(                                    randcount\)) s
+14 324 M (748:) s
+34.448 324 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 324 M
+(for) s
+/F-gs-font 8 8 SF
+68.664 324 M
+( key2 ) s
+/Times-Bold 8 8 SUF
+88.216 324 M
+(in) s
+/F-gs-font 8 8 SF
+94.888 324 M
+( features:) s
+14 315 M (749:) s
+34.448 315 M
+(                xy.append\(list\(tgroups[key][key2].tolist\(\)[i] ) s
+/Times-Bold 8 8 SUF
+209.312 315 M
+(for) s
+/F-gs-font 8 8 SF
+219.528 315 M
+( i ) s
+/Times-Bold 8 8 SUF
+225.752 315 M
+(in) s
+/F-gs-font 8 8 SF
+232.424 315 M
+( to_plot\)\)) s
+14 306 M (750:) s
+34.448 306 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 306 M
+(else) s
+/F-gs-font 8 8 SF
+62.888 306 M
+(:) s
+14 297 M (751:) s
+34.448 297 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 297 M
+(for) s
+/F-gs-font 8 8 SF
+68.664 297 M
+( key2 ) s
+/Times-Bold 8 8 SUF
+88.216 297 M
+(in) s
+/F-gs-font 8 8 SF
+94.888 297 M
+( features:) s
+14 288 M (752:) s
+34.448 288 M
+(                xy.append\(tgroups[key][key2]\)) s
+14 279 M (753:) s
+14 270 M (754:) s
+34.448 270 M
+(        acount = 0) s
+14 261 M (755:) s
+34.448 261 M
+(        ) s
+/Times-Bold 8 8 SUF
+50.448 261 M
+(for) s
+/F-gs-font 8 8 SF
+60.664 261 M
+( ax ) s
+/Times-Bold 8 8 SUF
+72.216 261 M
+(in) s
+/F-gs-font 8 8 SF
+78.888 261 M
+( axes:) s
+14 252 M (756:) s
+34.448 252 M
+(            axes[ax].scatter\(xy[0], xy[1], xy[2], c=c, s=kwargs[) s
+/Times-Bold 8 8 SUF
+224.08 252 M
+('dotsize') s
+/F-gs-font 8 8 SF
+252.96 252 M
+(], al) s
+14 243 M (757:) s
+/F-gs-font 8 8 SF
+34.448 243 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 243 M
+(if) s
+/F-gs-font 8 8 SF
+63.336 243 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+91.104 243 M
+('xlim') s
+/F-gs-font 8 8 SF
+111.544 243 M
+(] ) s
+/Times-Bold 8 8 SUF
+116.208 243 M
+(is) s
+/F-gs-font 8 8 SF
+121.544 243 M
+( ) s
+/Times-Bold 8 8 SUF
+123.544 243 M
+(not) s
+/F-gs-font 8 8 SF
+134.656 243 M
+( None:) s
+14 234 M (758:) s
+34.448 234 M
+(                axes[ax].set_xlim3d\(kwargs[) s
+/Times-Bold 8 8 SUF
+159.536 234 M
+('xlim') s
+/F-gs-font 8 8 SF
+179.976 234 M
+(][0], kwargs[) s
+/Times-Bold 8 8 SUF
+221.736 234 M
+('xlim') s
+/F-gs-font 8 8 SF
+242.176 234 M
+(][1]\)) s
+14 225 M (759:) s
+34.448 225 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 225 M
+(if) s
+/F-gs-font 8 8 SF
+63.336 225 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+91.104 225 M
+('ylim') s
+/F-gs-font 8 8 SF
+111.544 225 M
+(] ) s
+/Times-Bold 8 8 SUF
+116.208 225 M
+(is) s
+/F-gs-font 8 8 SF
+121.544 225 M
+( ) s
+/Times-Bold 8 8 SUF
+123.544 225 M
+(not) s
+/F-gs-font 8 8 SF
+134.656 225 M
+( None:) s
+14 216 M (760:) s
+34.448 216 M
+(                axes[ax].set_ylim3d\(kwargs[) s
+/Times-Bold 8 8 SUF
+159.536 216 M
+('ylim') s
+/F-gs-font 8 8 SF
+179.976 216 M
+(][0], kwargs[) s
+/Times-Bold 8 8 SUF
+221.736 216 M
+('ylim') s
+/F-gs-font 8 8 SF
+242.176 216 M
+(][1]\)) s
+14 207 M (761:) s
+34.448 207 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 207 M
+(if) s
+/F-gs-font 8 8 SF
+63.336 207 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+91.104 207 M
+('zlim') s
+/F-gs-font 8 8 SF
+111.096 207 M
+(] ) s
+/Times-Bold 8 8 SUF
+115.76 207 M
+(is) s
+/F-gs-font 8 8 SF
+121.096 207 M
+( ) s
+/Times-Bold 8 8 SUF
+123.096 207 M
+(not) s
+/F-gs-font 8 8 SF
+134.208 207 M
+( None:) s
+14 198 M (762:) s
+34.448 198 M
+(                axes[ax].set_zlim3d\(kwargs[) s
+/Times-Bold 8 8 SUF
+159.088 198 M
+('zlim') s
+/F-gs-font 8 8 SF
+179.08 198 M
+(][0], kwargs[) s
+/Times-Bold 8 8 SUF
+220.84 198 M
+('zlim') s
+/F-gs-font 8 8 SF
+240.832 198 M
+(][1]\)) s
+14 189 M (763:) s
+34.448 189 M
+(            axes[ax].view_init\(angle1[acount], angle2[acount]\)) s
+14 180 M (764:) s
+34.448 180 M
+(            axes[ax].set_xlabel\() s
+/Times-Bold 8 8 SUF
+122.648 180 M
+('{}') s
+/F-gs-font 8 8 SF
+134.28 180 M
+(.format\(features[0]\),) s
+14 171 M (765:) s
+34.448 171 M
+(                                fontsize=kwargs[) s
+/Times-Bold 8 8 SUF
+154.056 171 M
+('labelfontsize') s
+/F-gs-font 8 8 SF
+202.048 171 M
+(]\)) s
+14 162 M (766:) s
+34.448 162 M
+(            axes[ax].set_ylabel\() s
+/Times-Bold 8 8 SUF
+122.648 162 M
+('{}') s
+/F-gs-font 8 8 SF
+134.28 162 M
+(.format\(features[1]\),) s
+14 153 M (767:) s
+34.448 153 M
+(                                fontsize=kwargs[) s
+/Times-Bold 8 8 SUF
+154.056 153 M
+('labelfontsize') s
+/F-gs-font 8 8 SF
+202.048 153 M
+(]\)) s
+14 144 M (768:) s
+34.448 144 M
+(            axes[ax].set_zlabel\() s
+/Times-Bold 8 8 SUF
+122.2 144 M
+('{}') s
+/F-gs-font 8 8 SF
+133.832 144 M
+(.format\(features[2]\),) s
+14 135 M (769:) s
+34.448 135 M
+(                                fontsize=kwargs[) s
+/Times-Bold 8 8 SUF
+154.056 135 M
+('labelfontsize') s
+/F-gs-font 8 8 SF
+202.048 135 M
+(]\)) s
+14 126 M (770:) s
+34.448 126 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 126 M
+(if) s
+/F-gs-font 8 8 SF
+63.336 126 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+91.104 126 M
+('noticks') s
+/F-gs-font 8 8 SF
+120.88 126 M
+(]:) s
+14 117 M (771:) s
+34.448 117 M
+(                axes[ax].set_xticklabels\() s
+/Times-Bold 8 8 SUF
+145.76 117 M
+('') s
+/F-gs-font 8 8 SF
+151.088 117 M
+(\)) s
+14 108 M (772:) s
+34.448 108 M
+(                axes[ax].set_yticklabels\() s
+/Times-Bold 8 8 SUF
+145.76 108 M
+('') s
+/F-gs-font 8 8 SF
+151.088 108 M
+(\)) s
+14 99 M (773:) s
+34.448 99 M
+(                axes[ax].set_zticklabels\() s
+/Times-Bold 8 8 SUF
+145.312 99 M
+('') s
+/F-gs-font 8 8 SF
+150.64 99 M
+(\)) s
+14 90 M (774:) s
+34.448 90 M
+(            ) s
+/Times-Bold 8 8 SUF
+58.448 90 M
+(else) s
+/F-gs-font 8 8 SF
+70.888 90 M
+(:) s
+14 81 M (775:) s
+34.448 81 M
+(                axes[ax].xaxis.set_tick_params\(labelsize=kwargs[) s
+/Times-Bold 8 8 SUF
+227.36 81 M
+('ticksize') s
+/F-gs-font 8 8 SF
+258.016 81 M
+(]\)) s
+14 72 M (776:) s
+34.448 72 M
+(                axes[ax].yaxis.set_tick_params\(labelsize=kwargs[) s
+/Times-Bold 8 8 SUF
+227.36 72 M
+('ticksize') s
+/F-gs-font 8 8 SF
+258.016 72 M
+(]\)) s
+14 63 M (777:) s
+34.448 63 M
+(                axes[ax].zaxis.set_tick_params\(labelsize=kwargs[) s
+/Times-Bold 8 8 SUF
+226.912 63 M
+('ticksize') s
+/F-gs-font 8 8 SF
+257.568 63 M
+(]\)) s
+14 54 M (778:) s
+34.448 54 M
+(            acount = acount + 1) s
+14 45 M (779:) s
+34.448 45 M
+(        counter = counter + 1) s
+14 36 M (780:) s
+14 27 M (781:) s
+34.448 27 M
+(    ) s
+/Times-Italic 8 8 SUF
+42.448 27 M
+(# plt.legend\(fontsize=kwargs['legendfontsize'], frameon=False\)) s
+/F-gs-font 8 8 SF
+14 18 M (782:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+34.448 18 M
+(    axes[3].set_xticks\([]\)) s
+14 9 M (783:) s
+34.448 9 M
+(    axes[4].set_xticks\([]\)) s
+287.5 783 M (784:) s
+287.5 774 M (785:) s
+307.948 774 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 774 M
+(if) s
+/F-gs-font 8 8 SF
+320.836 774 M
+( kwargs[) s
+/Times-Bold 8 8 SUF
+348.604 774 M
+('fname') s
+/F-gs-font 8 8 SF
+375.26 774 M
+(] ) s
+/Times-Bold 8 8 SUF
+379.924 774 M
+(is) s
+/F-gs-font 8 8 SF
+385.26 774 M
+( None:) s
+287.5 765 M (786:) s
+307.948 765 M
+(        plt.show\(\)) s
+287.5 756 M (787:) s
+307.948 756 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 756 M
+(else) s
+/F-gs-font 8 8 SF
+328.388 756 M
+(:) s
+287.5 747 M (788:) s
+307.948 747 M
+(        plt.savefig\(kwargs[) s
+/Times-Bold 8 8 SUF
+385.932 747 M
+('fname') s
+/F-gs-font 8 8 SF
+412.588 747 M
+(], dpi=kwargs[) s
+/Times-Bold 8 8 SUF
+459.756 747 M
+('dpi') s
+/F-gs-font 8 8 SF
+476.204 747 M
+(]\)) s
+287.5 738 M (789:) s
+/Times-Bold 8 8 SUF
+307.948 738 M
+(def) s
+/F-gs-font 8 8 SF
+318.612 738 M
+( ) s
+/Times-Bold 8 8 SUF
+320.612 738 M
+(main) s
+/F-gs-font 8 8 SF
+337.948 738 M
+(\(\):) s
+287.5 729 M (790:) s
+307.948 729 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 729 M
+(import) s
+/F-gs-font 8 8 SF
+339.5 729 M
+( pandas as pd) s
+287.5 720 M (791:) s
+307.948 720 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 720 M
+(import) s
+/F-gs-font 8 8 SF
+339.5 720 M
+( os) s
+287.5 711 M (792:) s
+307.948 711 M
+(    os.chdir\() s
+287.5 702 M (793:) s
+307.948 702 M
+(        ) s
+/Times-Bold 8 8 SUF
+323.948 702 M
+('/Users/claudialozano/Dropbox/PycharmProjects/AD_nanopart) s
+/F-gs-font 8 8 SF
+287.5 693 M (794:) s
+/Times-Bold 8 8 SUF
+307.948 693 M
+(    filename = ) s
+/Times-Bold 8 8 SUF
+353.836 693 M
+("features_orig_P10F_10uM_6h_slice_1_cortex_vid_1.) s
+/F-gs-font 8 8 SF
+287.5 684 M (795:) s
+/Times-Bold 8 8 SUF
+307.948 684 M
+(    fstats = pd.read_csv\(filename, encoding=) s
+/Times-Bold 8 8 SUF
+455.06 684 M
+("ISO-8859-1") s
+/F-gs-font 8 8 SF
+503.052 684 M
+(, index_col) s
+287.5 675 M (796:) s
+307.948 675 M
+(    nonnum = []) s
+287.5 666 M (797:) s
+307.948 666 M
+(    fstats_num = fstats.drop\(nonnum, axis=1\)) s
+287.5 657 M (798:) s
+307.948 657 M
+(    fstats_raw = fstats.values) s
+287.5 648 M (799:) s
+307.948 648 M
+(    pcadataset = pca_analysis\(fstats, dropcols=nonnum, n_components=6) s
+287.5 639 M (800:) s
+307.948 639 M
+(    kmostat = kmo\(pcadataset.scaled\)) s
+287.5 630 M (801:) s
+307.948 630 M
+(    test = np.exp\(np.nanmean\(np.log\(pcadataset.final[pcadataset.final[) s
+/Times-Bold 8 8 SUF
+529.516 630 M
+('fr) s
+/F-gs-font 8 8 SF
+287.5 621 M (802:) s
+/Times-Bold 8 8 SUF
+307.948 621 M
+(    test1 = np.exp\(np.nanmean\(np.log\(pcadataset.final[pcadataset.fin) s
+/F-gs-font 8 8 SF
+287.5 612 M (803:) s
+/Times-Bold 8 8 SUF
+307.948 612 M
+(    dicti = {}) s
+/F-gs-font 8 8 SF
+287.5 603 M (804:) s
+/Times-Bold 8 8 SUF
+307.948 603 M
+(    dicti[0] = test) s
+/F-gs-font 8 8 SF
+287.5 594 M (805:) s
+/Times-Bold 8 8 SUF
+307.948 594 M
+(    dicti[1] = test1) s
+/F-gs-font 8 8 SF
+287.5 585 M (806:) s
+/Times-Bold 8 8 SUF
+307.948 585 M
+(   ) s
+/Times-Italic 8 8 SUF
+313.948 585 M
+(#plot_pca\(dicti, savefig=True, labels=['Long T', 'Short T']\)) s
+/F-gs-font 8 8 SF
+287.5 576 M (807:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 576 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 576 M
+(#print\(pcadataset.prcomps\)) s
+/F-gs-font 8 8 SF
+287.5 567 M (808:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 567 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 567 M
+(#feature_plot_3D\(fstats, "alpha", features=[0, 1, 2], lvals=['PEG', ') s
+/F-gs-font 8 8 SF
+287.5 558 M (809:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 549 M (810:) s
+307.948 549 M
+(    np.random.seed\(seed=1\)) s
+287.5 540 M (811:) s
+307.948 540 M
+(    dataset = {) s
+/Times-Bold 8 8 SUF
+350.516 540 M
+('label') s
+/F-gs-font 8 8 SF
+372.292 540 M
+(: 250 * [) s
+/Times-Bold 8 8 SUF
+399.18 540 M
+('yes') s
+/F-gs-font 8 8 SF
+415.172 540 M
+(] + 250 * [) s
+/Times-Bold 8 8 SUF
+449.012 540 M
+('no') s
+/F-gs-font 8 8 SF
+462.788 540 M
+(],) s
+287.5 531 M (812:) s
+307.948 531 M
+(               0: np.random.normal\(0.5, 1, size=500\),) s
+287.5 522 M (813:) s
+307.948 522 M
+(               1: np.random.normal\(1, 2, size=500\),) s
+287.5 513 M (814:) s
+307.948 513 M
+(               2: np.random.normal\(3, 10, size=500\)) s
+287.5 504 M (815:) s
+307.948 504 M
+(               }) s
+287.5 495 M (816:) s
+287.5 486 M (817:) s
+307.948 486 M
+(    df = pd.DataFrame\(data=dataset\)) s
+287.5 477 M (818:) s
+307.948 477 M
+(    ) s
+/Times-Bold 8 8 SUF
+315.948 477 M
+(print) s
+/F-gs-font 8 8 SF
+333.284 477 M
+(\(df\)) s
+287.5 468 M (819:) s
+307.948 468 M
+(    ) s
+/Times-Italic 8 8 SUF
+315.948 468 M
+(#feature_plot_2D\(df, label='label', features=[0, 1], randsel=True,) s
+/F-gs-font 8 8 SF
+287.5 459 M (820:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+307.948 459 M
+(     ) s
+/Times-Italic 8 8 SUF
+317.948 459 M
+(#                        lvals=['yes', 'no']\)) s
+/F-gs-font 8 8 SF
+287.5 450 M (821:) s
+/Times-Italic 8 8 SUF
+/F-gs-font 8 8 SF
+287.5 441 M (822:) s
+/Times-Bold 8 8 SUF
+307.948 441 M
+(if) s
+/F-gs-font 8 8 SF
+312.836 441 M
+( __name__ == ) s
+/Times-Bold 8 8 SUF
+361.188 441 M
+("__main__") s
+/F-gs-font 8 8 SF
+403.404 441 M
+(:) s
+287.5 432 M (823:) s
+307.948 432 M
+(    main\(\)) s
+_R
+S
+%%Trailer
+%%Pages: 5
+%%DocumentNeededResources: font Times-Roman Courier-Bold Times-Italic 
+%%+ font Times-Bold 
+%%EOF

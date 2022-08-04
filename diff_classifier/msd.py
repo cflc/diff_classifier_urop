@@ -118,6 +118,8 @@ def msd_calc(track, length=10):
     ...          'Y': [6, 7, 8, 9, 10]}
     >>> df = pd.DataFrame(data=data1)
     >>> new_track = msd.msd_calc(df)
+    :param track:
+    :param length:
 
     """
 
@@ -432,7 +434,6 @@ def all_msds2(data, frames=651):
                     meansd[frame + 1, :] = np.nanmean(xpos + ypos, axis=0)
                     gauss[frame + 1, :] = np.nanmean(xpos ** 2 + ypos ** 2, axis=0) / (2 * (meansd[frame + 1] ** 2))
 
-
             data1 = {'Frame': xyft['farray'].flatten('F'),
                      'Track_ID': xyft['tarray'].flatten('F'),
                      'X': xyft['xarray'].flatten('F'),
@@ -513,7 +514,7 @@ def geomean_msdisp(prefix, umppx=0.16, fps=100.02, upload=True,
     geo_mean : numpy.ndarray
         Geometric mean of trajectory MSDs at all time points.
     geo_stder : numpy.ndarray
-        Geometric standard errot of trajectory MSDs at all time points.
+        Geometric standard error of trajectory MSDs at all time points.
 
     """
 
@@ -777,6 +778,7 @@ def plot_all_experiments(experiments, bucket='ccurtis.data', folder='test',
         ax.set_yscale("log")
 
     plt.legend(frameon=False, loc=2, prop={'size': 16})
+    fig.savefig(outfile, bbox_inches='tight')
 
     if upload:
         fig.savefig(outfile, bbox_inches='tight')
@@ -942,52 +944,6 @@ def random_walk(nsteps=100, seed=None, start=(0, 0), step=1, mask=None,
                 y[i] = y[i - 1]
 
     return x, y
-
-
-# def random_walk(nsteps=100, seed=1, start=(0, 0)):
-#     """Creates 2d random walk trajectory.
-#
-#     Parameters
-#     ----------
-#     nsteps : int
-#         Number of steps for trajectory to move.
-#     seed : int
-#         Seed for pseudo-random number generator for reproducability.
-#     start : tuple of int or float
-#         Starting xy coordinates at which the random walk begins.
-#
-#     Returns
-#     -------
-#     x : numpy.ndarray
-#         Array of x coordinates of random walk.
-#     y : numpy.ndarray
-#         Array of y coordinates of random walk.
-#
-#     """
-#
-#     rand.seed(a=seed)
-#
-#     x = np.zeros(nsteps)
-#     y = np.zeros(nsteps)
-#     x[0] = start[0]
-#     y[0] = start[1]
-#
-#     for i in range(1, nsteps):
-#         val = rand.randint(1, 4)
-#         if val == 1:
-#             x[i] = x[i - 1] + 1
-#             y[i] = y[i - 1]
-#         elif val == 2:
-#             x[i] = x[i - 1] - 1
-#             y[i] = y[i - 1]
-#         elif val == 3:
-#             x[i] = x[i - 1]
-#             y[i] = y[i - 1] + 1
-#         else:
-#             x[i] = x[i - 1]
-#             y[i] = y[i - 1] - 1
-#
-#     return x, y
 
 
 def random_traj_dataset(nframes=100, nparts=30, seed=1, fsize=(0, 512),

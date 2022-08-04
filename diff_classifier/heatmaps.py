@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi
 import scipy.stats as stats
 import os
-import os.path as op
+
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 import numpy.ma as ma
@@ -317,9 +317,8 @@ def plot_trajectories(prefix, resolution=512, rows=4, cols=4, upload=True,
 
 
 def plot_histogram(prefix, xlabel='Log Diffusion Coefficient Dist', ylabel='Trajectory Count',
-                   fps=100.02, umppx=0.16, frames=651, y_range=100, frame_interval=20, frame_range=100,
-                   analysis='log', theta='D', upload=True, remote_folder="01_18_Experiment",
-                   bucket='ccurtis.data'):
+                   fps=100.02, umppx=0.16, frames=651, y_range=100, x_range=4, frame_interval=10, frame_range=50,
+                   analysis='log', theta='D', ):
     """
     Plot heatmap of trajectories in video with colors corresponding to features.
 
@@ -349,28 +348,29 @@ def plot_histogram(prefix, xlabel='Log Diffusion Coefficient Dist', ylabel='Traj
         True if you want to upload to s3.
 
     """
-    merged = pd.read_csv('msd_{}.csv'.format(prefix))
-    data = merged
-    frame_range = range(frame_interval, frame_range + frame_interval, frame_interval)
-
     # load data
+    merged = pd.read_csv('msd_{}.csv'.format(prefix))
+    frame_range = range(frame_interval, frame_range + frame_interval, frame_interval)
 
     # generate keys for legend
     bar = {}
     keys = []
     entries = []
+
     for i in range(0, len(list(frame_range))):
         keys.append(i)
         entries.append(str(10 * frame_interval * (i + 1)) + 'ms')
 
-    set_x_limit = False
+    set_x_limit = True
     set_y_limit = True
+
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
     fig = plt.figure(figsize=(16, 6))
 
     counter = 0
+    tt = []
     for i in frame_range:
-        toi = i / fps
+        toi = i / fps  #### ASUMMING BROWIAN MOTION!!!!!!
         if theta == "MSD":
             factor = 1
         else:
@@ -379,8 +379,10 @@ def plot_histogram(prefix, xlabel='Log Diffusion Coefficient Dist', ylabel='Traj
         if analysis == 'log':
             dist = np.log(umppx * umppx * merged.loc[merged.Frame == i, 'MSDs'].dropna() / factor)
             test_bins = np.linspace(-5, 5, 76)
+
         else:
             dist = umppx * umppx * merged.loc[merged.Frame == i, 'MSDs'].dropna() / factor
+            tt.extend(dist.tolist())
             test_bins = np.linspace(0, 20, 76)
 
         histogram, test_bins = np.histogram(dist, bins=test_bins)
@@ -395,10 +397,14 @@ def plot_histogram(prefix, xlabel='Log Diffusion Coefficient Dist', ylabel='Traj
         center = (bins[:-1] + bins[1:]) / 2
         bar[keys[counter]] = plt.bar(center, plot, align='center', width=width, color=colors[counter],
                                      label=entries[counter])
+
+        plt.xticks(test_bins.round(3) - .5, test_bins.round(3))
+        plt.xticks(fontsize=5, rotation=90)
+        plt.tick_params(axis='both', which='major', labelsize=20)
+
         plt.axvline(avg, color=colors[counter])
         plt.xlabel(xlabel, fontsize=30)
         plt.ylabel(ylabel, fontsize=30)
-        plt.tick_params(axis='both', which='major', labelsize=20)
 
         counter = counter + 1
         if set_y_limit:
@@ -408,10 +414,12 @@ def plot_histogram(prefix, xlabel='Log Diffusion Coefficient Dist', ylabel='Traj
             plt.gca().set_xlim([0, x_range])
 
         plt.legend(fontsize=20, frameon=False)
+
+    df = pd.DataFrame({'DiffCoeffBM': tt})
+    df.to_csv('DiffCoeffBM_{}.csv'.format(prefix), index=False)
     outfile = 'hist_{}.png'.format(prefix)
     fig.savefig(outfile, bbox_inches='tight')
-    if upload == True:
-        aws.upload_s3(outfile, remote_folder + '/' + outfile, bucket_name=bucket)
+    plt.show()
 
 
 def plot_particles_in_frame(prefix, x_range=600, y_range=2000, upload=True,
@@ -451,8 +459,8 @@ def plot_particles_in_frame(prefix, x_range=600, y_range=2000, upload=True,
         aws.upload_s3(outfile, remote_folder + '/' + outfile, bucket_name=bucket)
 
 
-def plot_individual_msds(prefix, x_range=100, y_range=20, umppx=0.16, fps=100.02, alpha=0.1, folder='.', upload=True,
-                         remote_folder="01_18_Experiment", bucket='ccurtis.data', figsize=(10, 10), subset=True,
+def plot_individual_msds(prefix, x_range=100, y_range=20, umppx=0.16, fps=100.02, alpha=0.1, folder='.',
+                         figsize=(10, 10), subset=True,
                          size=1000,
                          dpi=300):
     """
@@ -496,11 +504,7 @@ def plot_individual_msds(prefix, x_range=100, y_range=20, umppx=0.16, fps=100.02
 
     frames = int(max(merged['Frame']))
 
-    #   y = merged['Y'].values.reshape((particles+1, frames+1))*umppx*umppx Y IS REPLACED IN LINE 502
     x = merged['X'].values.reshape((particles + 1, frames + 1)) / fps
-    #     for i in racd cnge(0, particles+1):
-    #         y[i, :] = merged.loc[merged.Track_ID == i, 'MSDs']*umppx*umppx
-    #         x = merged.loc[merged.Track_ID == i, 'Frame']/fps
 
     particles = np.linspace(0, particles, particles - 1).astype(int)
     if subset:
@@ -528,10 +532,7 @@ def plot_individual_msds(prefix, x_range=100, y_range=20, umppx=0.16, fps=100.02
     fig.savefig(outfile, bbox_inches='tight', dpi=dpi)
     np.savetxt(outfile2, geo_mean, delimiter=",")
     np.savetxt(outfile3, geo_SEM, delimiter=",")
-    if upload:
-        aws.upload_s3(outfile, remote_folder + '/' + outfile, bucket_name=bucket)
-        aws.upload_s3(outfile2, remote_folder + '/' + outfile2, bucket_name=bucket)
-        aws.upload_s3(outfile3, remote_folder + '/' + outfile3, bucket_name=bucket)
+
     return geo_mean, geo_SEM
 
 
@@ -576,8 +577,8 @@ def plot_individual_features(*args, col_list=["alpha"],
         plt.ylabel(feature)
         plt.title(feature)
         plt.tight_layout()
-        if len(args) ==1:
-            plt.savefig("{}/{}_plot_individual_features".format(args[0],feature))  # Saving Figure
+        if len(args) == 1:
+            plt.savefig("{}/{}_plot_individual_features".format(args[0], feature))  # Saving Figure
         plt.savefig("{}_plot_individual_features".format(feature))  # Saving Figure
         plt.close()  # Clears up the figure for not overlapping points
 
@@ -728,7 +729,6 @@ def plot_compare_features(prefix, compare_to, name_file,
         if not all(i != i for i in list(calc[feature])):  # Making sure that the feature has data points
             if not all(i != i for i in list(compare[feature])):
                 distance = 0  # Re-initializes distance between features
-                print(feature)
                 compare_l = list(compare[feature])
                 calc_l = list(calc[feature])
                 # Getting rid of NaN and infinite values
@@ -765,9 +765,8 @@ def plot_compare_features(prefix, compare_to, name_file,
                     # Add the distances between all the points
                     distance += abs(df[point, 1] - df_compare[assignment[point], 1])
 
-                print(distance)
                 try:
-                    penalty = diff_factor["Track_ID"]  # Penalty for tracking more or less particles
+                    penalty = 0  # Penalty for tracking more or less particles
                     diff_factor[feature] = (distance / N) + penalty
                 except:
                     diff_factor[feature] = (distance / N)
@@ -859,13 +858,14 @@ def make_labels(ax, boxplot):
     return {"median": median, "pc25": pc25, "pc75": pc75, "mean": mean_, "capbottom": capbottom, "captop": captop}
 
 
-def boxplot_feature(prefix, col_list=["alpha"]):
+def boxplot_feature(prefix, col_list=["alpha"], outliers=True, file="NaN", umppx=1, fps=1, time=1):
     """
     Plots the Box and Wiskers plot for the list of features given. It prints all relevant values: median, mean, iqrs,
     caps, std and outliers.
 
     Parameters
     -----------
+    :param outliers:
     :param prefix: The dataset name that we are analysing
     :param col_list: The feature names that we want to analyze
 
@@ -874,10 +874,65 @@ def boxplot_feature(prefix, col_list=["alpha"]):
     :return: a dictionary of dictionaries with all the relevant statistical values of the features
     """
 
-    df = pd.read_csv('{}/features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
-    df.dropna(inplace=True)  # Remove all NaN values
-    stds = df.std(axis=0)  # Get a list of  standard deviations for each feature
+    if file == "BM":
+        print("BM Diffusion Coeffcient Calculated")
+        df = pd.read_csv('{}/DiffCoeffBM_{}.csv'.format(prefix, prefix))
+        print(np.mean(df["DiffCoeffBM"]))
+    print(file == "D")
+    if file == "D":
+        print("Diffusion Coeffcient Calculated")
+        df = pd.read_csv('{}/features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
+        features = list(df.columns)
+        for feature in features:
+            df[feature] = umppx * df[feature]
+    if file == "M":
+        print("Mesh Size")
+        df = pd.read_csv('{}/Mesh_{}.csv'.format(prefix, prefix))
 
+    if file == "SV":
+        print("Speed and Velocity")
+        tf = pd.read_csv('{}/Speed.csv'.format(prefix), usecols=col_list)
+        tf = tf.iloc[3:].astype('float64')
+        df = pd.DataFrame()
+
+        df["TRACK_DISPLACEMENT (µm)"] = umppx * tf["TRACK_DISPLACEMENT"]
+        df[" TOTAL_DISTANCE_TRAVELED (µm)"] = umppx * tf["TOTAL_DISTANCE_TRAVELED"]
+
+        if "TRACK_MEAN_SPEED" in col_list:
+            df["TRACK_MEAN_SPEED (µm/sec)"] = umppx * tf["TRACK_MEAN_SPEED"] * fps
+
+    if file == "NaN":
+        print('Feature File ')
+        df = pd.read_csv('{}/features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
+
+    df.dropna(inplace=True)  # Remove all NaN values
+
+    def quantiles(df):
+        Q1 = df.quantile(0.25)
+        Q3 = df.quantile(0.75)
+        IQR = Q3 - Q1
+        return Q1, Q3, IQR
+
+    if not outliers:
+        check = True
+        while check:
+            Q1, Q3, IQR = quantiles(df)
+            cap_top = df.max(numeric_only=True) > (IQR * 1.5 + Q3) + 1
+            cap_bottom = df.min(numeric_only=True) < (Q1 - IQR * 1.5) - 1
+            if cap_top.any():
+                cap_top = True
+            else:
+                cap_top = False
+            if cap_bottom.any():
+                cap_bottom = True
+            else:
+                cap_bottom = False
+
+            check = cap_top or cap_bottom
+            df = df[~((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR))).any(axis=1)]
+
+    stds = df.std(axis=0)  # Get a list of  standard deviations for each feature
+    df.dropna(inplace=True)  # Remove all NaN values
     # Plot set up
     red_circle = dict(markerfacecolor='red', marker='o')  # Make outliers red circles
     mean_shape = dict(markerfacecolor='green', marker='D', markeredgecolor='green')  # Plots Mean as a green square
@@ -888,7 +943,7 @@ def boxplot_feature(prefix, col_list=["alpha"]):
         fig, axs = plt.subplots(1, len(df.columns), figsize=(20, 10))  # Create the Figure
 
         for i, ax in enumerate(axs.flat):  # For each of the features
-            feat_plot = ax.boxplot(df.iloc[:, i], flierprops=red_circle, showmeans=True, meanprops=mean_shape)
+            feat_plot = ax.boxplot(df[df.columns[i]], flierprops=red_circle, showmeans=True, meanprops=mean_shape)
             xpos = feat_plot['medians'][0].get_xdata()  # The x position of the median line
             xoff = 0.10 * (xpos[1] - xpos[0])  # horizontal offset which is some fraction of the width of the box
             xlabel = xpos[1] + xoff - 0.3  # The x position of the std
@@ -915,8 +970,6 @@ def boxplot_feature(prefix, col_list=["alpha"]):
 
     plt.tight_layout()
     plt.savefig("{}/Box&Wiskers_of_".format(prefix) + '_'.join(col_list))
-    plt.show()
-    plt.close()
     return stat_features
 
 
@@ -970,15 +1023,57 @@ def compile_figures(prefix, row_size=10):
     montage.save("{}_Image_Compilation.png".format(prefix))
 
 
+def particles_in_frame(prefix, x_range=600, y_range=2000):
+    """
+    Plot number of particles per frame as a function of time.
+
+    Parameters
+    ----------
+    prefix: string
+        Prefix of file name to be plotted e.g. features_P1.csv prefix is P1.
+    x_range: float64 or int
+        Desire x range of graph.
+    y_range: float64 or int
+        Desire y range of graph.
+    upload: boolean
+        True if you want to upload to s3.
+
+    """
+    merged = pd.read_csv('msd_{}.csv'.format(prefix))
+    frames = int(max(merged['Frame']))
+    framespace = np.linspace(0, frames, frames)
+    particles = np.zeros((framespace.shape[0]))
+    for i in range(0, frames):
+        particles[i] = merged.loc[merged.Frame == i, 'X'].dropna().shape[0]
+
+    fig = plt.figure(figsize=(5, 5))
+    plt.plot(framespace, particles, linewidth=4)
+    plt.xlim(0, x_range)
+    plt.ylim(0, y_range)
+    plt.xlabel('Frames', fontsize=20)
+    plt.ylabel('Particles', fontsize=20)
+
+    outfile = 'in_frame_{}.png'.format(prefix)
+    fig.savefig(outfile, bbox_inches='tight')
+
+
 def main():
+    prefix = "HUVEC-FbChipRED-PEG-PNPS2umFULLAUTO"
     os.chdir(
         '/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/')
-    boxplot_feature("4-06092022-Matrigel-40microlit-100nmYG-1068x1068-4_0xCA-8("
-                    "21)fps-pixelSize0_15micromet-SR-4Y-20x-MG850V-Airyscan-Processing",
-                    col_list=["alpha","Mean alpha"])
-    plot_individual_features("4-06092022-Matrigel-40microlit-100nmYG-1068x1068-4_0xCA-8("
-                             "21)fps-pixelSize0_15micromet-SR-4Y-20x-MG850V-Airyscan-Processing",
-                             col_list=["alpha","Mean alpha"])
+    boxplot_feature(prefix, col_list=["DiffCoeffBM"], file="BM", umppx=0.8014, fps=5, time = 0.2)
+    # plot_individual_features(prefix, col_list=["Track_ID","Mean alpha", "Mean Deff1", "Mean D_fit","alpha","MSD_ratio"])
+    os.chdir(
+        '/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/{}'.format(
+            prefix))
+    # particles_in_frame(prefix, x_range=500, y_range=50)
+
+    #plot_compare_features("Matrigel_TrackMate_Full", "Matrigel_TrackMate_Full_mine_more",
+                          #"TrackMate Consistency Quality auto")
+
+    # plot_histogram(prefix, xlabel='Diffusion Coefficient Dist', ylabel='Trajectory Count',
+    #                fps=5, umppx= 0.8014, frames=119, y_range=40, frame_interval=10, frame_range=50,
+    #                analysis='NaN', theta='D')
 
 
 if __name__ == "__main__":
