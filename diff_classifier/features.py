@@ -817,8 +817,7 @@ def calculate_features(dframe, framerate=1, frame=(10, 100), mean_values=True):
 
         try:
             datai['Deff1'][particle] = single_track['MSDs'][frame[0]] / (4 * frame[0])
-            print("frame 0 {}".format(frame[0]))
-            print("frame 1 {}".format(frame[1]))
+
         except:
             datai['Deff1'][particle] = np.nan
 

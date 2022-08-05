@@ -8,7 +8,6 @@ import diff_classifier.msd as msd
 
 
 def test_nth_diff():
-
     data1 = {'col1': [1, 2, 3, 4, 5]}
     df = pd.DataFrame(data=data1)
 
@@ -28,7 +27,6 @@ def test_nth_diff():
 
 
 def test_msd_calc():
-
     data1 = {'Frame': [1, 2, 3, 4, 5],
              'X': [5, 6, 7, 8, 9],
              'Y': [6, 7, 8, 9, 10]}
@@ -54,28 +52,26 @@ def test_msd_calc():
 
 
 def test_all_msds():
-
     data1 = {'Frame': [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
              'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
              'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
              'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6]}
     df = pd.DataFrame(data=data1)
 
-    di = {'Frame': [float(i) for i in[1, 2, 3, 4, 5, 1, 2, 3, 4, 5]],
-          'Track_ID': [float(i) for i in[1, 1, 1, 1, 1, 2, 2, 2, 2, 2]],
-          'X': [float(i) for i in[5, 6, 7, 8, 9, 1, 2, 3, 4, 5]],
-          'Y': [float(i) for i in[6, 7, 8, 9, 10, 2, 3, 4, 5, 6]],
-          'MSDs': [float(i) for i in[0, 2, 8, 18, 32, 0, 2, 8, 18, 32]],
+    di = {'Frame': [float(i) for i in [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]],
+          'Track_ID': [float(i) for i in [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]],
+          'X': [float(i) for i in [5, 6, 7, 8, 9, 1, 2, 3, 4, 5]],
+          'Y': [float(i) for i in [6, 7, 8, 9, 10, 2, 3, 4, 5, 6]],
+          'MSDs': [float(i) for i in [0, 2, 8, 18, 32, 0, 2, 8, 18, 32]],
           'Gauss': [0, 0.25, 0.25, 0.25, 0.25, 0, 0.25, 0.25, 0.25, 0.25]}
     cols = ['Frame', 'Track_ID', 'X', 'Y', 'MSDs', 'Gauss']
 
     dfi = pd.DataFrame(data=di)[cols]
-
+    print(msd.all_msds(df)[cols])
     pdt.assert_frame_equal(dfi, msd.all_msds(df)[cols])
 
 
 def test_make_xyarray():
-
     data1 = {'Frame': [0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
              'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
              'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
@@ -132,7 +128,6 @@ def test_make_xyarray():
 
 
 def test_all_msds2():
-
     data1 = {'Frame': [0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
              'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
              'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
@@ -142,17 +137,17 @@ def test_all_msds2():
              'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
     df = pd.DataFrame(data=data1)
 
-    di = {'Frame': [float(i) for i in[0, 1, 2, 3, 4, 0, 1, 2, 3, 4]],
-          'Track_ID': [float(i) for i in[1, 1, 1, 1, 1, 2, 2, 2, 2, 2]],
-          'X': [float(i) for i in[5, 6, 7, 8, 9, 1, 2, 3, 4, 5]],
-          'Y': [float(i) for i in[6, 7, 8, 9, 10, 2, 3, 4, 5, 6]],
-          'MSDs': [float(i) for i in[0, 2, 8, 18, 32, 0, 2, 8, 18, 32]],
+    di = {'Frame': [float(i) for i in [0, 1, 2, 3, 4, 0, 1, 2, 3, 4]],
+          'Track_ID': [float(i) for i in [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]],
+          'X': [float(i) for i in [5, 6, 7, 8, 9, 1, 2, 3, 4, 5]],
+          'Y': [float(i) for i in [6, 7, 8, 9, 10, 2, 3, 4, 5, 6]],
+          'MSDs': [float(i) for i in [0, 2, 8, 18, 32, 0, 2, 8, 18, 32]],
           'Gauss': [0, 0.25, 0.25, 0.25, 0.25, 0, 0.25, 0.25, 0.25, 0.25],
-          'Quality': [float(i) for i in[10, 10, 10, 10, 10,
-                      10, 10, 10, 10, 10]],
+          'Quality': [float(i) for i in [10, 10, 10, 10, 10,
+                                         10, 10, 10, 10, 10]],
           'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
-          'Mean_Intensity': [float(i) for i in[10, 10, 10, 10, 10,
-                             10, 10, 10, 10, 10]]}
+          'Mean_Intensity': [float(i) for i in [10, 10, 10, 10, 10,
+                                                10, 10, 10, 10, 10]]}
     cols = ['Frame', 'Track_ID', 'X', 'Y', 'MSDs', 'Gauss', 'Quality',
             'SN_Ratio', 'Mean_Intensity']
 
@@ -160,7 +155,7 @@ def test_all_msds2():
 
     length = max(df['Frame']) + 1
     print("DFI")
-    print( dfi)
+    print(dfi)
     print("MSDS")
     print(msd.all_msds2(df, frames=length))
     pdt.assert_frame_equal(dfi, msd.all_msds2(df, frames=length)[cols])
@@ -199,8 +194,8 @@ def test_geomean_msdisp():
     msds = msd.all_msds2(df)
     msds.to_csv('msd_test.csv')
     geomean, geostder = msd.geomean_msdisp('test', umppx=1, fps=1, upload=False)
-    npt.assert_equal(geomean, np.nan*np.ones(651))
-    npt.assert_equal(geostder, np.nan*np.ones(651))
+    npt.assert_equal(geomean, np.nan * np.ones(651))
+    npt.assert_equal(geostder, np.nan * np.ones(651))
 
     # test 3
     data1 = {'Frame': [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
@@ -248,8 +243,8 @@ def test_precision_weight():
         experiments.append(name)
         data1 = {'Frame': [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
                  'Track_ID': [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-                 'X': [x*(num+1) for x in [5, 6, 7, 8, 9, 2, 4, 6, 8, 10]],
-                 'Y': [x*(num+1) for x in [6, 7, 8, 9, 10, 6, 8, 10, 12, 14]],
+                 'X': [x * (num + 1) for x in [5, 6, 7, 8, 9, 2, 4, 6, 8, 10]],
+                 'Y': [x * (num + 1) for x in [6, 7, 8, 9, 10, 6, 8, 10, 12, 14]],
                  'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
                  'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
                  'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
@@ -275,8 +270,8 @@ def test_precision_averaging():
         experiments.append(name)
         data1 = {'Frame': [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
                  'Track_ID': [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-                 'X': [x*(num+1) for x in [5, 6, 7, 8, 9, 2, 4, 6, 8, 10]],
-                 'Y': [x*(num+1) for x in [6, 7, 8, 9, 10, 6, 8, 10, 12, 14]],
+                 'X': [x * (num + 1) for x in [5, 6, 7, 8, 9, 2, 4, 6, 8, 10]],
+                 'Y': [x * (num + 1) for x in [6, 7, 8, 9, 10, 6, 8, 10, 12, 14]],
                  'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
                  'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
                  'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
@@ -292,16 +287,16 @@ def test_precision_averaging():
                                       save=False)
 
     geostd_t = np.array([0.3, 0.3, 0.3, 0.3])
-    geo_t = np.array([19.6,  78.4, 176.4, 313.5])
+    geo_t = np.array([19.6, 78.4, 176.4, 313.5])
     npt.assert_equal(np.round(geodata.geostd[geodata.geostd.mask == False].data,
                               1), geostd_t)
     npt.assert_equal(np.round(
-                     np.exp(geodata.geomean[
-                              geodata.geomean.mask == False].data), 1), geo_t)
+        np.exp(geodata.geomean[
+                   geodata.geomean.mask == False].data), 1), geo_t)
 
 
 def test_random_walk():
-    xi = np.array([0., 1.,  2.,  2.,  1.])
+    xi = np.array([0., 1., 2., 2., 1.])
     yi = np.array([0., 0., 0., 1., 1.])
     x, y = msd.random_walk(nsteps=5)
     npt.assert_equal(xi, x)
@@ -309,10 +304,10 @@ def test_random_walk():
 
 
 def test_random_traj_dataset():
-    di = {'Frame': [float(i) for i in[0, 1, 2, 3, 4, 0, 1, 2, 3, 4]],
-          'Track_ID': [float(i) for i in[0, 0, 0, 0, 0, 1, 1, 1, 1, 1]],
+    di = {'Frame': [float(i) for i in [0, 1, 2, 3, 4, 0, 1, 2, 3, 4]],
+          'Track_ID': [float(i) for i in [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]],
           'X': np.array([1., 1.93045975532, 1.0, 1.0, 1.0, 0.0, 0.288183500979, 0.576367001958,
-                        0.864550502937, 0.864550502937]),
+                         0.864550502937, 0.864550502937]),
           'Y': np.array([1., 1., 1., 0.06954024468115816, 1.0, 4.0, 4.0, 4.0, 4.0, 4.288183500978857
                          ]),
           'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
@@ -329,18 +324,23 @@ def test_plot_all_experiments():
     print('To do later.')
 
 
-
-
-
 data1 = {'Frame': [0, 1, 2, 3, 4, 20, 21, 22, 23, 24],
-             'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
-             'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
-             'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6],
-             'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-             'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
-             'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
+         'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+         'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
+         'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6],
+         'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+         'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+         'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
 df = pd.DataFrame(data=data1)
 length = max(df['Frame']) + 1
-cols = ['X', 'Y', 'MSDs', 'Gauss','Frame']
+cols = ['X', 'Y', 'MSDs', 'Gauss', 'Frame']
 print(msd.all_msds2(df, frames=length)[cols])
 test_make_xyarray()
+
+
+def main():
+    test_make_xyarray()
+
+
+if __name__ == "__main__":
+    main()

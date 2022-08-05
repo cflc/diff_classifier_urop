@@ -87,8 +87,7 @@ def nth_diff(dataframe, n=1, axis=0):
 
 
 def msd_calc(track, length=10):
-    """
-    Calculates mean squared displacement of input track.
+    """Calculates mean squared displacement of input track.
     Returns numpy array containing MSD data calculated from an individual track.
 
     Parameters
@@ -158,8 +157,8 @@ def msd_calc(track, length=10):
 
 
 def all_msds(data):
-    """
-    Calculates mean squared displacements of a trajectory dataset and
+
+    """Calculates mean squared displacements of a trajectory dataset and
     Returns numpy array containing MSD data of all tracks in a trajectory
     pandas dataframe. Add Track ID, frame
 
@@ -179,7 +178,7 @@ def all_msds(data):
         - units are in px^2
 
         MSDs, calculated mean squared displacements using the formula: MSD = <(xpos-x0)**2>
-        Gauss, calculated Gaussianity (The extent to which something is Gaussian)        
+        Gauss, calculated Gaussianity (The extent to which something is Gaussian)
 
     Examples
     --------
@@ -187,40 +186,51 @@ def all_msds(data):
     ...          'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
     ...          'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
     ...          'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6]}
-    >>> df = pd.DataFrame(data=data1)    
+    >>> df = pd.DataFrame(data=data1)
     >>> all_msds(df)
      """
 
     trackids = data.Track_ID.unique()  # Each unique Track-ID
     partcount = trackids.shape[0]  # Number of particles
-    new = {'xy': [[], []], 'frame': [], 'ID': [float(i) for i in data["Track_ID"].sort_values()]}
-    meansd = []
-    gauss = []
+    length = int(max(data['Frame']))
+
+    # initializing new data frame
+    new = {'length': partcount * length}
+    new['frame'] = np.zeros(new['length'])
+    new['ID'] = np.zeros(new['length'])
+    new['xy'] = [np.zeros(new['length']), np.zeros(new['length'])]
+    meansd = np.zeros(new['length'])
+    gauss = np.zeros(new['length'])
 
     for particle in range(0, partcount):
-        single_track = data.loc[data['Track_ID'] ==
-                                trackids[particle]].sort_values(['Track_ID', 'Frame'],
+        single_track = data.loc[data['Track_ID'] == trackids[particle]].sort_values(['Track_ID', 'Frame'],
                                                                 ascending=[1, 1]).reset_index(drop=True)
+        if particle == 0:
+            index1 = 0
+            index2 = length
 
-        length = sum(i == (particle + 1) for i in data["Track_ID"])  # account for particles being different lengths
-        new['single_track'] = msd_calc(single_track, length=length)  # uses a different func (msd_calc) to calc msd
-        new['frame'].extend(np.linspace(1, length, length))
-        new['xy'][0].extend(new['single_track']['X'])
-        new['xy'][1].extend(new['single_track']['Y'])
-        meansd.extend(new['single_track']['MSDs'])
-        gauss.extend(new['single_track']['Gauss'])
+        else:
+            print("particle is not 0 index 2 is:", index2)
+            index1 = index2
+            index2 = index2 + length
+
+        new['single_track'] = msd_calc(single_track, length=length)
+        new['frame'][index1:index2] = np.linspace(1, length, length)
+        new['ID'][index1:index2] = particle + 1
+        new['xy'][0][index1:index2] = new['single_track']['X']
+        new['xy'][1][index1:index2] = new['single_track']['Y']
+        meansd[index1:index2] = new['single_track']['MSDs']
+        gauss[index1:index2] = new['single_track']['Gauss']
 
     data1 = {'Frame': new['frame'], 'Track_ID': new['ID'], 'X': new['xy'][0],
-             'Y': new['xy'][1], 'MSDs': meansd, 'Gauss': gauss}
-
+             'Y': new['xy'][1],'MSDs': meansd, 'Gauss': gauss}
     new_data = pd.DataFrame(data=data1)
 
     return new_data
 
 
 def make_xyarray(data, length=651):
-    """
-    Rearranges xy position data into 2d arrays
+    """Rearranges xy position data into 2d arrays
     Rearranges xy data from input pandas dataframe into 2D numpy array.
 
     This takes the particles from the different track and then combines it so that the x positions
@@ -267,16 +277,48 @@ def make_xyarray(data, length=651):
     # Initial values
     first_p = int(min(data['Track_ID']))  # this is the smallest Track ID value (1)
     particles = int(max(data['Track_ID'])) - first_p + 1  # number of IDs , ie. total number of particles
-    new_frame = np.linspace(0, length - 1, length)
 
     xyft = {'xarray': np.zeros((length, particles)), 'yarray': np.zeros((length, particles)),
             'farray': np.zeros((length, particles)), 'tarray': np.zeros((length, particles)),
             'qarray': np.zeros((length, particles)), 'snarray': np.zeros((length, particles)),
             'iarray': np.zeros((length, particles))}
 
-    for part in range(first_p, first_p + particles):
-        track = data[data['Track_ID'] == part].sort_values(['Track_ID', 'Frame'], ascending=[1, 1]).reset_index(
-            drop=True)
+    track = data[data['Track_ID'] == first_p].sort_values(['Track_ID', 'Frame'], ascending=[1, 1]).reset_index(
+        drop=True)
+    new_frame = np.linspace(0, length - 1, length)
+
+    old_frame = track['Frame'].values.astype(float)
+    oldxy = [track['X'].values, track['Y'].values,
+             track['Quality'].values,
+             track['SN_Ratio'].values,
+             track['Mean_Intensity'].values]
+    fxy = [interpolate.interp1d(old_frame, oldxy[0], bounds_error=False,
+                                fill_value=np.nan),
+           interpolate.interp1d(old_frame, oldxy[1], bounds_error=False,
+                                fill_value=np.nan),
+           interpolate.interp1d(old_frame, oldxy[2], bounds_error=False,
+                                fill_value=np.nan),
+           interpolate.interp1d(old_frame, oldxy[3], bounds_error=False,
+                                fill_value=np.nan),
+           interpolate.interp1d(old_frame, oldxy[4], bounds_error=False,
+                                fill_value=np.nan)]
+
+    intxy = [fxy[0](new_frame), fxy[1](new_frame), fxy[2](new_frame),
+             fxy[3](new_frame), fxy[4](new_frame)]
+
+    # Fill in entire array
+    xyft['xarray'][:, 0] = intxy[0]
+    xyft['yarray'][:, 0] = intxy[1]
+    xyft['farray'][:, 0] = new_frame
+    xyft['tarray'][:, 0] = first_p
+    xyft['qarray'][:, 0] = intxy[2]
+    xyft['snarray'][:, 0] = intxy[3]
+    xyft['iarray'][:, 0] = intxy[4]
+
+    for part in range(first_p + 1, first_p + particles):
+        track = data[data['Track_ID'] == part
+                     ].sort_values(['Track_ID', 'Frame'],
+                                   ascending=[1, 1]).reset_index(drop=True)
 
         old_frame = track['Frame']
         oldxy = [track['X'].values,
@@ -285,13 +327,20 @@ def make_xyarray(data, length=651):
                  track['SN_Ratio'].values,
                  track['Mean_Intensity'].values]
 
-        fxy = [interpolate.interp1d(old_frame, oldxy[0], bounds_error=False, fill_value=np.nan),
-               interpolate.interp1d(old_frame, oldxy[1], bounds_error=False, fill_value=np.nan),
-               interpolate.interp1d(old_frame, oldxy[2], bounds_error=False, fill_value=np.nan),
-               interpolate.interp1d(old_frame, oldxy[3], bounds_error=False, fill_value=np.nan),
-               interpolate.interp1d(old_frame, oldxy[4], bounds_error=False, fill_value=np.nan)]
+        fxy = [interpolate.interp1d(old_frame, oldxy[0], bounds_error=False,
+                                    fill_value=np.nan),
+               interpolate.interp1d(old_frame, oldxy[1], bounds_error=False,
+                                    fill_value=np.nan),
+               interpolate.interp1d(old_frame, oldxy[2], bounds_error=False,
+                                    fill_value=np.nan),
+               interpolate.interp1d(old_frame, oldxy[3], bounds_error=False,
+                                    fill_value=np.nan),
+               interpolate.interp1d(old_frame, oldxy[4], bounds_error=False,
+                                    fill_value=np.nan)]
 
-        intxy = [fxy[0](new_frame), fxy[1](new_frame), fxy[2](new_frame), fxy[3](new_frame), fxy[4](new_frame)]
+        intxy = [fxy[0](new_frame), fxy[1](new_frame), fxy[2](new_frame),
+                 fxy[3](new_frame), fxy[4](new_frame)]
+
         xyft['xarray'][:, part - first_p] = intxy[0]
         xyft['yarray'][:, part - first_p] = intxy[1]
         xyft['farray'][:, part - first_p] = new_frame
@@ -299,8 +348,6 @@ def make_xyarray(data, length=651):
         xyft['qarray'][:, part - first_p] = intxy[2]
         xyft['snarray'][:, part - first_p] = intxy[3]
         xyft['iarray'][:, part - first_p] = intxy[4]
-
-
 
     return xyft
 
@@ -388,6 +435,7 @@ def all_msds2(data, frames=651):
 
 
 def geomean_msdisp(prefix, umppx=0.16, fps=100.02, backup_frames=651):
+
     """
     Computes geometric averages of mean squared displacement datasets
     Calculates geometric averages and stnadard errors for MSD datasets. Might
@@ -896,17 +944,17 @@ class Bunch:
 
 
 def main():
-    data1 = {'Frame': [0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
-             'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
-             'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
-             'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6],
-             'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-             'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
-             'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
+    data1 = {'Frame': [1, 2, 3, 4, 5],
+             'X': [5, 6, 7, 8, 9],
+             'Y': [6, 7, 8, 9, 10]}
     df = pd.DataFrame(data=data1)
+    new_track = msd_calc(df, 5)
 
-    length = max(df['Frame']) + 1
-    xyft = make_xyarray(df, length=length)
+    data1 = {'Frame': [1, 2, 3, 4, 5],
+             'X': [5, 6, 7, 8, 9],
+             'Y': [6, 7, 8, 9, 10]}
+    df = pd.DataFrame(data=data1)
+    new_track = msd_calc(df)
 
 
 if __name__ == "__main__":
