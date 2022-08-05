@@ -938,6 +938,138 @@ def random_traj_dataset(nframes=100, nparts=30, seed=1, fsize=(0, 512),
     return dataf
 
 
+def msd_calc(track, length=10):
+    """
+    Calculates mean squared displacement of input track.
+    Returns numpy array containing MSD data calculated from an individual track.
+
+    Parameters
+    ----------
+    :param track : pandas.core.frame.DataFrame
+        Contains, at a minimum a 'Frame', 'X', and 'Y' column"
+
+    :param length : The maximum nth difference calculated i.e. the total number of frames
+
+    Returns
+    -------
+    :return new_track : pandas.core.frame.DataFrame
+        - Similar to input track.
+        - All missing frames of individual trajectories are filled in with NaNs
+        - two new columns, MSDs and Gauss are added
+        - units are in px^2
+
+        MSDs, calculated mean squared displacements using the formula: MSD = <(xpos-x0)**2>
+        Gauss, calculated Gaussianity (The extent to which something is Gaussian)
+
+    Examples
+    --------
+    >>> data1 = {'Frame': [1, 2, 3, 4, 5],
+    ...          'X': [5, 6, 7, 8, 9],
+    ...          'Y': [6, 7, 8, 9, 10]}
+    >>> df = pd.DataFrame(data=data1)
+    >>> new_track = msd.msd_calc(df, 5)
+
+    """
+
+    meansd = np.zeros(length)
+    gauss = np.zeros(length)
+    new_frame = np.linspace(1, length, length)
+    old_frame = track['Frame']
+    oldxy = [track['X'], track['Y']]
+
+    # x and y positions with interpolated calculated values
+    fxy = [interpolate.interp1d(old_frame, oldxy[0], bounds_error=False,
+                                fill_value=np.nan),
+           interpolate.interp1d(old_frame, oldxy[1], bounds_error=False,
+                                fill_value=np.nan)]
+    """
+    PREVIOUS ATTEMPT THIS DOES NOT WORK BECAUSE NAN IS NOT EQUAL TO NAN
+    intxy = [ma.masked_equal(fxy[0](new_frame), np.nan),
+             ma.masked_equal(fxy[1](new_frame), np.nan)]
+    """
+    intxy = [ma.masked_invalid(fxy[0](new_frame)), ma.masked_invalid(fxy[1](new_frame))]  # masks the NaN values
+
+    data1 = {'Frame': new_frame, 'X': intxy[0], 'Y': intxy[1]}
+    new_track = pd.DataFrame(data=data1)
+
+    for frame in range(1, length):
+        # square the nth differences where n increases each time
+        xy = [np.square(nth_diff(new_track['X'], n=frame)),
+              np.square(nth_diff(new_track['Y'], n=frame))]
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            meansd[frame] = np.nanmean(xy[0] + xy[1])
+            # calculated Gaussianity (The extent to which something is Gaussian)
+            gauss[frame] = np.nanmean(xy[0] ** 2 + xy[1] ** 2) / (2 * (meansd[frame] ** 2))
+
+    new_track['MSDs'] = pd.Series(meansd, index=new_track.index)
+    new_track['Gauss'] = pd.Series(gauss, index=new_track.index)
+
+    return new_track
+
+
+def all_msds(data):
+    """
+    Calculates mean squared displacements of a trajectory dataset and
+    Returns numpy array containing MSD data of all tracks in a trajectory
+    pandas dataframe. Add Track ID, frame
+
+    Parameters
+    ----------
+    :param data : pandas.core.frame.DataFrame
+        Contains, at a minimum a 'Frame', 'Track_ID', 'X', and
+        'Y' column. Note: it is assumed that frames begins at 1, not 0 with this
+        function. Adjust before feeding into function.
+
+    Returns
+    -------
+    :return new_data : pandas.core.frame.DataFrame
+        - Similar to input track.
+        - All missing frames of individual trajectories are filled in with NaNs
+        - two new columns, MSDs and Gauss are added
+        - units are in px^2
+
+        MSDs, calculated mean squared displacements using the formula: MSD = <(xpos-x0)**2>
+        Gauss, calculated Gaussianity (The extent to which something is Gaussian)
+
+    Examples
+    --------
+    >>> data1 = {'Frame': [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
+    ...          'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+    ...          'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
+    ...          'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6]}
+    >>> df = pd.DataFrame(data=data1)
+    >>> all_msds(df)
+     """
+
+    trackids = data.Track_ID.unique()  # Each unique Track-ID
+    partcount = trackids.shape[0]  # Number of particles
+    new = {'xy': [[], []], 'frame': [], 'ID': [float(i) for i in data["Track_ID"].sort_values()]}
+    meansd = []
+    gauss = []
+
+    for particle in range(0, partcount):
+        single_track = data.loc[data['Track_ID'] ==
+                                trackids[particle]].sort_values(['Track_ID', 'Frame'],
+                                                                ascending=[1, 1]).reset_index(drop=True)
+
+        length = sum(i == (particle + 1) for i in data["Track_ID"])  # account for particles being different lengths
+        new['single_track'] = msd_calc(single_track, length=length)  # uses a different func (msd_calc) to calc msd
+        new['frame'].extend(np.linspace(1, length, length))
+        new['xy'][0].extend(new['single_track']['X'])
+        new['xy'][1].extend(new['single_track']['Y'])
+        meansd.extend(new['single_track']['MSDs'])
+        gauss.extend(new['single_track']['Gauss'])
+
+    data1 = {'Frame': new['frame'], 'Track_ID': new['ID'], 'X': new['xy'][0],
+             'Y': new['xy'][1], 'MSDs': meansd, 'Gauss': gauss}
+
+    new_data = pd.DataFrame(data=data1)
+
+    return new_data
+
+
 class Bunch:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
