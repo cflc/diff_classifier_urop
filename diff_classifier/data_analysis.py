@@ -338,24 +338,24 @@ def boxplot_feature(prefix, col_list=["alpha"], outliers=True, file="NaN", umppx
 
     if file == "BM":
         print("BM Diffusion Coeffcient Calculated")
-        df = pd.read_csv('{}/DiffCoeffBM_{}.csv'.format(prefix, prefix))
+        df = pd.read_csv('DiffCoeffBM_{}.csv'.format(prefix, prefix))
         print(np.mean(df["DiffCoeffBM"]))
     if file == "D":
         print("Diffusion Coeffcient Calculated")
-        df = pd.read_csv('{}/features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
+        df = pd.read_csv('features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
         features = list(df.columns)
         for feature in features:
             df[feature] = umppx * umppx * df[feature]
     if file == "M":
         print("Mesh Size")
-        df = pd.read_csv('{}/Mesh_{}.csv'.format(prefix, prefix))
+        df = pd.read_csv('Mesh_{}.csv'.format(prefix, prefix))
 
     if file == "SV":
         print("Speed and Velocity")
-        df = pd.read_csv('{}/Speed.csv'.format(prefix), usecols=col_list)
+        df = pd.read_csv('Speed.csv'.format(prefix), usecols=col_list)
 
     if file == "NaN":
-        df = pd.read_csv('{}/features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
+        df = pd.read_csv('features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
 
     def quantiles(df):
         Q1 = df.quantile(0.25)
@@ -419,7 +419,7 @@ def boxplot_feature(prefix, col_list=["alpha"], outliers=True, file="NaN", umppx
         stat_features[df.columns[0]] = labels  # Append dictionary to corresponding feature
 
     plt.tight_layout()
-    plt.savefig("{}/Box&Wiskers_of_".format(prefix) + '_'.join(col_list))
+    plt.savefig("Box&Wiskers_of_".format(prefix) + '_'.join(col_list))
     return stat_features
 
 
@@ -625,10 +625,7 @@ def main():
     filename = "Matrigel1056_PxSize0_075_473fps"
     ##https://www.researchgate.net/figure/Cell-and-Matrigel-Compression-a-Fluorescently-labeled-dextran-molecules-only-permeate_fig2_346162488
     pore_size(filename, 50 * 10 ** -9, 4 * 10 ** -9, DC="D_fit", umppx=4.73)
-    os.chdir(
-        '/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/')
-
-    boxplot_feature(filename, col_list=["Mesh_Size"], outliers=True, file="M", umppx=0.75, fps=4.73, vid_time=20)
+    boxplot_feature(filename, col_list=["Mean D_fit"], outliers=True, file="NaN", umppx=0.75, fps=4.73, vid_time=20)
 
 
 if __name__ == "__main__":
