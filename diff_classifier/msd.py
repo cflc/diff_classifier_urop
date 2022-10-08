@@ -4,7 +4,7 @@ mean squared displacements and additional measures from input trajectory dataset
 plugin.
 
 This file has been edited by Claudia Lozano for readability and familiarization of the code. The original can be found
-in the msd.py file.
+in the original_msd.py file.
 
 
 """
@@ -134,7 +134,7 @@ def make_xyarray(data):
      'yarray': [nan,  5.]]),array([[ 6., nan],[ 7., nan],[ 8.,  2.],[ 9.,  3.],[10.,  4.],[nan,  5.],[nan,  6.]])}
     """
     print("The only parameter for this function is the data with Frame, Track_ID, X, and Y arrays ")
-    length = max(data['Frame']) + 1
+    length = int(max(data['Frame']) + 1)
     # Initial values
     first_p = int(min(data['Track_ID']))  # this is the smallest Track ID value (1)
     particles = int(max(data['Track_ID'])) - first_p + 1  # number of IDs , ie. total number of particles
@@ -177,6 +177,7 @@ def make_xyarray(data):
         xyft['iarray'][:, part - first_p] = intxy[4]
 
     return xyft
+
 
 def msd_calc(track, length=10):
     """Calculates mean squared displacement of input track.
@@ -246,7 +247,6 @@ def msd_calc(track, length=10):
     new_track['Gauss'] = pd.Series(gauss, index=new_track.index)
 
     return new_track
-
 
 
 def all_msds2(data):
@@ -452,7 +452,7 @@ def precision_weight(group, geo_stder):
 
     w_holder = []
     for sample in group:
-        w_holder.append(1 / (geo_stder[sample] * geo_stder[sample]))    # Calculate the weight of each sample
+        w_holder.append(1 / (geo_stder[sample] * geo_stder[sample]))  # Calculate the weight of each sample
 
     # Get rid of the 0 and 1's values since they are not unseful
     w_holder = ma.masked_equal(w_holder, 0.0)
@@ -656,7 +656,8 @@ def checkerboard_mask(dims=(512, 512), squares=50, width=25):
 
 def random_walk(nsteps=100, seed=None, start=(0, 0), step=1, mask=None,
                 stuckprob=0.5):
-
+    # RANDOM WALK FUNCTION IS NOT WORKING EVEN USING THE ORIGINAL CODE
+    # WILL HAVE TO DO FURHTER EDITING
     """Creates 2d random walk trajectory.
 
     Parameters
@@ -761,6 +762,7 @@ def random_walk(nsteps=100, seed=None, start=(0, 0), step=1, mask=None,
 
     return x, y
 
+
 def random_traj_dataset(nframes=100, nparts=30, seed=1, fsize=(0, 512),
                         ndist=(1, 2)):
     """
@@ -845,7 +847,8 @@ def main():
         geomean[name], geostder[name] = geomean_msdisp(name, umppx=1)
     weights, w_holder = precision_weight(experiments, geostder)
     print("weights", weights)
-    print("w_holder",  w_holder)
+    print("w_holder", w_holder)
+
 
 if __name__ == "__main__":
     main()
