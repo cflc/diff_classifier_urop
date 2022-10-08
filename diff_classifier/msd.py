@@ -62,7 +62,7 @@ def nth_diff(dataframe, n=1, axis=0):
 
     assert isinstance(n, int), "n must be an integer."  # assert n is an integer
     length = dataframe.shape[0]
-    print("This function takes the parameters: DataFrame, nth value and axis")
+    #print("This function takes the parameters: DataFrame, nth value and axis")
     if dataframe.ndim == 1:
         if n <= length:
             test1 = dataframe[:-n].reset_index(drop=True)  # return df from 0 to length - n
@@ -133,7 +133,7 @@ def make_xyarray(data):
      'xarray': array([[ 5., nan], [ 6., nan], [ 7.,  1.], [ 8.,  2.], [ 9.,  3.], [nan,  4.],
      'yarray': [nan,  5.]]),array([[ 6., nan],[ 7., nan],[ 8.,  2.],[ 9.,  3.],[10.,  4.],[nan,  5.],[nan,  6.]])}
     """
-    print("The only parameter for this function is the data with Frame, Track_ID, X, and Y arrays ")
+    #print("The only parameter for this function is the data with Frame, Track_ID, X, and Y arrays ")
     length = int(max(data['Frame']) + 1)
     # Initial values
     first_p = int(min(data['Track_ID']))  # this is the smallest Track ID value (1)
@@ -283,7 +283,7 @@ def all_msds2(data):
     >>> length = max(df['Frame']) + 1
     >>> all_msds2(df, frames=length)[cols]
     """
-    print("The only parameter for this function is the data with Frame, Track_ID, X, and Y arrays ")
+    #print("The only parameter for this function is the data with Frame, Track_ID, X, and Y arrays ")
     if data.shape[0] > 2:  # at least 2 Frames/IDs/X-val s/Y-vals
         try:
             frames = max(data['Frame']) + 1  # The way they calculate frame value in the MSD TEST file
@@ -362,7 +362,7 @@ def geomean_msdisp(prefix, umppx=0.16, backup_frames=651):
         Geometric standard error of trajectory MSDs at all time points.
 
     """
-    print("The parameters for this function are prefix name, resolution in umppx and the backup frame number")
+    #print("The parameters for this function are prefix name, resolution in umppx and the backup frame number")
     merged = pd.read_csv('msd_{}.csv'.format(prefix))
     try:
         particles = int(max(merged['Track_ID']))  # number of particles
@@ -410,7 +410,7 @@ def binning(experiments, wells=4, prefix='test'):
     bin_names : list of str
         List of group names
     """
-    print("The parameters in for this functions are number of wells and prefix name")
+    #print("The parameters in for this functions are number of wells and prefix name")
     total_videos = len(experiments)  # number of experiments
     slices = int(total_videos / wells)  # division of the videos such that we divided in to the well number
     bins = {}  # initialize bin dictionary
