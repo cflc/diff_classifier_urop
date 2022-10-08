@@ -1,7 +1,11 @@
-"""Functions to calculate mean squared displacements from trajectory data
-This module includes functions to calculate mean squared displacements and
-additional measures from input trajectory datasets as calculated by the
-Trackmate ImageJ plugin.
+"""
+Functions to calculate mean squared displacements from trajectory data .This module includes functions to calculate
+mean squared displacements and additional measures from input trajectory datasets as calculated by theTrackmate ImageJ
+plugin.
+
+This file has been edited by Claudia Lozano for readability and familiarization of the code. The original can be found
+in the msd.py file.
+
 
 """
 import warnings
@@ -21,8 +25,8 @@ def nth_diff(dataframe, n=1, axis=0):
     """
     Calculates the nth difference between vector elements
             The nth difference is the difference between a number x and a number y n places away
-    Returns a new vector of size N - n containing the nth difference between
-    vector elements.
+
+    Returns a new vector of size N - n containing the nth difference between vector elements.
 
     Parameters
     ----------
@@ -58,7 +62,7 @@ def nth_diff(dataframe, n=1, axis=0):
 
     assert isinstance(n, int), "n must be an integer."  # assert n is an integer
     length = dataframe.shape[0]
-
+    print("This function takes the parameters: DataFrame, nth value and axis")
     if dataframe.ndim == 1:
         if n <= length:
             test1 = dataframe[:-n].reset_index(drop=True)  # return df from 0 to length - n
@@ -85,7 +89,8 @@ def nth_diff(dataframe, n=1, axis=0):
 
     return diff
 
-def make_xyarray(data, length=651):
+
+def make_xyarray(data):
     """
     Rearranges xy position data into 2d arrays
     Rearranges xy data from input pandas dataframe into 2D numpy array.
@@ -117,20 +122,19 @@ def make_xyarray(data, length=651):
 
     Examples
     --------
-    >>> data1 = {'Frame': [0, 1, 2, 3, 4, 2, 3, 4, 5, 6], 'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
-    >>> 'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6]}
     >>>  data1 = {'Frame': [0, 1, 2, 3, 4, 2, 3, 4, 5, 6], 'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
     >>>'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6], 'Quality': [5,5,4,6,7,5,4,4,3,5],
     >>> 'Mean_Intensity': [100,300,200,300,300,300,400,300,400,300],'SN_Ratio':[0.9,0.8,0.9,1,1,0.9,1,0.8,0.9,1]}
     >>> df = pd.DataFrame(data=data1)
     >>> length = max(df['Frame']) + 1
-    >>> xyft = msd.make_xyarray(df, length=length)
+    >>> xyft = make_xyarray(df, length=length)
     {'farray': array([[0., 0.],[1., 1.],[2., 2.], [3., 3.], [4., 4.], [5., 5.], [6., 6.]]),
      'tarray': array([[1., 2.], [1., 2.], [1., 2.], [1., 2.], [1., 2.], [1., 2.], [1., 2.]]),
      'xarray': array([[ 5., nan], [ 6., nan], [ 7.,  1.], [ 8.,  2.], [ 9.,  3.], [nan,  4.],
      'yarray': [nan,  5.]]),array([[ 6., nan],[ 7., nan],[ 8.,  2.],[ 9.,  3.],[10.,  4.],[nan,  5.],[nan,  6.]])}
     """
-
+    print("The only parameter for this function is the data with Frame, Track_ID, X, and Y arrays ")
+    length = max(data['Frame']) + 1
     # Initial values
     first_p = int(min(data['Track_ID']))  # this is the smallest Track ID value (1)
     particles = int(max(data['Track_ID'])) - first_p + 1  # number of IDs , ie. total number of particles
@@ -174,9 +178,78 @@ def make_xyarray(data, length=651):
 
     return xyft
 
+def msd_calc(track, length=10):
+    """Calculates mean squared displacement of input track.
+    Returns numpy array containing MSD data calculated from an individual track.
 
-def all_msds2(data, frames=651):
+    Parameters
+    ----------
+    :param track : pandas.core.frame.DataFrame
+        Contains, at a minimum a 'Frame', 'X', and 'Y' column"
 
+    :param length : The maximum nth difference calculated i.e. the total number of frames
+
+    Returns
+    -------
+    :return new_track : pandas.core.frame.DataFrame
+        - Similar to input track.
+        - All missing frames of individual trajectories are filled in with NaNs
+        - two new columns, MSDs and Gauss are added
+        - units are in px^2
+
+        MSDs, calculated mean squared displacements using the formula: MSD = <(xpos-x0)**2>
+        Gauss, calculated Gaussianity (The extent to which something is Gaussian)
+
+    Examples
+    --------
+    >>> data1 = {'Frame': [1, 2, 3, 4, 5],
+    ...          'X': [5, 6, 7, 8, 9],
+    ...          'Y': [6, 7, 8, 9, 10]}
+    >>> df = pd.DataFrame(data=data1)
+    >>> new_track = msd.msd_calc(df, 5)
+
+    """
+
+    meansd = np.zeros(length)
+    gauss = np.zeros(length)
+    new_frame = np.linspace(1, length, length)
+    old_frame = track['Frame']
+    oldxy = [track['X'], track['Y']]
+
+    # x and y positions with interpolated calculated values
+    fxy = [interpolate.interp1d(old_frame, oldxy[0], bounds_error=False,
+                                fill_value=np.nan),
+           interpolate.interp1d(old_frame, oldxy[1], bounds_error=False,
+                                fill_value=np.nan)]
+    """
+    PREVIOUS ATTEMPT THIS DOES NOT WORK BECAUSE NAN IS NOT EQUAL TO NAN
+    intxy = [ma.masked_equal(fxy[0](new_frame), np.nan),
+             ma.masked_equal(fxy[1](new_frame), np.nan)]
+    """
+    intxy = [ma.masked_invalid(fxy[0](new_frame)), ma.masked_invalid(fxy[1](new_frame))]  # masks the NaN values
+
+    data1 = {'Frame': new_frame, 'X': intxy[0], 'Y': intxy[1]}
+    new_track = pd.DataFrame(data=data1)
+
+    for frame in range(1, length):
+        # square the nth differences where n increases each time
+        xy = [np.square(nth_diff(new_track['X'], n=frame)),
+              np.square(nth_diff(new_track['Y'], n=frame))]
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            meansd[frame] = np.nanmean(xy[0] + xy[1])
+            # calculated Gaussianity (The extent to which something is Gaussian)
+            gauss[frame] = np.nanmean(xy[0] ** 2 + xy[1] ** 2) / (2 * (meansd[frame] ** 2))
+
+    new_track['MSDs'] = pd.Series(meansd, index=new_track.index)
+    new_track['Gauss'] = pd.Series(gauss, index=new_track.index)
+
+    return new_track
+
+
+
+def all_msds2(data):
     """
     Calculates mean squared displacements of input trajectory dataset
     Returns numpy array containing MSD data of all tracks in a trajectory pandas
@@ -187,17 +260,17 @@ def all_msds2(data, frames=651):
     :param data : pandas.core.frame.DataFrame
         Contains, at a minimum a 'Frame', 'Track_ID', 'X', and
         'Y' column. Note: it is assumed that frames begins at 0.
-    :param frames int
-        The number of frames that they video has
 
     Returns
     -------
     :return new_data : pandas.core.frame.DataFrame
-        Similar to input data.  All missing frames of individual trajectories
-        are filled in with NaNs, and two new columns, MSDs and Gauss are added:
-        MSDs, calculated mean squared displacements using the formula
-        MSD = <(xpos-x0)**2>
-        Gauss, calculated Gaussianity
+        - Similar to input track.
+        - All missing frames of individual trajectories are filled in with NaNs
+        - two new columns, MSDs and Gauss are added
+        - units are in px^2
+
+        MSDs, calculated mean squared displacements using the formula: MSD = <(xpos-x0)**2>
+        Gauss, calculated Gaussianity (The extent to which something is Gaussian)
 
     Examples
     --------
@@ -208,27 +281,32 @@ def all_msds2(data, frames=651):
     >>> df = pd.DataFrame(data=data1)
     >>> cols = ['Frame', 'Track_ID', 'X', 'Y', 'MSDs', 'Gauss']
     >>> length = max(df['Frame']) + 1
-    >>> msd.all_msds2(df, frames=length)[cols]
-
+    >>> all_msds2(df, frames=length)[cols]
     """
-    if data.shape[0] > 2:
+    print("The only parameter for this function is the data with Frame, Track_ID, X, and Y arrays ")
+    if data.shape[0] > 2:  # at least 2 Frames/IDs/X-val s/Y-vals
         try:
-            xyft = make_xyarray(data, length=frames)
+            frames = max(data['Frame']) + 1  # The way they calculate frame value in the MSD TEST file
+            xyft = make_xyarray(data)
             length = xyft['xarray'].shape[0]  # number of frames
             particles = xyft['xarray'].shape[1]  # number of TrackID
 
             meansd = np.zeros((length, particles))
             gauss = np.zeros((length, particles))
 
-            for frame in range(0, length - 1):
-                xpos = np.square(nth_diff(xyft['xarray'], n=frame + 1))
-                ypos = np.square(nth_diff(xyft['yarray'], n=frame + 1))
+            for frame in range(1, length):
+                # For each of the frames except the last calculate the nth difference where n is the frame whe are in
+                # + 1. the nth difference array is then squared per the MSD equation
+                xpos = np.square(nth_diff(xyft['xarray'], n=frame))  # (xpos-x0)**2
+                ypos = np.square(nth_diff(xyft['yarray'], n=frame))  # (ypos-x0)**2
 
+                # TODO: Check if the way to do 2D MSD is by adding the x MSD and the Y MSD
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", category=RuntimeWarning)
-                    meansd[frame + 1, :] = np.nanmean(xpos + ypos, axis=0)
-                    gauss[frame + 1, :] = np.nanmean(xpos ** 2 + ypos ** 2, axis=0) / (2 * (meansd[frame + 1] ** 2))
+                    meansd[frame, :] = np.nanmean(xpos + ypos, axis=0)  # We add the mean value of all the MSDs values
+                    gauss[frame, :] = np.nanmean(xpos ** 2 + ypos ** 2, axis=0) / (2 * (meansd[frame] ** 2))
 
+            # TODO: Check what those np.flatten("F") Do.
             data1 = {'Frame': xyft['farray'].flatten('F'),
                      'Track_ID': xyft['tarray'].flatten('F'),
                      'X': xyft['xarray'].flatten('F'),
@@ -241,18 +319,19 @@ def all_msds2(data, frames=651):
 
             new_data = pd.DataFrame(data=data1)
 
+        # IN CASE OF AN ERROR RETURN A DF WITH EMPTY LISTS
         except ValueError:
-            print('YOU DID NOT GET AN MSD2')
+            print('YOU DID NOT GET AN MSD2 VALUE ERROR')
             data1 = {'Frame': [], 'Track_ID': [], 'X': [], 'Y': [], 'MSDs': [], 'Gauss': [],
                      'Quality': [], 'SN_Ratio': [], 'Mean_Intensity': []}
             new_data = pd.DataFrame(data=data1)
         except IndexError:
-            print('YOU DID NOT GET AN MSD2')
+            print('YOU DID NOT GET AN MSD2 INDEX ERROR')
             data1 = {'Frame': [], 'Track_ID': [], 'X': [], 'Y': [], 'MSDs': [], 'Gauss': [],
                      'Quality': [], 'SN_Ratio': [], 'Mean_Intensity': []}
             new_data = pd.DataFrame(data=data1)
     else:
-        print('YOU DID NOT GET AN MSD2')
+        print('YOU DID NOT GET AN MSD2 ELSE')
         data1 = {'Frame': [], 'Track_ID': [], 'X': [], 'Y': [], 'MSDs': [], 'Gauss': [], 'Quality': [],
                  'SN_Ratio': [], 'Mean_Intensity': []}
         new_data = pd.DataFrame(data=data1)
@@ -260,7 +339,8 @@ def all_msds2(data, frames=651):
     return new_data
 
 
-def geomean_msdisp(prefix, umppx=0.16, fps=100.02, backup_frames=651):
+# ASSUMES UMPPX, FPS, BACK UP FRAMES
+def geomean_msdisp(prefix, umppx=0.16, backup_frames=651):
     """
     Computes geometric averages of mean squared displacement datasets
     Calculates geometric averages and stnadard errors for MSD datasets. Might
@@ -272,9 +352,7 @@ def geomean_msdisp(prefix, umppx=0.16, fps=100.02, backup_frames=651):
         Prefix of file name to be plotted e.g. features_P1.csv prefix is P1.
     :param umppx : float
         Microns per pixel of original images.
-    :param fps : float
-        Frames per second of video.
-    :param backup_frames
+    :param backup_frames : Number of frames in the video
 
     Returns
     -------
@@ -284,22 +362,24 @@ def geomean_msdisp(prefix, umppx=0.16, fps=100.02, backup_frames=651):
         Geometric standard error of trajectory MSDs at all time points.
 
     """
-
+    print("The parameters for this function are prefix name, resolution in umppx and the backup frame number")
     merged = pd.read_csv('msd_{}.csv'.format(prefix))
     try:
-        particles = int(max(merged['Track_ID']))
-        frames = int(max(merged['Frame']))
-        ypos = np.zeros((particles + 1, frames + 1))
+        particles = int(max(merged['Track_ID']))  # number of particles
+        frames = int(max(merged['Frame']))  # number of frames
+        msd_val = np.zeros((particles + 1, frames + 1))  # initiate the MSD vals array
 
         for i in range(0, particles + 1):
-            ypos[i, :] = merged.loc[merged.Track_ID == i, 'MSDs'] * umppx * umppx
-            xpos = merged.loc[merged.Track_ID == i, 'Frame'] / fps
+            # get the corresponding MSD value for each of the particles
+            # NOTE: it has already taken into account the resolution
+            msd_val[i, :] = merged.loc[merged.Track_ID == i, 'MSDs'] * umppx * umppx
 
-        geo_mean = np.nanmean(ma.log(ypos), axis=0)
-        geo_stder = ma.masked_equal(stats.sem(ma.log(ypos), axis=0,
-                                              nan_policy='omit'), 0.0)
+        # TODO: What is ma.log. What is a geometic mean? What is ma.masked_equal? WHAT IS STATS.SEM?
+        geo_mean = np.nanmean(ma.log(msd_val), axis=0)
+        geo_stder = ma.masked_equal(stats.sem(ma.log(msd_val), axis=0, nan_policy='omit'), 0.0)
 
     except ValueError:
+        print("NO GEOMEAN OR GEOSTD CALC. VLAUE ERROR ")
         geo_mean = np.nan * np.ones(backup_frames)
         geo_stder = np.nan * np.ones(backup_frames)
 
@@ -314,11 +394,12 @@ def binning(experiments, wells=4, prefix='test'):
 
     Parameters
     ----------
-    experiments : list of str
+    :param experiments : list of str
         List of experiment names.
-    wells : int
+    :param wells : int
         Number of groups to divide experiments into.
-
+    :param prefix: str
+        Name of the file where data is stored
     Returns
     -------
     slices : int
@@ -328,66 +409,61 @@ def binning(experiments, wells=4, prefix='test'):
         lists of experiments in each group.
     bin_names : list of str
         List of group names
-
     """
-
-    total_videos = len(experiments)
-    bins = {}
-    slices = int(total_videos / wells)
-    bin_names = []
+    print("The parameters in for this functions are number of wells and prefix name")
+    total_videos = len(experiments)  # number of experiments
+    slices = int(total_videos / wells)  # division of the videos such that we divided in to the well number
+    bins = {}  # initialize bin dictionary
+    bin_names = []  # name of bins list
 
     for num in range(0, wells):
-        slice1 = num * slices
-        slice2 = (num + 1) * (slices)
+        slice1 = num * slices  # beginning of the slices
+        slice2 = (num + 1) * slices  # the end of the experiments in the slice
         pref = '{}_W{}'.format(prefix, num)
         bins[pref] = experiments[slice1:slice2]
         bin_names.append(pref)
+
+    # return the num of exp per group, the groups corresponding to each group name, and a list of group names
     return slices, bins, bin_names
 
 
 def precision_weight(group, geo_stder):
-    """Calculates precision-based weights from input standard error data
-
-    Calculates precision weights to be used in precision-averaged MSD
-    calculations.
+    """
+    Calculates precision-based weights from input standard error data
+    Calculates precision weights to be used in precision-averaged MSD calculations.
 
     Parameters
     ----------
-    group : list of str
-        List of experiment names to average. Each element corresponds to a key
-        in geo_stder and geomean.
-    geo_stder : dict of numpy.ndarray
-        Each entry in dictionary corresponds to the standard errors of an MSD
-        profile, the key corresponding to an experiment name.
+    :param group : list of str
+        List of experiment names to average. Each element corresponds to a key in geo_stder and geomean.
+    :param geo_stder : dict of numpy.ndarray
+        Each entry in dictionary corresponds to the standard errors of an MSD profile, the key corresponding to an
+        experiment name.
+            - geostder of the geomean_msdisp function
 
     Returns
     -------
-    weights: numpy.ndarray
+    :return weights: numpy.ndarray
         Precision weights to be used in precision averaging.
-    w_holder : numpy.ndarray
+    :return w_holder : numpy.ndarray
         Precision values of each video at each time point.
 
     """
 
-    frames = np.shape(geo_stder[group[0]])[0]
-    slices = len(group)
-    video_counter = 0
-    w_holder = np.zeros((slices, frames))
+    w_holder = []
     for sample in group:
-        w_holder[video_counter, :] = 1 / (geo_stder[sample] * geo_stder[sample])
-        video_counter = video_counter + 1
+        w_holder.append(1 / (geo_stder[sample] * geo_stder[sample]))    # Calculate the weight of each sample
 
+    # Get rid of the 0 and 1's values since they are not unseful
     w_holder = ma.masked_equal(w_holder, 0.0)
     w_holder = ma.masked_equal(w_holder, 1.0)
 
-    weights = ma.sum(w_holder, axis=0)
+    weights = ma.sum(w_holder, axis=0)  # the final weight is the sum of the weights of each group's item weight
 
     return weights, w_holder
 
 
-def precision_averaging(group, geomean, geo_stder, weights, save=True,
-                        bucket='ccurtis.data', folder='test',
-                        experiment='test'):
+def precision_averaging(group, geomean, geo_stder, weights):
     """Calculates precision-weighted averages of MSD datasets.
 
     Parameters
@@ -410,7 +486,10 @@ def precision_averaging(group, geomean, geo_stder, weights, save=True,
         Precision-weighted averaged MSDs from experiments specified in group
     geo_stder : numpy.ndarray
         Precision-weighted averaged SEMs from experiments specified in group
-
+        :param weights:
+        :param geo_stder:
+        :param group:
+        :param geomean:
     """
 
     frames = np.shape(geo_stder[group[0]])[0]
@@ -439,15 +518,6 @@ def precision_averaging(group, geomean, geo_stder, weights, save=True,
     geo = ma.sum(geo_holder, axis=0)
     geo_stder = ma.sqrt((1 / ma.sum(gstder_holder, axis=0)))
 
-    if save:
-        geo_f = 'geomean_{}.csv'.format(experiment)
-        gstder_f = 'geoSEM_{}.csv'.format(experiment)
-        np.savetxt(geo_f, geo, delimiter=',')
-        np.savetxt(gstder_f, geo_stder, delimiter=',')
-        aws.upload_s3(geo_f, '{}/{}'.format(folder, geo_f), bucket_name=bucket)
-        aws.upload_s3(gstder_f, '{}/{}'.format(folder, gstder_f),
-                      bucket_name=bucket)
-
     geodata = Bunch(geomean=geo, geostd=geo_stder, weighthold=w_holder,
                     geostdhold=gstder_holder)
 
@@ -456,7 +526,7 @@ def precision_averaging(group, geomean, geo_stder, weights, save=True,
 
 def plot_all_experiments(experiments, bucket='ccurtis.data', folder='test',
                          yrange=(10 ** -1, 10 ** 1), fps=100.02,
-                         xrange=(10 ** -2, 10 ** 0), upload=True,
+                         xrange=(10 ** -2, 10 ** 0),
                          outfile='test.png', exponential=True,
                          labels=None, log=True):
     """Plots precision-weighted averages of MSD datasets.
@@ -466,27 +536,17 @@ def plot_all_experiments(experiments, bucket='ccurtis.data', folder='test',
 
     Parameters
     ----------
-    group : list of str
-        List of experiment names to plot. Each experiment must have an MSD and
-        SEM file associated with it in s3.
-    bucket : str
-        S3 bucket from which to download data.
-    folder : str
-        Folder in s3 bucket from which to download data.
-    yrange : list of float
+    :param yrange : list of float
         Y range of plot
-    xrange: list of float
+    :param xrange: list of float
         X range of plot
-    upload : bool
-        True to upload to S3
-    outfile : str
+    :param outfile : str
         Filename of output image
-
     """
 
     n = len(experiments)
 
-    if labels == None:
+    if labels is None:
         labels = experiments
 
     color = iter(cm.viridis(np.linspace(0, 0.9, n)))
@@ -538,10 +598,6 @@ def plot_all_experiments(experiments, bucket='ccurtis.data', folder='test',
 
     plt.legend(frameon=False, loc=2, prop={'size': 16})
     fig.savefig(outfile, bbox_inches='tight')
-
-    if upload:
-        fig.savefig(outfile, bbox_inches='tight')
-        aws.upload_s3(outfile, folder + '/' + outfile, bucket_name=bucket)
 
 
 def checkerboard_mask(dims=(512, 512), squares=50, width=25):
@@ -600,6 +656,7 @@ def checkerboard_mask(dims=(512, 512), squares=50, width=25):
 
 def random_walk(nsteps=100, seed=None, start=(0, 0), step=1, mask=None,
                 stuckprob=0.5):
+
     """Creates 2d random walk trajectory.
 
     Parameters
@@ -704,22 +761,22 @@ def random_walk(nsteps=100, seed=None, start=(0, 0), step=1, mask=None,
 
     return x, y
 
-
 def random_traj_dataset(nframes=100, nparts=30, seed=1, fsize=(0, 512),
                         ndist=(1, 2)):
-    """Creates a random population of random walks.
+    """
+    Creates a random population of random walks.
 
     Parameters
     ----------
-    nframes : int
+    :param nframes : int
         Number of frames for each random trajectory.
-    nparts : int
+    :param nparts : int
         Number of particles in trajectory dataset.
-    seed : int
+    :param seed : int
         Seed for pseudo-random number generator for reproducability.
-    fsize : tuple of int or float
+    :param fsize : tuple of int or float
         Scope of points over which particles may start at.
-    ndist : tuple of int or float
+    :param ndist : tuple of int or float
         Parameters to generate normal distribution, mu and sigma.
 
     Returns
@@ -769,18 +826,37 @@ class Bunch:
 
 
 def main():
-    data1 = {'Frame': [0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
-             'Track_ID': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
-             'X': [5, 6, 7, 8, 9, 1, 2, 3, 4, 5],
-             'Y': [6, 7, 8, 9, 10, 2, 3, 4, 5, 6],
-             'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-             'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
-             'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
-    df = pd.DataFrame(data=data1)
-
-    length = max(df['Frame']) + 1
-    xyft = make_xyarray(df, length=length)
-
+    experiments = []
+    geomean = {}
+    geostder = {}
+    for num in range(4):
+        name = 'test_{}'.format(num)
+        experiments.append(name)
+        data1 = {'Frame': [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
+                 'Track_ID': [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+                 'X': [x * (num + 1) for x in [5, 6, 7, 8, 9, 2, 4, 6, 8, 10]],
+                 'Y': [x * (num + 1) for x in [6, 7, 8, 9, 10, 6, 8, 10, 12, 14]],
+                 'Quality': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+                 'SN_Ratio': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+                 'Mean_Intensity': [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
+        df = pd.DataFrame(data=data1)
+        msds = all_msds2(df)
+        msds.to_csv('msd_test_{}.csv'.format(num))
+        geomean[name], geostder[name] = geomean_msdisp(name, umppx=1)
+    weights, w_holder = precision_weight(experiments, geostder)
+    print("weights", weights)
+    print("w_holder",  w_holder)
 
 if __name__ == "__main__":
     main()
+"""
+weights [-- 8.325475924022431 8.32547592402243 8.32547592402243 8.32547592402243
+ --]
+w_holder [[-- 2.0813689810056086 2.0813689810056073 2.0813689810056073
+  2.0813689810056086 --]
+ [-- 2.0813689810056073 2.0813689810056086 2.0813689810056073
+  2.0813689810056073 --]
+ [-- 2.0813689810056073 2.0813689810056073 2.0813689810056073
+  2.0813689810056073 --]
+ [-- 2.0813689810056086 2.0813689810056073 2.0813689810056073
+  2.0813689810056073 --]]"""

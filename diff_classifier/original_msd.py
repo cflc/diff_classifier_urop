@@ -1,4 +1,4 @@
-"""Functions to calculate mean squared displacements from trajectory data
+"""Functtest_msd_calcions to calculate mean squared displacements from trajectory data
 This module includes functions to calculate mean squared displacements and
 additional measures from input trajectory datasets as calculated by the
 Trackmate ImageJ plugin.
@@ -1074,20 +1074,3 @@ class Bunch:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-
-def main():
-    data1 = {'Frame': [1, 2, 3, 4, 5],
-             'X': [5, 6, 7, 8, 9],
-             'Y': [6, 7, 8, 9, 10]}
-    df = pd.DataFrame(data=data1)
-    new_track = msd_calc(df, 5)
-
-    data1 = {'Frame': [1, 2, 3, 4, 5],
-             'X': [5, 6, 7, 8, 9],
-             'Y': [6, 7, 8, 9, 10]}
-    df = pd.DataFrame(data=data1)
-    new_track = msd_calc(df)
-
-
-if __name__ == "__main__":
-    main()

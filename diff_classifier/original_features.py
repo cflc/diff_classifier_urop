@@ -1,16 +1,16 @@
-"""
-Functions to calculate trajectory features from input trajectory data This module provides functions to calculate
-trajectory features based off the ImageJ plugin TrajClassifer by Thorsten Wagner. See details at
+"""Functions to calculate trajectory features from input trajectory data
+
+This module provides functions to calculate trajectory features based off the
+ImageJ plugin TrajClassifer by Thorsten Wagner. See details at
 https://imagej.net/TraJClassifier.
 
-This file has been edited by Claudia Lozano for readability and familiarization of the code. The original can be found
-in the original_msd.py file.
 """
 
 import math
 from math import pi, log
 import struct
 import os
+
 import pandas as pd
 import numpy as np
 import numpy.linalg as LA

@@ -176,7 +176,7 @@ def test_geomean_msdisp():
     msds = msd.all_msds2(df)
     msds.to_csv('msd_test.csv')
 
-    geomean, geostder = msd.geomean_msdisp('test', umppx=1, fps=1, upload=False)
+    geomean, geostder = msd.geomean_msdisp('test', umppx=1)
     npt.assert_equal(np.round(np.exp(geomean[geomean.mask == False].data), 1),
                      geomean_t)
     npt.assert_equal(np.round(np.exp(geostder[geostder.mask == False].data), 1),
@@ -193,7 +193,7 @@ def test_geomean_msdisp():
     df = pd.DataFrame(data=data1)
     msds = msd.all_msds2(df)
     msds.to_csv('msd_test.csv')
-    geomean, geostder = msd.geomean_msdisp('test', umppx=1, fps=1, upload=False)
+    geomean, geostder = msd.geomean_msdisp('test', umppx=1)
     npt.assert_equal(geomean, np.nan * np.ones(651))
     npt.assert_equal(geostder, np.nan * np.ones(651))
 
