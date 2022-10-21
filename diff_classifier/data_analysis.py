@@ -590,7 +590,7 @@ def features_from_velocity(names, filename, umppx, fps, vid_time):
 
         local_name = "{}_{}_{}.csv".format("SV", row, col)
         to_add = pd.read_csv(local_name)  # Gets all the values from the speed file
-
+        to_add = to_add.rename(columns={'TRACK_ID': 'Track_ID', 'TRACK_DURATION':"Frame"})
         to_add.sort_values(['Track_ID', 'Frame'], ascending=[1, 1])  # sort per frame and Track ID
         to_add = to_add.astype('float64')  # Declaring the values to have decimal points
 
