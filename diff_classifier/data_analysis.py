@@ -352,7 +352,7 @@ def boxplot_feature(prefix, col_list=["alpha"], outliers=True, file="NaN", umppx
 
     if file == "SV":
         print("Speed and Velocity")
-        df = pd.read_csv('Speed.csv'.format(prefix), usecols=col_list)
+        df = pd.read_csv('Speed_{}.csv'.format(prefix), usecols=col_list)
 
     if file == "NaN":
         df = pd.read_csv('features_{}.csv'.format(prefix, prefix), usecols=col_list)  # Read the csv File
