@@ -420,6 +420,7 @@ def boxplot_feature(prefix, col_list=["alpha"], outliers=True, file="NaN", umppx
 
     plt.tight_layout()
     plt.savefig("Box&Wiskers_of_".format(prefix) + '_'.join(col_list))
+    plt.show()
     return stat_features
 
 
@@ -589,27 +590,31 @@ def features_from_velocity(names, filename, umppx, fps, vid_time):
         col = int(name.split(filename)[1].split('.')[0].split('_')[2])
 
         local_name = "{}_{}_{}.csv".format("SV", row, col)
-        to_add = pd.read_csv(local_name)  # Gets all the values from the speed file
-        to_add = to_add.rename(columns={'TRACK_ID': 'Track_ID', 'TRACK_DURATION':"Frame"})
+        to_add = pd.read_csv(local_name,
+                             usecols=["TRACK_ID", "TRACK_DURATION", "CONFINEMENT_RATIO", "TOTAL_DISTANCE_TRAVELED",
+                                      "TRACK_MEAN_SPEED"])  # Gets all the values from the speed file
+        to_add = to_add.iloc[3:]
+        to_add = to_add.rename(columns={'TRACK_ID': 'Track_ID', 'TRACK_DURATION': "Frame"})
         to_add.sort_values(['Track_ID', 'Frame'], ascending=[1, 1])  # sort per frame and Track ID
         to_add = to_add.astype('float64')  # Declaring the values to have decimal points
 
         # adding onto the data frame
-        if row == col == 0:
-            to_add['Track_ID'] = to_add['Track_ID']
-        else:
-            to_add['Track_ID'] = to_add['Track_ID'] + max(sv['Track_ID']) + 1
-
-        to_add = to_add.iloc[3:]
-
-        temp = pd.DataFrame()   # Create temporary data frame to then be added to the SV dataframe
-        temp["Track_ID"] = to_add["TRACK_ID"]
+        temp = pd.DataFrame()  # Create temporary data frame to then be added to the SV dataframe
         temp["CONFINEMENT_RATIO"] = umppx * to_add["CONFINEMENT_RATIO"]
         temp["TOTAL_DISTANCE_TRAVELED(µm)"] = umppx * to_add["TOTAL_DISTANCE_TRAVELED"]
         temp["TRACK_MEAN_SPEED (µm/sec)"] = umppx * to_add["TRACK_MEAN_SPEED"] * fps / vid_time
-        sv.append(temp, ignore_index=True)
 
-    distance_traveled = (sv["TOTAL_DISTANCE_TRAVELED"] * umppx)
+        if row == col == 0:
+            temp['Track_ID'] = to_add['Track_ID']
+            sv = temp
+            print(sv)
+        else:
+
+            temp['Track_ID'] = to_add['Track_ID'] + max(sv['Track_ID']) + 1
+            sv = pd.concat([sv,temp], axis=0, ignore_index=True)
+
+
+    distance_traveled = (sv["TOTAL_DISTANCE_TRAVELED(µm)"] * umppx)
     sv["DIFFUSION_VELOCITY_D_FIT"] = features["D_fit"] * umppx * umppx * 4 / distance_traveled
     sv["DIFFUSION_VELOCITY_MEAN_DEFF1"] = features["Mean Deff1"] * umppx * umppx * 4 / distance_traveled
     sv["DIFFUSION_VELOCITY_MEAN_DEFF2"] = features["Mean Deff2"] * umppx * umppx * 4 / distance_traveled
@@ -620,12 +625,13 @@ def features_from_velocity(names, filename, umppx, fps, vid_time):
 
 def main():
     os.chdir(
-        '/Users/claudialozano/Dropbox/PycharmProjects/AD_nanoparticle/diff_classifier/notebooks/development/MPT_Data/Matrigel1056_PxSize0_075_473fps')
+        "/Users/claudialozano/Dropbox/My Mac (C02DF5PMMD6M.tld)/Documents/UROP/Perfused_Chips/2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2")
 
-    filename = "Matrigel1056_PxSize0_075_473fps"
+    filename = "2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2"
     ##https://www.researchgate.net/figure/Cell-and-Matrigel-Compression-a-Fluorescently-labeled-dextran-molecules-only-permeate_fig2_346162488
-    pore_size(filename, 50 * 10 ** -9, 4 * 10 ** -9, DC="D_fit", umppx=4.73)
+    # pore_size(filename, 50 * 10 ** -9, 4 * 10 ** -9, DC="D_fit", umppx=4.73)
     boxplot_feature(filename, col_list=["Mean D_fit"], outliers=True, file="NaN", umppx=0.75, fps=4.73, vid_time=20)
+
 
 
 if __name__ == "__main__":
