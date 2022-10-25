@@ -419,7 +419,7 @@ def boxplot_feature(prefix, col_list=["alpha"], outliers=True, file="NaN", umppx
         stat_features[df.columns[0]] = labels  # Append dictionary to corresponding feature
 
     plt.tight_layout()
-    plt.savefig("Box&Wiskers_of_".format(prefix) + '_'.join(col_list))
+    plt.savefig("Box&Wiskers_of_" + '_'.join(col_list))
     plt.show()
     return stat_features
 
@@ -601,8 +601,8 @@ def features_from_velocity(names, filename, umppx, fps, vid_time):
         # adding onto the data frame
         temp = pd.DataFrame()  # Create temporary data frame to then be added to the SV dataframe
         temp["CONFINEMENT_RATIO"] = umppx * to_add["CONFINEMENT_RATIO"]
-        temp["TOTAL_DISTANCE_TRAVELED(µm)"] = umppx * to_add["TOTAL_DISTANCE_TRAVELED"]
-        temp["TRACK_MEAN_SPEED (µm/sec)"] = umppx * to_add["TRACK_MEAN_SPEED"] * fps / vid_time
+        temp["TOTAL_DISTANCE_TRAVELED"] = umppx * to_add["TOTAL_DISTANCE_TRAVELED"]
+        temp["TRACK_MEAN_SPEED"] = umppx * to_add["TRACK_MEAN_SPEED"] * fps  # µm/sec
 
         if row == col == 0:
             temp['Track_ID'] = to_add['Track_ID']
@@ -614,7 +614,7 @@ def features_from_velocity(names, filename, umppx, fps, vid_time):
             sv = pd.concat([sv,temp], axis=0, ignore_index=True)
 
 
-    distance_traveled = (sv["TOTAL_DISTANCE_TRAVELED(µm)"] * umppx)
+    distance_traveled = (sv["TOTAL_DISTANCE_TRAVELED"] * umppx)
     sv["DIFFUSION_VELOCITY_D_FIT"] = features["D_fit"] * umppx * umppx * 4 / distance_traveled
     sv["DIFFUSION_VELOCITY_MEAN_DEFF1"] = features["Mean Deff1"] * umppx * umppx * 4 / distance_traveled
     sv["DIFFUSION_VELOCITY_MEAN_DEFF2"] = features["Mean Deff2"] * umppx * umppx * 4 / distance_traveled
@@ -630,7 +630,8 @@ def main():
     filename = "2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2"
     ##https://www.researchgate.net/figure/Cell-and-Matrigel-Compression-a-Fluorescently-labeled-dextran-molecules-only-permeate_fig2_346162488
     # pore_size(filename, 50 * 10 ** -9, 4 * 10 ** -9, DC="D_fit", umppx=4.73)
-    boxplot_feature(filename, col_list=["Mean D_fit"], outliers=True, file="NaN", umppx=0.75, fps=4.73, vid_time=20)
+    boxplot_feature(filename, col_list=["TRACK_MEAN_SPEED "], outliers=True, file="SV", umppx=0.8, fps=0.537, vid_time=532.16)
+
 
 
 
