@@ -599,7 +599,7 @@ def features_from_velocity(names, filename, umppx, fps):
 
         # adding onto the data frame
         temp = pd.DataFrame()  # Create temporary data frame to then be added to the SV dataframe
-        temp["CONFINEMENT_RATIO"] = umppx * to_add["CONFINEMENT_RATIO"]
+        temp["CONFINEMENT_RATIO"] = to_add["CONFINEMENT_RATIO"] # unless value
         temp["TOTAL_DISTANCE_TRAVELED"] = umppx * to_add["TOTAL_DISTANCE_TRAVELED"]
         temp["TRACK_MEAN_SPEED"] = umppx * to_add["TRACK_MEAN_SPEED"] * fps  # µm/sec
 
