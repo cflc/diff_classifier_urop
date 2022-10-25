@@ -406,7 +406,7 @@ def boxplot_feature(prefix, col_list=["alpha"], outliers=True, file="NaN", umppx
             stat_features[df.columns[i]] = labels  # Append dictionary to corresponding feature
     else:  # if there is only one feature that we want to plot
         fig, ax = plt.subplots(1, len(df.columns), figsize=(20, 10))  # Create the Figure
-        feat_plot = ax.boxplot(df, flierprops=red_circle, showmeans=True, meanprops=mean_shape)
+        feat_plot = plt.boxplot(df[df.columns[0]], flierprops=red_circle, showmeans=True, meanprops=mean_shape)
         xpos = feat_plot['medians'][0].get_xdata()  # The x position of the median line
         xoff = 0.10 * (xpos[1] - xpos[0])  # horizontal offset which is some fraction of the width of the box
         xlabel = xpos[1] + xoff - 0.3  # The x position of the std
@@ -420,7 +420,6 @@ def boxplot_feature(prefix, col_list=["alpha"], outliers=True, file="NaN", umppx
 
     plt.tight_layout()
     plt.savefig("Box&Wiskers_of_" + '_'.join(col_list))
-    plt.show()
     return stat_features
 
 
@@ -562,7 +561,7 @@ def pore_size(prefix, rs, rf, DC="DiffCoeffBM", umppx=1):
     return pore_sizes
 
 
-def features_from_velocity(names, filename, umppx, fps, vid_time):
+def features_from_velocity(names, filename, umppx, fps):
     """
 
     :param names: the names of the different file sections
@@ -630,7 +629,12 @@ def main():
     filename = "2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2"
     ##https://www.researchgate.net/figure/Cell-and-Matrigel-Compression-a-Fluorescently-labeled-dextran-molecules-only-permeate_fig2_346162488
     # pore_size(filename, 50 * 10 ** -9, 4 * 10 ** -9, DC="D_fit", umppx=4.73)
-    boxplot_feature(filename, col_list=["TRACK_MEAN_SPEED "], outliers=True, file="SV", umppx=0.8, fps=0.537, vid_time=532.16)
+    names = ['2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2_0_0.tif',
+             '2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2_0_1.tif',
+             '2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2_1_0.tif',
+             '2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2_1_1.tif']
+    #features_from_velocity(names, filename, umppx=0.8, fps=0.537)
+    boxplot_feature(filename, col_list=["TRACK_MEAN_SPEED"], outliers=True, file="SV", umppx=0.8, fps=0.537, vid_time=532.16)
 
 
 
