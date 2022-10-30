@@ -3,6 +3,7 @@ Functions to Analyze the MPT tracking data by Claudia Lozano for UROP purposes a
 """
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 import itertools
 import random
@@ -599,7 +600,7 @@ def features_from_velocity(names, filename, umppx, fps):
 
         # adding onto the data frame
         temp = pd.DataFrame()  # Create temporary data frame to then be added to the SV dataframe
-        temp["CONFINEMENT_RATIO"] = to_add["CONFINEMENT_RATIO"] # unless value
+        temp["CONFINEMENT_RATIO"] = to_add["CONFINEMENT_RATIO"]  # unless value
         temp["TOTAL_DISTANCE_TRAVELED"] = umppx * to_add["TOTAL_DISTANCE_TRAVELED"]
         temp["TRACK_MEAN_SPEED"] = umppx * to_add["TRACK_MEAN_SPEED"] * fps  # µm/sec
 
@@ -610,8 +611,7 @@ def features_from_velocity(names, filename, umppx, fps):
         else:
 
             temp['Track_ID'] = to_add['Track_ID'] + max(sv['Track_ID']) + 1
-            sv = pd.concat([sv,temp], axis=0, ignore_index=True)
-
+            sv = pd.concat([sv, temp], axis=0, ignore_index=True)
 
     distance_traveled = (sv["TOTAL_DISTANCE_TRAVELED"] * umppx)
     sv["DIFFUSION_VELOCITY_D_FIT"] = features["D_fit"] * umppx * umppx * 4 / distance_traveled
@@ -620,6 +620,43 @@ def features_from_velocity(names, filename, umppx, fps):
     sv.to_csv('Speed_{}.csv'.format(filename), index=False)
 
     return sv
+
+
+def compare_stokes(prefix, rs, DC="DiffCoeffBM", umppx=1):
+    """
+    Compares the optained Diffusion Cefficient values to the theoretical values given by the stokes esintein equation
+
+    :param prefix: filename
+    :param rs: critical limiting radius (radius of the nanoparticle probe in this instance). The intensity-mean
+    hydrodynamicradius of the PS-PEG nanoparticles, as determined by DLS, was used as the critical limiting radius.
+    :param DC: Determines where we get the Diffusion Coefficient from
+    :param ummpx: resolutin in µm/px
+
+    :return
+    a graphs with a line marking the theoretical Stokes-Einstein equation and the actual values obtaines as a scatter
+    plot
+    """
+
+    if DC == "DiffCoeffBM":
+        df = pd.read_csv('DiffCoeffBM_{}.csv'.format(prefix))
+        D_eff = df[DC] * 10 ** (-12)  # in m^2/s
+    else:
+        df = pd.read_csv('features_{}.csv'.format(prefix))
+        D_eff = (df[DC] * umppx * umppx) * 10 ** (-12)  # from px^2/s -> um^2/s -> m^2/s
+
+    kB = 1.380649 * 10 ** (-23)  # Boltzmann's constant in m2*kg*s^-2*K^-1
+    T = 293.15  # 20C in Kelvin
+    mu = 0.0010016  # viscosity of water kg*m^-1*s^-2
+    D0 = kB * T / (6 * pi * mu * rs)  # Stokes-Einstein equation
+    print(D0)
+    plt.figure(figsize=(13, 6))
+    graph = sns.scatterplot(x=df['Track_ID'], y=D_eff, palette='BuPu_r')  # Give title
+    graph.axhline(D0)
+    plt.text(1, D0, f'Theoretical Val {D0:.3e}')
+    title = 'Theoretical vs Measured Deff'
+    plt.title(title)
+    plt.savefig(title, dpi=200)
+    plt.show()
 
 
 def main():
@@ -633,10 +670,10 @@ def main():
              '2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2_0_1.tif',
              '2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2_1_0.tif',
              '2022-09-06_HUVEC+FB_diamondchip3_mechdissect_pgright_+1umRED-PEGPNPs_perfused!!_pt2_1_1.tif']
-    #features_from_velocity(names, filename, umppx=0.8, fps=0.537)
-    boxplot_feature(filename, col_list=["TRACK_MEAN_SPEED"], outliers=True, file="SV", umppx=0.8, fps=0.537, vid_time=532.16)
-
-
+    # features_from_velocity(names, filename, umppx=0.8, fps=0.537)
+    # boxplot_feature(filename, col_list=["TRACK_MEAN_SPEED"], outliers=True, file="SV", umppx=0.8, fps=0.537,
+    # vid_time=532.16)
+    compare_stokes(filename, rs=100 * 10 ^ (-9), DC="Mean D_fit", umppx=0.8)
 
 
 if __name__ == "__main__":
